@@ -7,3 +7,6 @@ export 'src/models/usuario.dart';
 export 'src/dto/ws_message.dart';
 export 'src/dto/auth/login_request_dto.dart';
 export 'src/dto/auth/login_response_dto.dart';
+export 'src/dto/erro_dto.dart';
+export 'src/dto/auth/cadastro_request_dto.dart';
+export 'src/dto/auth/cadastro_response.dart';
