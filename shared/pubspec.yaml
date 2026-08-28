@@ -1,5 +1,5 @@
-name: backend
-description: A sample command-line application.
+name: shared
+description: A starting point for Dart libraries or applications.
 version: 1.0.0
 # repository: https://github.com/my_org/my_repo
 
@@ -8,12 +8,7 @@ environment:
 
 # Add regular dependencies here.
 dependencies:
-  dotenv: ^4.2.0
-  path: ^1.9.0
-  supabase: ^2.16.1
-
-  shared:
-    path: ../shared
+  # path: ^1.9.0
 
 dev_dependencies:
   lints: ^6.0.0

@@ -1,0 +1,25 @@
+import 'package:shared/src/dto/ws_message.dart';
+
+class LoginRequestDto implements WsMessage {
+  final String email;
+  final String senha;
+
+  LoginRequestDto({required this.email, required this.senha});
+
+  @override
+  String get tipo => "login";
+
+  factory LoginRequestDto.fromJson(Map<String, dynamic> json) {
+    return LoginRequestDto(
+      email: json["email"] as String,
+      senha: json["senha"] as String,
+    );
+  }
+
+  @override
+  Map<String, dynamic> toJson() => {
+    "tipo": tipo,
+    "email": email,
+    "senha": senha,
+  };
+}
