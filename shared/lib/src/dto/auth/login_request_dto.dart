@@ -1,5 +1,4 @@
-import 'package:shared/src/dto/tipo_mensagem.dart';
-import 'package:shared/src/dto/ws_message.dart';
+import 'package:shared/shared.dart';
 
 class LoginRequestDto implements WsMessage {
   final String email;
@@ -12,8 +11,8 @@ class LoginRequestDto implements WsMessage {
 
   factory LoginRequestDto.fromJson(Map<String, dynamic> json) {
     return LoginRequestDto(
-      email: json["email"] as String,
-      senha: json["senha"] as String,
+      email: JsonUtils.requireString(json, "email"),
+      senha: JsonUtils.requireString(json, "senha"),
     );
   }
 

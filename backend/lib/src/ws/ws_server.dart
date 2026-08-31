@@ -59,6 +59,11 @@ class WsServer {
       return;
     }
 
-    await _router.rotear(conexao, msg);
+    try {
+      await _router.rotear(conexao, msg);
+    } catch (e, strackTrace) {
+      print('Erro não tratado ao rotear mensagem: $e');
+      print(strackTrace);
+    }
   }
 }

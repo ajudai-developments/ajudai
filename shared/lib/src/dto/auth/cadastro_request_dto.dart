@@ -1,3 +1,4 @@
+import 'package:shared/src/dto/json_utils.dart';
 import 'package:shared/src/dto/tipo_mensagem.dart';
 
 import '../ws_message.dart';
@@ -22,11 +23,11 @@ class CadastroRequestDto implements WsMessage {
 
   factory CadastroRequestDto.fromJson(Map<String, dynamic> json) {
     return CadastroRequestDto(
-      email: json['email'] as String,
-      senha: json['senha'] as String,
-      nome: json['nome'] as String,
-      cpf: json['cpf'] as String,
-      telefone: json['telefone'] as String?,
+      email: JsonUtils.requireString(json, "email"),
+      senha: JsonUtils.requireString(json, "senha"),
+      nome: JsonUtils.requireString(json, "nome"),
+      cpf: JsonUtils.requireString(json, "cpf"),
+      telefone: JsonUtils.optionalString(json, "telefone"),
     );
   }
 

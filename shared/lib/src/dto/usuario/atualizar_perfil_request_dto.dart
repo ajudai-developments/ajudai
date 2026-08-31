@@ -1,3 +1,4 @@
+import 'package:shared/src/dto/json_utils.dart';
 import 'package:shared/src/dto/tipo_mensagem.dart';
 
 import '../ws_message.dart';
@@ -13,8 +14,8 @@ class AtualizarPerfilRequestDto implements WsMessage {
 
   factory AtualizarPerfilRequestDto.fromJson(Map<String, dynamic> json) {
     return AtualizarPerfilRequestDto(
-      nome: json['nome'] as String?,
-      telefone: json['telefone'] as String?,
+      nome: JsonUtils.optionalString(json, 'nome'),
+      telefone: JsonUtils.optionalString(json, 'telefone'),
     );
   }
 
