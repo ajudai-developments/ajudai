@@ -11,6 +11,5 @@ class WsConnection {
     _socket.add(jsonEncode(mensagem.toJson()));
   }
 
-  Stream get mensagens =>
-      _socket.map((raw) => jsonDecode(raw) as Map<String, dynamic>);
+  Stream<String> get mensagensCruas => _socket.cast<String>();
 }

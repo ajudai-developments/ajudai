@@ -1,5 +1,7 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:backend/src/services/sessao_service.dart';
+import 'package:shared/shared.dart';
 
 import 'ws_connection.dart';
 import 'ws_router.dart';
@@ -29,8 +31,8 @@ class WsServer {
   void _handleConexao(WsConnection conexao) {
     print('Novo cliente conectado');
 
-    conexao.mensagens.listen(
-      (msg) => _router.rotear(conexao, msg),
+    conexao.mensagensCruas.listen(
+      (raw) => _handleMensagemCrua(conexao, raw),
       onDone: () {
         print('Cliente desconectou');
         _sessaoService.remover(conexao);
@@ -40,5 +42,23 @@ class WsServer {
         _sessaoService.remover(conexao);
       },
     );
+  }
+
+  Future<void> _handleMensagemCrua(WsConnection conexao, String raw) async {
+    Map<String, dynamic> msg;
+
+    try {
+      msg = jsonDecode(raw) as Map<String, dynamic>;
+    } catch (_) {
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.dadosInvalidos,
+          mensagem: 'JSON mal formatado',
+        ),
+      );
+      return;
+    }
+
+    await _router.rotear(conexao, msg);
   }
 }
