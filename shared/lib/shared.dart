@@ -11,6 +11,8 @@ export 'src/dto/auth/login_response_dto.dart';
 export 'src/dto/erro_dto.dart';
 export 'src/dto/auth/cadastro_request_dto.dart';
 export 'src/dto/auth/cadastro_response.dart';
+export 'src/dto/usuario/atualizar_perfil_request_dto.dart';
+export 'src/dto/usuario/atualizar_perfil_response_dto.dart';
 
 export 'src/validators/cpf_validator.dart';
 export 'src/validators/telefone_validator.dart';

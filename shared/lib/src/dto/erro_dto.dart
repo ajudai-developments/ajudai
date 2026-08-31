@@ -8,6 +8,7 @@ enum ErroCodigo {
   emailJaCadastrado,
   cpfJaCadastrado,
   erroInterno,
+  senhaFraca,
 }
 
 class ErroDto implements WsMessage {
