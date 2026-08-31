@@ -24,7 +24,7 @@ class ErroDto implements WsMessage {
 
   @override
   Map<String, dynamic> toJson() => {
-    'tipo': tipo,
+    'tipo': tipo.valor,
     'codigo': codigo.name,
     'mensagem': mensagem,
   };

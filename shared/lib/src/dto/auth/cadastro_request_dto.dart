@@ -32,7 +32,7 @@ class CadastroRequestDto implements WsMessage {
 
   @override
   Map<String, dynamic> toJson() => {
-    'tipo': tipo,
+    'tipo': tipo.valor,
     'email': email,
     'senha': senha,
     'nome': nome,

@@ -10,5 +10,5 @@ class LoginResponseDto implements WsMessage {
   TipoMensagem get tipo => TipoMensagem.loginOk;
 
   @override
-  Map<String, dynamic> toJson() => {'tipo': tipo, 'userId': userId};
+  Map<String, dynamic> toJson() => {'tipo': tipo.valor, 'userId': userId};
 }

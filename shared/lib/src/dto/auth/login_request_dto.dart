@@ -19,7 +19,7 @@ class LoginRequestDto implements WsMessage {
 
   @override
   Map<String, dynamic> toJson() => {
-    "tipo": tipo,
+    "tipo": tipo.valor,
     "email": email,
     "senha": senha,
   };

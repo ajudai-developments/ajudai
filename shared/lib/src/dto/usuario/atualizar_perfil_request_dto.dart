@@ -20,7 +20,7 @@ class AtualizarPerfilRequestDto implements WsMessage {
 
   @override
   Map<String, dynamic> toJson() => {
-    'tipo': tipo,
+    'tipo': tipo.valor,
     'nome': ?nome,
     'telefone': ?telefone,
   };
