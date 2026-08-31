@@ -1,3 +1,4 @@
+import 'package:backend/src/repositories/usuario_repository.dart';
 import 'package:shared/shared.dart';
 import '../repositories/auth_repository.dart';
 import 'sessao_service.dart';
@@ -6,8 +7,13 @@ import '../ws/ws_connection.dart';
 class AuthService {
   final AuthRepository _authRepository;
   final SessaoService _sessaoService;
+  final UsuarioRepository _usuarioRepositorySecret;
 
-  AuthService(this._authRepository, this._sessaoService);
+  AuthService(
+    this._authRepository,
+    this._sessaoService,
+    this._usuarioRepositorySecret,
+  );
 
   Future<LoginResponseDto> login(
     WsConnection conexao,
@@ -52,6 +58,14 @@ class AuthService {
     }
 
     final cpfLimpo = CpfValidator.limpar(dto.cpf);
+
+    if (await _usuarioRepositorySecret.cpfJaExiste(cpfLimpo)) {
+      throw ErroDto(
+        codigo: ErroCodigo.cpfJaCadastrado,
+        mensagem: 'CPF já cadastrado',
+      );
+    }
+
     final telefoneLimpo = dto.telefone != null && dto.telefone!.isNotEmpty
         ? TelefoneValidator.limpar(dto.telefone!)
         : null;

@@ -1,4 +1,5 @@
 import 'package:shared/shared.dart';
+import 'package:supabase/supabase.dart';
 import '../services/auth_service.dart';
 import '../ws/ws_connection.dart';
 
@@ -17,9 +18,21 @@ class AuthHandler {
       conexao.enviar(resposta);
     } on ErroDto catch (erro) {
       conexao.enviar(erro);
-    } catch (e) {
+    } on AuthApiException {
       conexao.enviar(
-        ErroDto(codigo: ErroCodigo.erroInterno, mensagem: e.toString()),
+        ErroDto(
+          codigo: ErroCodigo.credenciaisInvalidas,
+          mensagem: "E-mail ou senha incorreto(s)",
+        ),
+      );
+    } catch (e, stackTrace) {
+      print("Um erro ocorreu: ${e.toString()}");
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: "Ocorreu um erro interno",
+        ),
       );
     }
   }
@@ -34,7 +47,37 @@ class AuthHandler {
       conexao.enviar(resposta);
     } on ErroDto catch (erro) {
       conexao.enviar(erro);
-    } catch (e) {
+    } on AuthWeakPasswordException {
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.senhaFraca,
+          mensagem:
+              "A senha deve conter letras entre A e Z e conter ao menos 1 número!",
+        ),
+      );
+    } on AuthApiException {
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.emailJaCadastrado,
+          mensagem: "Este e-mail já está cadastrador no sistema!",
+        ),
+      );
+    } on AuthException catch (e) {
+      if (e.message.contains('Database error saving new user')) {
+        conexao.enviar(
+          ErroDto(
+            codigo: ErroCodigo.cpfJaCadastrado,
+            mensagem: 'CPF já cadastrado',
+          ),
+        );
+      } else {
+        conexao.enviar(
+          ErroDto(codigo: ErroCodigo.emailJaCadastrado, mensagem: e.message),
+        );
+      }
+    } catch (e, stackTrace) {
+      print("Erro inesperado: $e");
+      print(stackTrace);
       conexao.enviar(
         ErroDto(codigo: ErroCodigo.erroInterno, mensagem: e.toString()),
       );

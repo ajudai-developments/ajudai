@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:backend/src/supabase/supabase_client_factory.dart';
 import 'package:supabase/supabase.dart';
 import '../repositories/auth_repository.dart';
 import '../ws/ws_connection.dart';
@@ -9,12 +10,14 @@ class SessaoAtiva {
   String refreshToken;
   DateTime expiraEm;
   Timer? timerRefresh;
+  SupabaseClient clientAutenticado;
 
   SessaoAtiva({
     required this.userId,
     required this.accessToken,
     required this.refreshToken,
     required this.expiraEm,
+    required this.clientAutenticado,
   });
 }
 
@@ -36,6 +39,9 @@ class SessaoService {
       expiraEm: DateTime.now().add(
         Duration(seconds: session.expiresIn ?? 3600),
       ),
+      clientAutenticado: SupabaseClientFactory.criarComToken(
+        session.accessToken,
+      ),
     );
 
     _sessoes[conexao] = sessao;
@@ -43,6 +49,9 @@ class SessaoService {
   }
 
   String? userIdDe(WsConnection conexao) => _sessoes[conexao]?.userId;
+
+  SupabaseClient? clientDe(WsConnection conexao) =>
+      _sessoes[conexao]?.clientAutenticado;
 
   void remover(WsConnection conexao) {
     _sessoes[conexao]?.timerRefresh?.cancel();
@@ -75,6 +84,9 @@ class SessaoService {
       sessao.expiraEm = DateTime.now().add(
         Duration(seconds: session.expiresIn ?? 3600),
       );
+      sessao.clientAutenticado = SupabaseClientFactory.criarComToken(
+        session.accessToken,
+      ); // atualiza o client também
 
       _agendarRefresh(conexao);
     } catch (_) {
