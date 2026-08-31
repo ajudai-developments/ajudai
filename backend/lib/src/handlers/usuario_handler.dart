@@ -17,6 +17,10 @@ class UsuarioHandler {
       conexao.enviar(resposta);
     } on ErroDto catch (erro) {
       conexao.enviar(erro);
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
     } catch (e) {
       conexao.enviar(
         ErroDto(codigo: ErroCodigo.erroInterno, mensagem: e.toString()),

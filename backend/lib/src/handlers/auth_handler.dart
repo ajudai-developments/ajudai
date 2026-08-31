@@ -25,6 +25,10 @@ class AuthHandler {
           mensagem: "E-mail ou senha incorreto(s)",
         ),
       );
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
     } catch (e, stackTrace) {
       print("Um erro ocorreu: ${e.toString()}");
       print(stackTrace);
@@ -75,6 +79,10 @@ class AuthHandler {
           ErroDto(codigo: ErroCodigo.emailJaCadastrado, mensagem: e.message),
         );
       }
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
     } catch (e, stackTrace) {
       print("Erro inesperado: $e");
       print(stackTrace);
