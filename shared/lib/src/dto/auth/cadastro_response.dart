@@ -1,3 +1,5 @@
+import 'package:shared/src/dto/tipo_mensagem.dart';
+
 import '../ws_message.dart';
 
 class CadastroResponseDto implements WsMessage {
@@ -6,7 +8,7 @@ class CadastroResponseDto implements WsMessage {
   CadastroResponseDto({required this.userId});
 
   @override
-  String get tipo => 'cadastro_ok';
+  TipoMensagem get tipo => TipoMensagem.cadastroOk;
 
   @override
   Map<String, dynamic> toJson() => {'tipo': tipo, 'userId': userId};

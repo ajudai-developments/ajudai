@@ -1,3 +1,4 @@
+import 'package:shared/src/dto/tipo_mensagem.dart';
 import 'package:shared/src/dto/ws_message.dart';
 
 class LoginRequestDto implements WsMessage {
@@ -7,7 +8,7 @@ class LoginRequestDto implements WsMessage {
   LoginRequestDto({required this.email, required this.senha});
 
   @override
-  String get tipo => "login";
+  TipoMensagem get tipo => TipoMensagem.login;
 
   factory LoginRequestDto.fromJson(Map<String, dynamic> json) {
     return LoginRequestDto(

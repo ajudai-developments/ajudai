@@ -1,3 +1,5 @@
+import 'package:shared/src/dto/tipo_mensagem.dart';
+
 import '../ws_message.dart';
 
 class AtualizarPerfilRequestDto implements WsMessage {
@@ -7,7 +9,7 @@ class AtualizarPerfilRequestDto implements WsMessage {
   AtualizarPerfilRequestDto({this.nome, this.telefone});
 
   @override
-  String get tipo => 'atualizar_perfil';
+  TipoMensagem get tipo => TipoMensagem.atualizarPerfil;
 
   factory AtualizarPerfilRequestDto.fromJson(Map<String, dynamic> json) {
     return AtualizarPerfilRequestDto(

@@ -1,3 +1,4 @@
+import 'package:shared/src/dto/tipo_mensagem.dart';
 import 'package:shared/src/dto/ws_message.dart';
 
 class LoginResponseDto implements WsMessage {
@@ -6,7 +7,7 @@ class LoginResponseDto implements WsMessage {
   LoginResponseDto({required this.userId});
 
   @override
-  String get tipo => 'login_ok';
+  TipoMensagem get tipo => TipoMensagem.loginOk;
 
   @override
   Map<String, dynamic> toJson() => {'tipo': tipo, 'userId': userId};

@@ -1,3 +1,5 @@
+import 'package:shared/src/dto/tipo_mensagem.dart';
+
 import '../ws_message.dart';
 
 class CadastroRequestDto implements WsMessage {
@@ -16,7 +18,7 @@ class CadastroRequestDto implements WsMessage {
   });
 
   @override
-  String get tipo => 'cadastro';
+  TipoMensagem get tipo => TipoMensagem.cadastro;
 
   factory CadastroRequestDto.fromJson(Map<String, dynamic> json) {
     return CadastroRequestDto(

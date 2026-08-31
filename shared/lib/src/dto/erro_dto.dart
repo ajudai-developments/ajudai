@@ -1,3 +1,5 @@
+import 'package:shared/src/dto/tipo_mensagem.dart';
+
 import 'ws_message.dart';
 
 enum ErroCodigo {
@@ -18,7 +20,7 @@ class ErroDto implements WsMessage {
   ErroDto({required this.codigo, required this.mensagem});
 
   @override
-  String get tipo => 'erro';
+  TipoMensagem get tipo => TipoMensagem.erro;
 
   @override
   Map<String, dynamic> toJson() => {

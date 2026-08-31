@@ -1,3 +1,5 @@
+import 'package:shared/src/dto/tipo_mensagem.dart';
+
 import '../ws_message.dart';
 import '../../models/usuario.dart';
 
@@ -7,7 +9,7 @@ class AtualizarPerfilResponseDto implements WsMessage {
   AtualizarPerfilResponseDto({required this.usuario});
 
   @override
-  String get tipo => 'atualizar_perfil_ok';
+  TipoMensagem get tipo => TipoMensagem.atualizarPerfilOk;
 
   @override
   Map<String, dynamic> toJson() => {'tipo': tipo, 'usuario': usuario.toJson()};
