@@ -9,23 +9,32 @@ class WsRouter {
   WsRouter(this._authHandler, this._usuarioHandler);
 
   Future<void> rotear(WsConnection conexao, Map<String, dynamic> msg) async {
-    final tipo = msg['tipo'];
+    final tipo = TipoMensagem.fromValor(msg['tipo'] as String?);
+    if (tipo == null) {
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.dadosInvalidos,
+          mensagem: 'Tipo de mensagem desconhecido: ${msg['tipo']}',
+        ),
+      );
+      return;
+    }
 
     switch (tipo) {
-      case 'login':
+      case TipoMensagem.login:
         await _authHandler.handleLogin(conexao, msg);
         break;
-      case 'cadastro':
+      case TipoMensagem.cadastro:
         await _authHandler.handleCadastro(conexao, msg);
         break;
 
-      case 'atualizar_perfil':
+      case TipoMensagem.atualizarPerfil:
         await _usuarioHandler.handleAtualizarPerfil(conexao, msg);
       default:
         conexao.enviar(
           ErroDto(
             codigo: ErroCodigo.dadosInvalidos,
-            mensagem: 'Tipo de mensagem desconhecido: $tipo',
+            mensagem: 'Tipo de mensagem não aceito como request: ${tipo.valor}',
           ),
         );
     }
