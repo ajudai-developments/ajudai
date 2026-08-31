@@ -1,3 +1,4 @@
+import 'package:shared/shared.dart';
 import '../handlers/auth_handler.dart';
 import 'ws_connection.dart';
 
@@ -17,7 +18,12 @@ class WsRouter {
         await _authHandler.handleCadastro(conexao, msg);
         break;
       default:
-        break;
+        conexao.enviar(
+          ErroDto(
+            codigo: ErroCodigo.dadosInvalidos,
+            mensagem: 'Tipo de mensagem desconhecido: $tipo',
+          ),
+        );
     }
   }
 }

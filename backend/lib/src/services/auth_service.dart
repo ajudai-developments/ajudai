@@ -35,10 +35,19 @@ class AuthService {
     WsConnection conexao,
     CadastroRequestDto dto,
   ) async {
+    if (!CpfValidator.isValido(dto.cpf)) {
+      throw ErroDto(
+        codigo: ErroCodigo.dadosInvalidos,
+        mensagem: 'CPF inválido',
+      );
+    }
+
+    final cpfLimpo = CpfValidator.limpar(dto.cpf);
+
     final response = await _authRepository.cadastrar(
       email: dto.email,
       senha: dto.senha,
-      metadata: dto.toSupabaseMetadata(),
+      metadata: {...dto.toSupabaseMetadata(), 'cpf': cpfLimpo},
     );
 
     final userId = response.user?.id;
