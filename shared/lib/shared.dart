@@ -13,6 +13,7 @@ export 'src/dto/auth/cadastro_request_dto.dart';
 export 'src/dto/auth/cadastro_response.dart';
 
 export 'src/validators/cpf_validator.dart';
+export 'src/validators/telefone_validator.dart';
 
 export 'src/models/enums/status_prestador.dart';
 export 'src/models/enums/user_role.dart';

@@ -1,4 +1,3 @@
-// lib/src/dto/auth/cadastro_request_dto.dart
 import '../ws_message.dart';
 
 class CadastroRequestDto implements WsMessage {
@@ -6,7 +5,7 @@ class CadastroRequestDto implements WsMessage {
   final String senha;
   final String nome;
   final String cpf;
-  final String telefone;
+  final String? telefone;
 
   CadastroRequestDto({
     required this.email,
@@ -25,7 +24,7 @@ class CadastroRequestDto implements WsMessage {
       senha: json['senha'] as String,
       nome: json['nome'] as String,
       cpf: json['cpf'] as String,
-      telefone: json['telefone'] as String,
+      telefone: json['telefone'] as String?,
     );
   }
 

@@ -42,12 +42,24 @@ class AuthService {
       );
     }
 
+    if (dto.telefone != null && dto.telefone!.isNotEmpty) {
+      if (!TelefoneValidator.isValido(dto.telefone!)) {
+        throw ErroDto(
+          codigo: ErroCodigo.dadosInvalidos,
+          mensagem: 'Telefone inválido',
+        );
+      }
+    }
+
     final cpfLimpo = CpfValidator.limpar(dto.cpf);
+    final telefoneLimpo = dto.telefone != null && dto.telefone!.isNotEmpty
+        ? TelefoneValidator.limpar(dto.telefone!)
+        : null;
 
     final response = await _authRepository.cadastrar(
       email: dto.email,
       senha: dto.senha,
-      metadata: {...dto.toSupabaseMetadata(), 'cpf': cpfLimpo},
+      metadata: {'nome': dto.nome, 'cpf': cpfLimpo, 'telefone': telefoneLimpo},
     );
 
     final userId = response.user?.id;
