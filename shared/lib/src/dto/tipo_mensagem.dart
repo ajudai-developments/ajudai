@@ -5,8 +5,12 @@ enum TipoMensagem {
   cadastroOk('cadastro_ok'),
   atualizarPerfil('atualizar_perfil'),
   atualizarPerfilOk('atualizar_perfil_ok'),
-  cadastrarEndereco('cadastrar_endereco'),
-  cadastrarEnderecoOk('cadastrar_endereco_ok'),
+  consultarCep('consultar_cep'),
+  consultarCepOk('consultar_cep_ok'),
+  criarEndereco('criar_endereco'),
+  criarEnderecoOk('criar_endereco_ok'),
+  obterMeusEnderecos('obter_meus_enderecos'),
+  obterMeusEnderecosOk('obter_meus_endereco_ok'),
   erro('erro');
 
   final String valor;
