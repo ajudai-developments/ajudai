@@ -60,7 +60,7 @@ class AuthController extends StateNotifier<AuthState> {
     } on WsErrorException catch (e) {
       state = AuthErro(e.mensagem);
       return false;
-    } catch (e) {
+    } catch (_) {
       state = const AuthErro(
         'Não foi possível concluir o cadastro. Tente novamente.',
       );
