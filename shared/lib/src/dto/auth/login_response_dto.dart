@@ -1,14 +1,13 @@
-import 'package:shared/src/dto/tipo_mensagem.dart';
-import 'package:shared/src/dto/ws_message.dart';
+import 'package:shared/shared.dart';
 
 class LoginResponseDto implements WsMessage {
-  final String userId;
+  final Usuario usuario;
 
-  LoginResponseDto({required this.userId});
+  LoginResponseDto({required this.usuario});
 
   @override
   TipoMensagem get tipo => TipoMensagem.loginOk;
 
   @override
-  Map<String, dynamic> toJson() => {'tipo': tipo.valor, 'userId': userId};
+  Map<String, dynamic> toJson() => {'tipo': tipo.valor, 'usuario': usuario};
 }

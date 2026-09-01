@@ -34,7 +34,17 @@ class AuthService {
     }
 
     _sessaoService.criarSessao(conexao, userId, session);
-    return LoginResponseDto(userId: userId);
+    final client = _sessaoService.clientDe(conexao)!;
+    final usuario = await UsuarioRepository(client).buscarPorId(userId);
+
+    if (usuario == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.erroInterno,
+        mensagem: 'Perfil não encontrado após cadastro',
+      );
+    }
+
+    return LoginResponseDto(usuario: usuario);
   }
 
   Future<CadastroResponseDto> cadastrar(
@@ -86,6 +96,16 @@ class AuthService {
     }
 
     _sessaoService.criarSessao(conexao, userId, session);
-    return CadastroResponseDto(userId: userId);
+    final client = _sessaoService.clientDe(conexao)!;
+    final usuario = await UsuarioRepository(client).buscarPorId(userId);
+
+    if (usuario == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.erroInterno,
+        mensagem: 'Perfil não encontrado após cadastro',
+      );
+    }
+
+    return CadastroResponseDto(usuario: usuario);
   }
 }
