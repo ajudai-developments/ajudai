@@ -82,4 +82,33 @@ class EnderecoHandler {
       } catch (_) {}
     }
   }
+
+  Future<void> handleEditarEndereco(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final dto = EditarEnderecoRequestDto.fromJson(msg);
+
+      final resposta = await _enderecoService.editarEndereco(conexao, dto);
+      conexao.enviar(resposta);
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } catch (e, stackTrace) {
+      print('Erro ao consultar CEP: $e');
+      print(stackTrace);
+      try {
+        conexao.enviar(
+          ErroDto(
+            codigo: ErroCodigo.erroInterno,
+            mensagem: 'Erro ao consultar CEP',
+          ),
+        );
+      } catch (_) {}
+    }
+  }
 }

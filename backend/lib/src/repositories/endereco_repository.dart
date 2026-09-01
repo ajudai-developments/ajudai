@@ -47,4 +47,39 @@ class EnderecoRepository {
 
     return enderecos;
   }
+
+  Future<Endereco?> editarEndereco({
+    required String enderecoId,
+    required String usuarioId,
+    required String nome,
+    required String cep,
+    required String numero,
+    String? complemento,
+    required String logradouro,
+    required String bairro,
+    required String cidade,
+    required String estado,
+  }) async {
+    final response = await _client
+        .from('enderecos')
+        .update({
+          'nome': nome,
+          'cep': cep,
+          'numero': numero,
+          'complemento': complemento,
+          'logradouro': logradouro,
+          'bairro': bairro,
+          'cidade': cidade,
+          'estado': estado,
+          'editado_em': DateTime.now().toIso8601String(),
+        })
+        .eq('id', enderecoId)
+        .eq('usuario_id', usuarioId)
+        .select()
+        .maybeSingle();
+
+    if (response == null) return null;
+
+    return Endereco.fromJson(response);
+  }
 }

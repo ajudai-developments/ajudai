@@ -19,6 +19,8 @@ export 'src/dto/endereco/criar_endereco_request.dart';
 export 'src/dto/endereco/criar_endereco_response.dart';
 export 'src/dto/endereco/obter_meus_enderecos_request_dto.dart';
 export 'src/dto/endereco/obter_meus_enderecos_response_dto.dart';
+export 'src/dto/endereco/editar_endereco_request_dto.dart';
+export 'src/dto/endereco/editar_endereco_response_dto.dart';
 
 export 'src/validators/cpf_validator.dart';
 export 'src/validators/telefone_validator.dart';

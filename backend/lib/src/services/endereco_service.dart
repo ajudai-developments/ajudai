@@ -121,4 +121,57 @@ class EnderecoService {
       rethrow;
     }
   }
+
+  Future<EditarEnderecoResponseDto> editarEndereco(
+    WsConnection conexao,
+    EditarEnderecoRequestDto dto,
+  ) async {
+    final client = _sessaoService.clientDe(conexao);
+    final userId = _sessaoService.userIdDe(conexao);
+    if (client == null || userId == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final cepLimpo = dto.cep.replaceAll(RegExp(r'\D'), '');
+    if (cepLimpo.length != 8) {
+      throw ErroDto(
+        codigo: ErroCodigo.dadosInvalidos,
+        mensagem: 'CEP inválido',
+      );
+    }
+
+    final dados = await _cepClient.buscarPorCep(cepLimpo);
+    if (dados == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.dadosInvalidos,
+        mensagem: 'CEP não encontrado',
+      );
+    }
+
+    final enderecoRepository = EnderecoRepository(client);
+
+    final endereco = await enderecoRepository.editarEndereco(
+      enderecoId: dto.enderecoId,
+      usuarioId: userId,
+      nome: dto.nome,
+      cep: dto.cep,
+      numero: dto.numero,
+      logradouro: dados.logradouro,
+      bairro: dados.bairro,
+      cidade: dados.cidade,
+      estado: dados.estado,
+    );
+
+    if (endereco == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.enderecoNaoEncontrado,
+        mensagem: "O endereço não foi encontrado",
+      );
+    }
+
+    return EditarEnderecoResponseDto(endereco: endereco);
+  }
 }

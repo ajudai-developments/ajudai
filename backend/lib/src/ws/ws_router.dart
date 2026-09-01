@@ -41,6 +41,9 @@ class WsRouter {
 
       case TipoMensagem.obterMeusEnderecos:
         await _enderecoHandler.handleObterEndereco(conexao);
+
+      case TipoMensagem.editarEndereco:
+        await _enderecoHandler.handleEditarEndereco(conexao, msg);
       default:
         conexao.enviar(
           ErroDto(

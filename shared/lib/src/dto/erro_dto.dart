@@ -12,6 +12,7 @@ enum ErroCodigo {
   erroInterno,
   senhaFraca,
   limiteEnderecosExcedido,
+  enderecoNaoEncontrado,
 }
 
 class ErroDto implements WsMessage {
