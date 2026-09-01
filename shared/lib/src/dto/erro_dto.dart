@@ -11,6 +11,7 @@ enum ErroCodigo {
   cpfJaCadastrado,
   erroInterno,
   senhaFraca,
+  limiteEnderecosExcedido,
 }
 
 class ErroDto implements WsMessage {

@@ -1,5 +1,8 @@
+import 'package:backend/src/clients/cep_client.dart';
+import 'package:backend/src/handlers/endereco_handler.dart';
 import 'package:backend/src/handlers/usuario_handler.dart';
 import 'package:backend/src/repositories/usuario_repository.dart';
+import 'package:backend/src/services/endereco_service.dart';
 import 'package:backend/src/services/usuario_service.dart';
 import 'package:backend/src/supabase/supabase_client_factory.dart';
 import 'package:backend/src/repositories/auth_repository.dart';
@@ -29,9 +32,11 @@ Future<void> main() async {
     usuarioRepository,
   );
   final usuarioService = UsuarioService(sessaoService);
+  final enderecoService = EnderecoService(CepClient(), sessaoService);
   final usuarioHandler = UsuarioHandler(usuarioService);
   final authHandler = AuthHandler(authService);
-  final router = WsRouter(authHandler, usuarioHandler);
+  final enderecoHandler = EnderecoHandler(enderecoService);
+  final router = WsRouter(authHandler, usuarioHandler, enderecoHandler);
   final server = WsServer(router, sessaoService);
 
   await server.iniciar();
