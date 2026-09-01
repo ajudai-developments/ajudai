@@ -56,7 +56,7 @@ class AuthHandler {
         ErroDto(
           codigo: ErroCodigo.senhaFraca,
           mensagem:
-              "A senha deve conter letras entre A e Z e conter ao menos 1 número!",
+              "A senha deve conter 8 caracteres e deve conter letras entre A e Z e conter ao menos 1 número!",
         ),
       );
     } on AuthApiException {

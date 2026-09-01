@@ -5,6 +5,8 @@ enum TipoMensagem {
   cadastroOk('cadastro_ok'),
   atualizarPerfil('atualizar_perfil'),
   atualizarPerfilOk('atualizar_perfil_ok'),
+  cadastrarEndereco('cadastrar_endereco'),
+  cadastrarEnderecoOk('cadastrar_endereco_ok'),
   erro('erro');
 
   final String valor;
