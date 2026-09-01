@@ -11,6 +11,8 @@ enum TipoMensagem {
   criarEnderecoOk('criar_endereco_ok'),
   obterMeusEnderecos('obter_meus_enderecos'),
   obterMeusEnderecosOk('obter_meus_endereco_ok'),
+  editarEndereco('editar_endereco'),
+  editarEnderecoOk('editar_endereco_ok'),
   erro('erro');
 
   final String valor;
