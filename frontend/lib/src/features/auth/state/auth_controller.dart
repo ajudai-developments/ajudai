@@ -61,7 +61,6 @@ class AuthController extends StateNotifier<AuthState> {
       state = AuthErro(e.mensagem);
       return false;
     } catch (e) {
-      print(e);
       state = const AuthErro(
         'Não foi possível concluir o cadastro. Tente novamente.',
       );
