@@ -19,6 +19,7 @@ enum TipoMensagem {
   aprovarPrestadorOk('aprovar_prestador_ok'),
   rejeitarPrestador('rejeitar_prestador'),
   rejeitarPrestadorOk('rejeitar_prestador_ok'),
+  listarCategorias('listar_categorias'),
   listarCategoriasOk('listar_categorias_ok'),
   listarServicos('listar_servicos'),
   listarServicosOk('listar_servicos_ok'),
@@ -30,6 +31,7 @@ enum TipoMensagem {
   listarVerificacoes('listar_verificacoes'),
   listarVerificacoesOk('listar_verificacoesOk'),
 
+  listarServicosOferecidos('listar_servicos_oferecidos'),
   listarServicosOferecidosOk('listar_servicos_oferecidos_ok'),
 
   obterServicoOferecido('obter_servico_oferecido'),

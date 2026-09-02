@@ -1,17 +1,26 @@
-import '../json_utils.dart';
+import 'package:shared/src/dto/json_utils.dart';
+import 'package:shared/src/dto/tipo_mensagem.dart';
+import 'package:shared/src/dto/ws_message.dart';
 
-class AprovarPrestadorRequestDto {
+/// Enviado por um admin autenticado para aprovar uma solicitação pendente.
+/// O handler deve checar `usuario_role == admin` antes de processar.
+class AprovarPrestadorRequestDto implements WsMessage {
   final String verificacaoId;
 
-  const AprovarPrestadorRequestDto({required this.verificacaoId});
+  AprovarPrestadorRequestDto({required this.verificacaoId});
+
+  @override
+  TipoMensagem get tipo => TipoMensagem.aprovarPrestador;
 
   factory AprovarPrestadorRequestDto.fromJson(Map<String, dynamic> json) {
     return AprovarPrestadorRequestDto(
-      verificacaoId: JsonUtils.requireString(json, 'verificacaoId'),
+      verificacaoId: JsonUtils.requireString(json, 'verificacao_id'),
     );
   }
 
-  Map<String, dynamic> toJson() {
-    return {'verificacaoId': verificacaoId};
-  }
+  @override
+  Map<String, dynamic> toJson() => {
+    'tipo': tipo.valor,
+    'verificacao_id': verificacaoId,
+  };
 }
