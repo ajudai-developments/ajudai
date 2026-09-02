@@ -8,6 +8,10 @@ class EditarEnderecoResponseDto implements WsMessage {
   @override
   TipoMensagem get tipo => TipoMensagem.criarEnderecoOk;
 
+  factory EditarEnderecoResponseDto.fromJson(Map<String, dynamic> json) {
+    return EditarEnderecoResponseDto(endereco: Endereco.fromJson(json));
+  }
+
   @override
   Map<String, dynamic> toJson() => {
     "tipo": tipo.valor,

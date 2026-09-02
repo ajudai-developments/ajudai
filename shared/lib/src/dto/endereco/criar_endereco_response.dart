@@ -1,6 +1,4 @@
-import '../tipo_mensagem.dart';
-import '../ws_message.dart';
-import '../../models/endereco.dart';
+import 'package:shared/shared.dart';
 
 class CriarEnderecoResponseDto implements WsMessage {
   final Endereco endereco;
@@ -9,6 +7,10 @@ class CriarEnderecoResponseDto implements WsMessage {
 
   @override
   TipoMensagem get tipo => TipoMensagem.criarEnderecoOk;
+
+  factory CriarEnderecoResponseDto.fromJson(Map<String, dynamic> json) {
+    return CriarEnderecoResponseDto(endereco: Endereco.fromJson(json));
+  }
 
   @override
   Map<String, dynamic> toJson() => {

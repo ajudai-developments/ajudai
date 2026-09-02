@@ -16,6 +16,16 @@ class ConsultarCepResponseDto implements WsMessage {
     required this.estado,
   });
 
+  factory ConsultarCepResponseDto.fromJson(Map<String, dynamic> json) {
+    return ConsultarCepResponseDto(
+      cep: json["cep"],
+      logradouro: json["logradouro"],
+      bairro: json["bairro"],
+      cidade: json["cidade"],
+      estado: json["estado"],
+    );
+  }
+
   @override
   TipoMensagem get tipo => TipoMensagem.consultarCepOk;
 

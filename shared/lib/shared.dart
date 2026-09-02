@@ -2,6 +2,9 @@ library;
 
 export 'src/models/usuario.dart';
 export 'src/models/endereco.dart';
+export 'src/models/categoria.dart';
+export 'src/models/servico.dart';
+export 'src/models/servico_oferecido.dart';
 
 export 'src/dto/ws_message.dart';
 export 'src/dto/auth/login_request_dto.dart';
@@ -21,6 +24,12 @@ export 'src/dto/endereco/obter_meus_enderecos_request_dto.dart';
 export 'src/dto/endereco/obter_meus_enderecos_response_dto.dart';
 export 'src/dto/endereco/editar_endereco_request_dto.dart';
 export 'src/dto/endereco/editar_endereco_response_dto.dart';
+export 'src/dto/prestador/solicitar_prestador_response_dto.dart';
+export 'src/dto/servico/listar_servico_response_dto.dart';
+export 'src/dto/servico/listar_servico_request_dto.dart';
+export 'src/dto/servico/listar_categoria_response_dto.dart';
+export 'src/dto/servico/criar_servico_oferecido_request_dto.dart';
+export 'src/dto/servico/criar_servico_oferecido_response_dto.dart';
 
 export 'src/validators/cpf_validator.dart';
 export 'src/validators/telefone_validator.dart';

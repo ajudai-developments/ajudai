@@ -8,6 +8,10 @@ class LoginResponseDto implements WsMessage {
   @override
   TipoMensagem get tipo => TipoMensagem.loginOk;
 
+  factory LoginResponseDto.fromJson(Map<String, dynamic> json) {
+    return LoginResponseDto(usuario: Usuario.fromJson(json));
+  }
+
   @override
   Map<String, dynamic> toJson() => {'tipo': tipo.valor, 'usuario': usuario};
 }
