@@ -1,6 +1,7 @@
 import 'package:backend/src/services/agendamento_service.dart';
 import 'package:backend/src/ws/ws_connection.dart';
 import 'package:shared/shared.dart';
+import 'package:supabase/supabase.dart';
 
 class AgendamentoHandler {
   final AgendamentoService _agendamentoService;
@@ -27,6 +28,21 @@ class AgendamentoHandler {
       );
     } on ErroDto catch (erro) {
       conexao.enviar(erro);
+    } on PostgrestException catch (e, strackTrace) {
+      print('Erro ao criar preview de agendamento: $e');
+      print(strackTrace);
+      if (e.message.contains('22P02')) {
+        conexao.enviar(
+          ErroDto(
+            codigo: ErroCodigo.dadosInvalidos,
+            mensagem: 'Endereço não encontrado',
+          ),
+        );
+        return;
+      }
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.erroInterno, mensagem: 'Erro interno'),
+      );
     } catch (e, stackTrace) {
       print('Erro ao criar preview de agendamento: $e');
       print(stackTrace);

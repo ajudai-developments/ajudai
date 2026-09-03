@@ -2,12 +2,14 @@ import 'package:backend/src/clients/cep_client.dart';
 import 'package:backend/src/handlers/admin_handler.dart';
 import 'package:backend/src/handlers/agendamento_handler.dart';
 import 'package:backend/src/handlers/endereco_handler.dart';
+import 'package:backend/src/handlers/servico_handler.dart';
 import 'package:backend/src/handlers/usuario_handler.dart';
 import 'package:backend/src/repositories/usuario_repository.dart';
 import 'package:backend/src/services/admin_service.dart';
 import 'package:backend/src/services/agendamento_service.dart';
 import 'package:backend/src/services/endereco_service.dart';
 import 'package:backend/src/services/pagamento_service.dart';
+import 'package:backend/src/services/servico_service.dart';
 import 'package:backend/src/services/usuario_service.dart';
 import 'package:backend/src/supabase/supabase_client_factory.dart';
 import 'package:backend/src/repositories/auth_repository.dart';
@@ -44,17 +46,20 @@ Future<void> main() async {
     sessaoService,
     pagamentoService,
   );
+  final servicoService = ServicoService(sessaoService);
   final usuarioHandler = UsuarioHandler(usuarioService);
   final authHandler = AuthHandler(authService);
   final enderecoHandler = EnderecoHandler(enderecoService);
   final adminHandler = AdminHandler(adminService);
   final agendamentoHandler = AgendamentoHandler(agendamentoService);
+  final servicoHandler = ServicoHandler(servicoService);
   final router = WsRouter(
     authHandler,
     usuarioHandler,
     enderecoHandler,
     adminHandler,
     agendamentoHandler,
+    servicoHandler,
   );
   final server = WsServer(router, sessaoService);
 

@@ -13,7 +13,10 @@ Future<EnderecoResolvido> _resolverEndereco(
   String userId,
   String enderecoId,
 ) async {
-  final endereco = await EnderecoRepository(client).buscarPorId(enderecoId);
+  Endereco? endereco;
+
+  endereco = await EnderecoRepository(client).buscarPorId(enderecoId);
+
   if (endereco == null || endereco.usuarioId != userId) {
     throw ErroDto(
       codigo: ErroCodigo.dadosInvalidos,
@@ -139,7 +142,6 @@ class AgendamentoService {
 
     final pagamentoAprovado = await _pagamentoService.processar(
       valor: detalhe.valor,
-      metodoPagamento: dto.metodoPagamento,
     );
 
     if (!pagamentoAprovado) {
