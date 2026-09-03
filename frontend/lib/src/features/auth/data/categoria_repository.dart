@@ -13,6 +13,7 @@ class CategoriaRepository {
       tiposEsperados: {TipoMensagem.listarCategoriasOk.valor},
     );
     final dto = ListarCategoriasResponseDto.fromJson(resposta);
+
     return dto.categorias;
   }
 }

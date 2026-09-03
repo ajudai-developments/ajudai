@@ -23,7 +23,6 @@ class CadastroPage extends ConsumerWidget {
           ..showSnackBar(SnackBar(content: Text(atual.mensagem)));
       }
       if (atual is AuthAutenticado) {
-        // TODO: navegar para a home do app quando ela existir.
         ScaffoldMessenger.of(context)
           ..hideCurrentSnackBar()
           ..showSnackBar(
