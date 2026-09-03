@@ -1,72 +1,47 @@
-/// Regras de negócio para criação de agendamento. Usado tanto no backend
-/// (obrigatório, fonte da verdade) quanto opcionalmente no app (feedback
-/// imediato pro usuário antes de mandar pro servidor).
 class AgendamentoValidator {
-  static const antecedenciaMinima = Duration(minutes: 90);
-  static const duracaoMinima = Duration(minutes: 30);
-  static const limiteFuturo = Duration(days: 30);
-  static const horaMinima = 6; // 06:00
-  static const horaMaxima = 23; // 23:00 (fim do expediente)
+  static const _antecedenciaMinima = Duration(hours: 1, minutes: 30);
+  static const _antecedenciaMaxima = Duration(days: 30);
+  static const _duracaoMinima = Duration(minutes: 30);
+  static const _offsetBrasil = Duration(hours: -3);
 
-  /// Lança [FormatException] com uma mensagem amigável se algo estiver
-  /// fora das regras. Se não lançar, o horário é válido.
   static void validar({
-    required DateTime horaInicio,
-    required DateTime horaFim,
-    DateTime? agora,
+    required DateTime agoraUtc,
+    required DateTime horaInicioUtc,
+    required DateTime horaFimUtc,
   }) {
-    final referencia = agora ?? DateTime.now();
+    if (!agoraUtc.isUtc || !horaInicioUtc.isUtc || !horaFimUtc.isUtc) {
+      throw ArgumentError('Horários devem ser enviados em UTC');
+    }
 
-    if (!horaFim.isAfter(horaInicio)) {
-      throw const FormatException(
-        'O horário de término deve ser depois do horário de início.',
+    if (!horaFimUtc.isAfter(horaInicioUtc)) {
+      throw ArgumentError('Hora de término deve ser depois da hora de início');
+    }
+
+    final antecedencia = horaInicioUtc.difference(agoraUtc);
+    if (antecedencia < _antecedenciaMinima) {
+      throw ArgumentError(
+        'Agendamento precisa ser feito com pelo menos 1h30 de antecedência',
+      );
+    }
+    if (antecedencia > _antecedenciaMaxima) {
+      throw ArgumentError(
+        'Agendamento não pode ser feito com mais de 30 dias de antecedência',
       );
     }
 
-    if (horaInicio.isBefore(referencia.add(antecedenciaMinima))) {
-      throw FormatException(
-        'O agendamento precisa ser feito com pelo menos '
-        '${antecedenciaMinima.inMinutes} minutos de antecedência.',
-      );
+    final duracao = horaFimUtc.difference(horaInicioUtc);
+    if (duracao < _duracaoMinima) {
+      throw ArgumentError('Agendamento precisa durar pelo menos 30 minutos');
     }
 
-    if (horaInicio.isAfter(referencia.add(limiteFuturo))) {
-      throw FormatException(
-        'Não é possível agendar com mais de ${limiteFuturo.inDays} dias '
-        'de antecedência.',
-      );
+    final inicioLocal = horaInicioUtc.add(_offsetBrasil);
+    final fimLocal = horaFimUtc.add(_offsetBrasil);
+
+    if (inicioLocal.hour < 6) {
+      throw ArgumentError('Agendamento só pode começar a partir das 06:00');
     }
-
-    final duracao = horaFim.difference(horaInicio);
-    if (duracao < duracaoMinima) {
-      throw FormatException(
-        'O agendamento precisa durar pelo menos '
-        '${duracaoMinima.inMinutes} minutos.',
-      );
-    }
-
-    if (!_dentroDoHorarioPermitido(horaInicio) ||
-        !_dentroDoHorarioPermitido(horaFim)) {
-      throw FormatException(
-        'Só é possível agendar entre ${horaMinima}h e ${horaMaxima}h.',
-      );
-    }
-  }
-
-  static bool _dentroDoHorarioPermitido(DateTime momento) {
-    final minutosDoDia = momento.hour * 60 + momento.minute;
-    final minimoEmMinutos = horaMinima * 60;
-    final maximoEmMinutos = horaMaxima * 60;
-    return minutosDoDia >= minimoEmMinutos && minutosDoDia <= maximoEmMinutos;
-  }
-
-  /// true/false sem lançar exceção — útil para validação silenciosa na UI.
-  static bool ehValido({required DateTime horaInicio, required DateTime horaFim, DateTime? agora}) {
-    try {
-      validar(horaInicio: horaInicio, horaFim: horaFim, agora: agora);
-      return true;
-    } on FormatException {
-      return false;
+    if (fimLocal.hour > 23 || (fimLocal.hour == 23 && fimLocal.minute > 0)) {
+      throw ArgumentError('Agendamento precisa terminar até às 23:00');
     }
   }
 }

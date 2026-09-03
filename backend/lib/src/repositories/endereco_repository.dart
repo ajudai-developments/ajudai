@@ -82,4 +82,13 @@ class EnderecoRepository {
 
     return Endereco.fromJson(response);
   }
+
+  Future<Endereco?> buscarPorId(String id) async {
+    final response = await _client
+        .from('enderecos')
+        .select()
+        .eq('id', id)
+        .maybeSingle();
+    return response != null ? Endereco.fromJson(response) : null;
+  }
 }
