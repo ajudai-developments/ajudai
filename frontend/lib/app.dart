@@ -1,4 +1,4 @@
-import 'package:ajudai/src/features/auth/presentation/home_page.dart';
+import 'package:ajudai/src/features/home/presentation/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 

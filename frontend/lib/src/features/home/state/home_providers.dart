@@ -1,4 +1,4 @@
-import 'package:ajudai/src/features/auth/data/categoria_repository.dart';
+import 'package:ajudai/src/features/categoria/data/categoria_repository.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/shared.dart';
 
