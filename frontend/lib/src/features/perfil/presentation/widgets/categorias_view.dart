@@ -7,8 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/shared.dart';
 import '../../../home/state/home_providers.dart';
 
-
-
 class CategoriasView extends ConsumerWidget {
   const CategoriasView({super.key});
 
@@ -17,9 +15,7 @@ class CategoriasView extends ConsumerWidget {
     final categoriasAsync = ref.watch(categoriasProvider);
 
     return categoriasAsync.when(
-      loading: () => const Center(
-        child: CircularProgressIndicator(),
-      ),
+      loading: () => const Center(child: CircularProgressIndicator()),
       error: (error, stack) => Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -28,9 +24,7 @@ class CategoriasView extends ConsumerWidget {
             const SizedBox(height: 12),
             Text(
               'Erro ao carregar categorias',
-              style: AppTextStyles.corpo.copyWith(
-                color: AppColors.erro,
-              ),
+              style: AppTextStyles.corpo.copyWith(color: AppColors.erro),
             ),
             const SizedBox(height: 8),
             TextButton(
@@ -46,7 +40,11 @@ class CategoriasView extends ConsumerWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.category_outlined, color: AppColors.cinzaClaro, size: 48),
+                Icon(
+                  Icons.category_outlined,
+                  color: AppColors.cinzaClaro,
+                  size: 48,
+                ),
                 const SizedBox(height: 12),
                 Text(
                   'Nenhuma categoria disponível',
@@ -108,9 +106,7 @@ class CategoriaCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
@@ -123,7 +119,7 @@ class CategoriaCard extends StatelessWidget {
                 width: 56,
                 height: 56,
                 decoration: BoxDecoration(
-                  color: AppColors.vermelho.withOpacity(0.1),
+                  color: AppColors.vermelho.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(16),
                 ),
                 child: Icon(

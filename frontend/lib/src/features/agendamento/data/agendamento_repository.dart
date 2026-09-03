@@ -16,10 +16,10 @@ class AgendamentoRepository {
     // TODO: Verificar se existe DTO específico para isso
     // Por enquanto vamos usar o que temos disponível
     // Se não tiver, podemos criar um DTO específico
-    
+
     // Usando o mesmo DTO de listagem de serviços mas com filtro
-    final request = ListarServicosRequestDto(categoriaId: categoriaId);
-    
+    final request = ListarServicosRequestDto(categoriaId: categoriaId!);
+
     final response = await _wsClient.enviarEAguardar(
       request,
       tiposEsperados: {TipoMensagem.listarServicosOk.valor},
@@ -30,8 +30,8 @@ class AgendamentoRepository {
     // Nota: Pode ser necessário ajustar dependendo do backend
     return dto.servicos.map((servico) {
       return ServicoOferecidoPreview(
-        servicoOferecidoId: servico.id,
-        servicoNome: servico.nome,
+        servicoOferecidoId: servico.servicoOferecidoId,
+        servicoNome: servico.servicoNome,
         categoriaNome: '', // Preencher depois
         valor: 0.0, // Preencher depois
         prestadorId: '', // Preencher depois
@@ -51,7 +51,7 @@ class AgendamentoRepository {
     final request = ObterServicoOferecidoRequestDto(
       servicoOferecidoId: servicoOferecidoId,
     );
-    
+
     final response = await _wsClient.enviarEAguardar(
       request,
       tiposEsperados: {TipoMensagem.obterServicoOferecidoOk.valor},
@@ -117,7 +117,7 @@ class AgendamentoRepository {
     List<String>? status,
   }) async {
     final request = ListarMeusAgendamentosRequestDto(status: status);
-    
+
     final response = await _wsClient.enviarEAguardar(
       request,
       tiposEsperados: {TipoMensagem.listarMeusAgendamentosOk.valor},
@@ -136,7 +136,7 @@ class AgendamentoRepository {
     String agendamentoId,
   ) async {
     final request = ObterAgendamentoRequestDto(agendamentoId: agendamentoId);
-    
+
     final response = await _wsClient.enviarEAguardar(
       request,
       tiposEsperados: {TipoMensagem.obterAgendamentoOk.valor},
@@ -154,7 +154,7 @@ class AgendamentoRepository {
       agendamentoId: agendamentoId,
       aceitar: aceitar,
     );
-    
+
     final response = await _wsClient.enviarEAguardar(
       request,
       tiposEsperados: {TipoMensagem.responderAgendamentoOk.valor},
@@ -168,7 +168,7 @@ class AgendamentoRepository {
     String agendamentoId,
   ) async {
     final request = IniciarAgendamentoRequestDto(agendamentoId: agendamentoId);
-    
+
     final response = await _wsClient.enviarEAguardar(
       request,
       tiposEsperados: {TipoMensagem.iniciarAgendamentoOk.valor},
@@ -182,7 +182,7 @@ class AgendamentoRepository {
     String agendamentoId,
   ) async {
     final request = ConcluirAgendamentoRequestDto(agendamentoId: agendamentoId);
-    
+
     final response = await _wsClient.enviarEAguardar(
       request,
       tiposEsperados: {TipoMensagem.concluirAgendamentoOk.valor},
@@ -198,7 +198,7 @@ class AgendamentoRepository {
     final request = ConfirmarConclusaoAgendamentoRequestDto(
       agendamentoId: agendamentoId,
     );
-    
+
     final response = await _wsClient.enviarEAguardar(
       request,
       tiposEsperados: {TipoMensagem.confirmarConclusaoAgendamentoOk.valor},
@@ -216,7 +216,7 @@ class AgendamentoRepository {
       agendamentoId: agendamentoId,
       motivo: motivo,
     );
-    
+
     final response = await _wsClient.enviarEAguardar(
       request,
       tiposEsperados: {TipoMensagem.cancelarAgendamentoOk.valor},

@@ -70,7 +70,9 @@ class _EnderecoFormPageState extends ConsumerState<EnderecoFormPage> {
     });
 
     try {
-      final resultado = await ref.read(perfilRepositoryProvider).consultarCep(cep);
+      final resultado = await ref
+          .read(perfilRepositoryProvider)
+          .consultarCep(cep);
       setState(() => _cepResolvido = resultado);
     } on WsErrorException catch (e) {
       setState(() => _erroCep = e.mensagem);
@@ -113,7 +115,9 @@ class _EnderecoFormPageState extends ConsumerState<EnderecoFormPage> {
       if (mounted) Navigator.of(context).pop(true);
     } on WsErrorException catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.mensagem)));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.mensagem)));
       }
     } catch (_) {
       if (mounted) {
@@ -129,7 +133,9 @@ class _EnderecoFormPageState extends ConsumerState<EnderecoFormPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.ehEdicao ? 'Editar endereço' : 'Novo endereço')),
+      appBar: AppBar(
+        title: Text(widget.ehEdicao ? 'Editar endereço' : 'Novo endereço'),
+      ),
       body: Form(
         key: _formKey,
         child: ListView(
@@ -141,10 +147,15 @@ class _EnderecoFormPageState extends ConsumerState<EnderecoFormPage> {
                 Expanded(
                   child: TextFormField(
                     controller: _cepController,
-                    decoration: InputDecoration(labelText: 'CEP', errorText: _erroCep),
+                    decoration: InputDecoration(
+                      labelText: 'CEP',
+                      errorText: _erroCep,
+                    ),
                     keyboardType: TextInputType.number,
                     onChanged: (_) {
-                      if (_cepResolvido != null) setState(() => _cepResolvido = null);
+                      if (_cepResolvido != null) {
+                        setState(() => _cepResolvido = null);
+                      }
                     },
                   ),
                 ),
@@ -169,7 +180,9 @@ class _EnderecoFormPageState extends ConsumerState<EnderecoFormPage> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.secondary.withOpacity(0.08),
+                  color: Theme.of(
+                    context,
+                  ).colorScheme.secondary.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -181,19 +194,25 @@ class _EnderecoFormPageState extends ConsumerState<EnderecoFormPage> {
             const SizedBox(height: 20),
             TextFormField(
               controller: _nomeController,
-              decoration: const InputDecoration(labelText: 'Nome do endereço (ex: Casa, Trabalho)'),
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Informe um nome' : null,
+              decoration: const InputDecoration(
+                labelText: 'Nome do endereço (ex: Casa, Trabalho)',
+              ),
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Informe um nome' : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _numeroController,
               decoration: const InputDecoration(labelText: 'Número'),
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Informe o número' : null,
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Informe o número' : null,
             ),
             const SizedBox(height: 16),
             TextFormField(
               controller: _complementoController,
-              decoration: const InputDecoration(labelText: 'Complemento (opcional)'),
+              decoration: const InputDecoration(
+                labelText: 'Complemento (opcional)',
+              ),
             ),
             const SizedBox(height: 28),
             ElevatedButton(
@@ -202,7 +221,10 @@ class _EnderecoFormPageState extends ConsumerState<EnderecoFormPage> {
                   ? const SizedBox(
                       width: 20,
                       height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
                     )
                   : const Text('Salvar endereço'),
             ),

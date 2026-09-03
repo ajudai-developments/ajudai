@@ -53,15 +53,12 @@ class _EnderecoSelectorState extends ConsumerState<EnderecoSelector> {
 
         enderecosAsync.when(
           loading: () => const Center(
-            child: SizedBox(
-              height: 40,
-              child: CircularProgressIndicator(),
-            ),
+            child: SizedBox(height: 40, child: CircularProgressIndicator()),
           ),
           error: (error, stack) => Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppColors.erro.withOpacity(0.1),
+              color: AppColors.erro.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(14),
             ),
             child: Row(
@@ -71,9 +68,7 @@ class _EnderecoSelectorState extends ConsumerState<EnderecoSelector> {
                 Expanded(
                   child: Text(
                     'Erro ao carregar endereços',
-                    style: AppTextStyles.corpo.copyWith(
-                      color: AppColors.erro,
-                    ),
+                    style: AppTextStyles.corpo.copyWith(color: AppColors.erro),
                   ),
                 ),
               ],
@@ -122,7 +117,7 @@ class _EnderecoSelectorState extends ConsumerState<EnderecoSelector> {
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? AppColors.vermelho.withOpacity(0.05)
+                          ? AppColors.vermelho.withValues(alpha: 0.05)
                           : AppColors.fundoCampo,
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(

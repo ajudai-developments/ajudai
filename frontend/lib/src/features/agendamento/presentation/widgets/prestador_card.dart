@@ -19,9 +19,7 @@ class PrestadorCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(14),
@@ -34,7 +32,7 @@ class PrestadorCard extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 24,
-                    backgroundColor: AppColors.vermelho.withOpacity(0.1),
+                    backgroundColor: AppColors.vermelho.withValues(alpha: 0.1),
                     child: Text(
                       servicoOferecido.prestadorNome[0].toUpperCase(),
                       style: AppTextStyles.titulo.copyWith(

@@ -7,10 +7,7 @@ import 'package:shared/shared.dart';
 class ResumoServico extends StatelessWidget {
   final ServicoOferecidoPreview servicoOferecido;
 
-  const ResumoServico({
-    super.key,
-    required this.servicoOferecido,
-  });
+  const ResumoServico({super.key, required this.servicoOferecido});
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +26,7 @@ class ResumoServico extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.vermelho.withOpacity(0.1),
+                  color: AppColors.vermelho.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -72,7 +69,7 @@ class ResumoServico extends StatelessWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: AppColors.verde.withOpacity(0.1),
+                        color: AppColors.verde.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Row(

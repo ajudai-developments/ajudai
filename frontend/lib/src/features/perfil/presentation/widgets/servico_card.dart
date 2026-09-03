@@ -6,33 +6,33 @@ import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
 class ServicoCard extends StatelessWidget {
-  final Servico servico;
+  final ServicoOferecidoPreview servico;
   final VoidCallback? onTap;
 
-  const ServicoCard({
-    super.key,
-    required this.servico,
-    this.onTap,
-  });
+  const ServicoCard({super.key, required this.servico, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       elevation: 1,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(14),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       child: InkWell(
         onTap: () {
-  // Navegar para lista de prestadores do serviço
-  Navigator.push(
-    context,
-    MaterialPageRoute(
-      builder: (_) => PrestadoresPage(servico: servico),
-    ),
-  );
-},
+          // Navegar para lista de prestadores do serviço
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => PrestadoresPage(
+                servico: Servico(
+                  id: servico.servicoOferecidoId,
+                  nome: servico.servicoNome,
+                  categoriaId: servico.servicoOferecidoId,
+                ),
+              ),
+            ),
+          );
+        },
         borderRadius: BorderRadius.circular(14),
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -42,7 +42,7 @@ class ServicoCard extends StatelessWidget {
                 width: 48,
                 height: 48,
                 decoration: BoxDecoration(
-                  color: AppColors.vermelho.withOpacity(0.1),
+                  color: AppColors.vermelho.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
@@ -57,7 +57,7 @@ class ServicoCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      servico.nome,
+                      servico.servicoNome,
                       style: AppTextStyles.corpo.copyWith(
                         fontWeight: FontWeight.w600,
                       ),
@@ -65,9 +65,7 @@ class ServicoCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       'Clique para ver prestadores',
-                      style: AppTextStyles.secundario.copyWith(
-                        fontSize: 12,
-                      ),
+                      style: AppTextStyles.secundario.copyWith(fontSize: 12),
                     ),
                   ],
                 ),

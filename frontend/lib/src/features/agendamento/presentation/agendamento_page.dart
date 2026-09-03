@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared/shared.dart';
 
 import '../../../core/theme/app_colors.dart';
-import '../../../core/theme/app_text_styles.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/loading_overlay.dart';
 import '../state/agendamento_providers.dart';
@@ -17,10 +16,7 @@ import 'widgets/resumo_servico.dart';
 class AgendamentoPage extends ConsumerStatefulWidget {
   final ServicoOferecidoPreview servicoOferecido;
 
-  const AgendamentoPage({
-    super.key,
-    required this.servicoOferecido,
-  });
+  const AgendamentoPage({super.key, required this.servicoOferecido});
 
   @override
   ConsumerState<AgendamentoPage> createState() => _AgendamentoPageState();
@@ -36,13 +32,9 @@ class _AgendamentoPageState extends ConsumerState<AgendamentoPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Agendar Serviço'),
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text('Agendar Serviço'), elevation: 0),
       body: LoadingOverlay(
-        isLoading: _isLoading,
-        visivel: null,
+        visivel: _isLoading,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Form(
@@ -77,13 +69,14 @@ class _AgendamentoPageState extends ConsumerState<AgendamentoPage> {
 
                 // Botão confirmar
                 AppButton(
-                  label: 'Confirmar Agendamento',
-                  onPressed: _horaInicio != null &&
+                  texto: 'Confirmar Agendamento',
+                  onPressed:
+                      _horaInicio != null &&
                           _horaFim != null &&
                           _enderecoSelecionado != null
                       ? _confirmarAgendamento
                       : null,
-                  isLoading: _isLoading,
+                  carregando: _isLoading,
                 ),
               ],
             ),
@@ -94,7 +87,9 @@ class _AgendamentoPageState extends ConsumerState<AgendamentoPage> {
   }
 
   Future<void> _confirmarAgendamento() async {
-    if (_horaInicio == null || _horaFim == null || _enderecoSelecionado == null) {
+    if (_horaInicio == null ||
+        _horaFim == null ||
+        _enderecoSelecionado == null) {
       return;
     }
 
@@ -103,12 +98,12 @@ class _AgendamentoPageState extends ConsumerState<AgendamentoPage> {
     try {
       // Criar o agendamento
       final response = await ref.read(
-        criarAgendamentoProvider({
-          servicoOferecidoId: widget.servicoOferecido.servicoOferecidoId,
+        criarAgendamentoProvider((
           enderecoId: _enderecoSelecionado!.id,
-          horaInicio: _horaInicio!,
           horaFim: _horaFim!,
-        }).future,
+          horaInicio: _horaInicio!,
+          servicoOferecidoId: widget.servicoOferecido.servicoOferecidoId,
+        )).future,
       );
 
       if (mounted) {
@@ -121,7 +116,8 @@ class _AgendamentoPageState extends ConsumerState<AgendamentoPage> {
               endereco: _enderecoSelecionado!,
               horaInicio: _horaInicio!,
               horaFim: _horaFim!,
-              agendamentoId: response.servicoOferecidoId, // Ajustar conforme resposta
+              agendamentoId:
+                  response.servicoOferecidoId, // Ajustar conforme resposta
             ),
           ),
         );
@@ -139,10 +135,7 @@ class _AgendamentoPageState extends ConsumerState<AgendamentoPage> {
 
   void _showError(String mensagem) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(mensagem),
-        backgroundColor: AppColors.erro,
-      ),
+      SnackBar(content: Text(mensagem), backgroundColor: AppColors.erro),
     );
   }
 }

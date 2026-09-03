@@ -39,12 +39,9 @@ class _ConfirmacaoPagamentoPageState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Confirmar Pagamento'),
-        elevation: 0,
-      ),
+      appBar: AppBar(title: const Text('Confirmar Pagamento'), elevation: 0),
       body: LoadingOverlay(
-        isLoading: _isLoading,
+        visivel: _isLoading,
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -54,7 +51,7 @@ class _ConfirmacaoPagamentoPageState
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: AppColors.verde.withOpacity(0.1),
+                  color: AppColors.verde.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Row(
@@ -89,9 +86,9 @@ class _ConfirmacaoPagamentoPageState
 
               // Botão confirmar pagamento
               AppButton(
-                label: 'Confirmar Pagamento',
+                texto: 'Confirmar Pagamento',
                 onPressed: _confirmarPagamento,
-                isLoading: _isLoading,
+                carregando: _isLoading,
               ),
               const SizedBox(height: 12),
               Center(
@@ -160,7 +157,10 @@ class _ConfirmacaoPagamentoPageState
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: AppTextStyles.secundario.copyWith(fontSize: 12)),
+                Text(
+                  label,
+                  style: AppTextStyles.secundario.copyWith(fontSize: 12),
+                ),
                 Text(value, style: AppTextStyles.corpo),
               ],
             ),
@@ -183,7 +183,7 @@ class _ConfirmacaoPagamentoPageState
             width: 48,
             height: 48,
             decoration: BoxDecoration(
-              color: AppColors.vermelho.withOpacity(0.1),
+              color: AppColors.vermelho.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: const Icon(
@@ -239,10 +239,7 @@ class _ConfirmacaoPagamentoPageState
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'Total',
-                style: AppTextStyles.titulo.copyWith(fontSize: 18),
-              ),
+              Text('Total', style: AppTextStyles.titulo.copyWith(fontSize: 18)),
               Text(
                 'R\$ ${widget.servicoOferecido.valor.toStringAsFixed(2)}',
                 style: AppTextStyles.titulo.copyWith(
@@ -262,12 +259,12 @@ class _ConfirmacaoPagamentoPageState
 
     try {
       final response = await ref.read(
-        confirmarPagamentoProvider({
-          servicoOferecidoId: widget.servicoOferecido.servicoOferecidoId,
+        confirmarPagamentoProvider((
           enderecoId: widget.endereco.id,
-          horaInicio: widget.horaInicio,
           horaFim: widget.horaFim,
-        }).future,
+          horaInicio: widget.horaInicio,
+          servicoOferecidoId: widget.servicoOferecido.servicoOferecidoId,
+        )).future,
       );
 
       if (mounted) {
@@ -293,28 +290,27 @@ class _ConfirmacaoPagamentoPageState
 
   void _showError(String mensagem) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(mensagem),
-        backgroundColor: AppColors.erro,
-      ),
+      SnackBar(content: Text(mensagem), backgroundColor: AppColors.erro),
     );
   }
 }
 
 // Provider para confirmar pagamento
-final confirmarPagamentoProvider = FutureProvider.family<
-  ConfirmarPagamentoResponseDto, ({
-    String servicoOferecidoId,
-    String enderecoId,
-    DateTime horaInicio,
-    DateTime horaFim,
-  })
->((ref, params) async {
-  final repository = ref.watch(agendamentoRepositoryProvider);
-  return repository.confirmarPagamento(
-    servicoOferecidoId: params.servicoOferecidoId,
-    enderecoId: params.enderecoId,
-    horaInicio: params.horaInicio,
-    horaFim: params.horaFim,
-  );
-});
+final confirmarPagamentoProvider =
+    FutureProvider.family<
+      ConfirmarPagamentoResponseDto,
+      ({
+        String servicoOferecidoId,
+        String enderecoId,
+        DateTime horaInicio,
+        DateTime horaFim,
+      })
+    >((ref, params) async {
+      final repository = ref.watch(agendamentoRepositoryProvider);
+      return repository.confirmarPagamento(
+        servicoOferecidoId: params.servicoOferecidoId,
+        enderecoId: params.enderecoId,
+        horaInicio: params.horaInicio,
+        horaFim: params.horaFim,
+      );
+    });

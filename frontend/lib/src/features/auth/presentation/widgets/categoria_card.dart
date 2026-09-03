@@ -8,7 +8,11 @@ class CategoriaCard extends StatelessWidget {
   final Categoria categoria;
   final VoidCallback onTap;
 
-  const CategoriaCard({super.key, required this.categoria, required this.onTap});
+  const CategoriaCard({
+    super.key,
+    required this.categoria,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -25,9 +29,11 @@ class CategoriaCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 26,
-                backgroundColor: AppColors.vermelho.withOpacity(0.1),
+                backgroundColor: AppColors.vermelho.withValues(alpha: 0.1),
                 child: Text(
-                  categoria.nome.isNotEmpty ? categoria.nome[0].toUpperCase() : '?',
+                  categoria.nome.isNotEmpty
+                      ? categoria.nome[0].toUpperCase()
+                      : '?',
                   style: AppTextStyles.titulo.copyWith(
                     color: AppColors.vermelho,
                     fontSize: 20,
@@ -40,7 +46,9 @@ class CategoriaCard extends StatelessWidget {
                 textAlign: TextAlign.center,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.corpo.copyWith(fontWeight: FontWeight.w600),
+                style: AppTextStyles.corpo.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ],
           ),

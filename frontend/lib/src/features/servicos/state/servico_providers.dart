@@ -12,7 +12,10 @@ final servicoRepositoryProvider = Provider<ServicoRepository>((ref) {
 });
 
 final servicosPorCategoriaProvider =
-    FutureProvider.family<List<Servico>, String?>((ref, categoriaId) async {
+    FutureProvider.family<List<ServicoOferecidoPreview>, String?>((
+      ref,
+      categoriaId,
+    ) async {
       final repository = ref.watch(servicoRepositoryProvider);
-      return repository.listarServicos(categoriaId: categoriaId);
+      return await repository.listarServicos(categoriaId: categoriaId);
     });

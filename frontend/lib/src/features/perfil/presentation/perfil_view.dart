@@ -23,8 +23,14 @@ class PerfilView extends ConsumerWidget {
         title: const Text('Sair da conta'),
         content: const Text('Tem certeza que deseja sair?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Sair')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Sair'),
+          ),
         ],
       ),
     );
@@ -51,7 +57,10 @@ class PerfilView extends ConsumerWidget {
         children: [
           _Cabecalho(usuario: usuario),
           const SizedBox(height: 28),
-          Text('Meus endereços', style: AppTextStyles.titulo.copyWith(fontSize: 18)),
+          Text(
+            'Meus endereços',
+            style: AppTextStyles.titulo.copyWith(fontSize: 18),
+          ),
           const SizedBox(height: 12),
           enderecosAsync.when(
             data: (enderecos) => Column(
@@ -67,7 +76,8 @@ class PerfilView extends ConsumerWidget {
                     onEditar: () async {
                       await Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (_) => EnderecoFormPage(enderecoParaEditar: endereco),
+                          builder: (_) =>
+                              EnderecoFormPage(enderecoParaEditar: endereco),
                         ),
                       );
                     },
@@ -78,7 +88,8 @@ class PerfilView extends ConsumerWidget {
               padding: EdgeInsets.symmetric(vertical: 24),
               child: Center(child: CircularProgressIndicator()),
             ),
-            error: (erro, _) => Text('Não foi possível carregar seus endereços.\n$erro'),
+            error: (erro, _) =>
+                Text('Não foi possível carregar seus endereços.\n$erro'),
           ),
           OutlinedButton.icon(
             onPressed: () async {
@@ -114,7 +125,7 @@ class _Cabecalho extends StatelessWidget {
       children: [
         CircleAvatar(
           radius: 32,
-          backgroundColor: AppColors.vermelho.withOpacity(0.1),
+          backgroundColor: AppColors.vermelho.withValues(alpha: 0.1),
           child: Text(
             usuario.nome.isNotEmpty ? usuario.nome[0].toUpperCase() : '?',
             style: AppTextStyles.titulo.copyWith(color: AppColors.vermelho),
@@ -125,7 +136,10 @@ class _Cabecalho extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(usuario.nome, style: AppTextStyles.titulo.copyWith(fontSize: 20)),
+              Text(
+                usuario.nome,
+                style: AppTextStyles.titulo.copyWith(fontSize: 20),
+              ),
               const SizedBox(height: 4),
               if (usuario.telefone != null)
                 Text(usuario.telefone!, style: AppTextStyles.secundario),
@@ -134,13 +148,19 @@ class _Cabecalho extends StatelessWidget {
                 Row(
                   children: [
                     Icon(
-                      usuario.verificado ? Icons.verified : Icons.hourglass_bottom,
+                      usuario.verificado
+                          ? Icons.verified
+                          : Icons.hourglass_bottom,
                       size: 16,
-                      color: usuario.verificado ? AppColors.verde : AppColors.cinzaClaro,
+                      color: usuario.verificado
+                          ? AppColors.verde
+                          : AppColors.cinzaClaro,
                     ),
                     const SizedBox(width: 4),
                     Text(
-                      usuario.verificado ? 'Prestador verificado' : 'Verificação pendente',
+                      usuario.verificado
+                          ? 'Prestador verificado'
+                          : 'Verificação pendente',
                       style: AppTextStyles.secundario,
                     ),
                   ],
@@ -187,7 +207,9 @@ class _SecaoPrestador extends StatelessWidget {
               Icon(Icons.hourglass_bottom, color: AppColors.cinzaEscuro),
               SizedBox(width: 10),
               Expanded(
-                child: Text('Sua solicitação para ser prestador está em análise.'),
+                child: Text(
+                  'Sua solicitação para ser prestador está em análise.',
+                ),
               ),
             ],
           ),
@@ -196,7 +218,7 @@ class _SecaoPrestador extends StatelessWidget {
         return Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: AppColors.erro.withOpacity(0.08),
+            color: AppColors.erro.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(12),
           ),
           child: const Text(

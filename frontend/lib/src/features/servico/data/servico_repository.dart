@@ -8,9 +8,11 @@ class ServicoRepository {
 
   ServicoRepository(this._wsClient);
 
-  Future<List<Servico>> listarServicos({String? categoriaId}) async {
-    final request = ListarServicosRequestDto(categoriaId: categoriaId);
-    
+  Future<List<ServicoOferecidoPreview>> listarServicos({
+    String? categoriaId,
+  }) async {
+    final request = ListarServicosRequestDto(categoriaId: categoriaId!);
+
     final response = await _wsClient.enviarEAguardar(
       request,
       tiposEsperados: {TipoMensagem.listarServicosOk.valor},
@@ -22,7 +24,7 @@ class ServicoRepository {
 
   Future<List<Categoria>> listarCategorias() async {
     final request = ListarCategoriasRequestDto();
-    
+
     final response = await _wsClient.enviarEAguardar(
       request,
       tiposEsperados: {TipoMensagem.listarCategoriasOk.valor},
