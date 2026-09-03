@@ -40,6 +40,26 @@ enum TipoMensagem {
 
   confirmarPagamento('confirmar_pagamento'),
   confirmarPagamentoOk('confirmar_pagamento_ok'),
+
+  notificacao('notificacao'),
+
+  responderAgendamento('responder_agendamento'),
+  responderAgendamentoOk('responder_agendamento_ok'),
+  iniciarAgendamento('iniciar_agendamento'),
+  iniciarAgendamentoOk('iniciar_agendamento_ok'),
+  concluirAgendamento('concluir_agendamento'),
+  concluirAgendamentoOk('concluir_agendamento_ok'),
+  confirmarConclusaoAgendamento('confirmar_conclusao_agendamento'),
+  confirmarConclusaoAgendamentoOk('confirmar_conclusao_agendamento_ok'),
+  cancelarAgendamento('cancelar_agendamento'),
+  cancelarAgendamentoOk('cancelar_agendamento_ok'),
+  obterAgendamento('obter_agendamento'),
+  obterAgendamentoOk('obter_agendamento_ok'),
+  listarMeusAgendamentos('listar_meus_agendamentos'),
+  listarMeusAgendamentosOk('listar_meus_agendamentos_ok'),
+  listarAgendamentosRecebidos('listar_agendamentos_recebidos'),
+  listarAgendamentosRecebidosOk('listar_agendamentos_recebidos_ok'),
+
   erro('erro');
 
   final String valor;

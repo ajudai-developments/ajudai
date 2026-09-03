@@ -1,4 +1,5 @@
 import 'package:backend/src/handlers/admin_handler.dart';
+import 'package:backend/src/handlers/agendamento_handler.dart';
 import 'package:backend/src/handlers/endereco_handler.dart';
 import 'package:backend/src/handlers/usuario_handler.dart';
 import 'package:shared/shared.dart';
@@ -10,11 +11,14 @@ class WsRouter {
   final UsuarioHandler _usuarioHandler;
   final EnderecoHandler _enderecoHandler;
   final AdminHandler _adminHandler;
+  final AgendamentoHandler _agendamentoHandler;
+
   WsRouter(
     this._authHandler,
     this._usuarioHandler,
     this._enderecoHandler,
     this._adminHandler,
+    this._agendamentoHandler,
   );
 
   Future<void> rotear(WsConnection conexao, Map<String, dynamic> msg) async {
@@ -63,6 +67,42 @@ class WsRouter {
 
       case TipoMensagem.rejeitarPrestador:
         await _adminHandler.handleRejeitarPrestador(conexao, msg);
+
+      case TipoMensagem.criarAgendamento:
+        await _agendamentoHandler.handleCriarAgendamento(conexao, msg);
+
+      case TipoMensagem.confirmarPagamento:
+        await _agendamentoHandler.handleConfirmarPagamento(conexao, msg);
+
+      case TipoMensagem.responderAgendamento:
+        await _agendamentoHandler.handleResponderAgendamento(conexao, msg);
+
+      case TipoMensagem.iniciarAgendamento:
+        await _agendamentoHandler.handleIniciarAgendamento(conexao, msg);
+
+      case TipoMensagem.concluirAgendamento:
+        await _agendamentoHandler.handleConcluirAgendamento(conexao, msg);
+
+      case TipoMensagem.confirmarConclusaoAgendamento:
+        await _agendamentoHandler.handleConfirmarConclusaoAgendamento(
+          conexao,
+          msg,
+        );
+
+      case TipoMensagem.cancelarAgendamento:
+        await _agendamentoHandler.handleCancelarAgendamento(conexao, msg);
+
+      case TipoMensagem.obterAgendamento:
+        await _agendamentoHandler.handleObterAgendamento(conexao, msg);
+
+      case TipoMensagem.listarMeusAgendamentos:
+        await _agendamentoHandler.handleListarMeusAgendamentos(conexao, msg);
+
+      case TipoMensagem.listarAgendamentosRecebidos:
+        await _agendamentoHandler.handleListarAgendamentosRecebidos(
+          conexao,
+          msg,
+        );
       default:
         conexao.enviar(
           ErroDto(

@@ -6,7 +6,7 @@ class Agendamento {
   final String usuarioId;
   final String prestadorId;
   final String servicoOferecidoId;
-  final String? enderecoId;
+  final String enderecoId;
   final String enderecoLogradouro;
   final String enderecoNumero;
   final String? enderecoComplemento;
@@ -26,7 +26,7 @@ class Agendamento {
     required this.usuarioId,
     required this.prestadorId,
     required this.servicoOferecidoId,
-    this.enderecoId,
+    required this.enderecoId,
     required this.enderecoLogradouro,
     required this.enderecoNumero,
     this.enderecoComplemento,
@@ -48,7 +48,7 @@ class Agendamento {
       usuarioId: JsonUtils.requireString(json, 'usuario_id'),
       prestadorId: JsonUtils.requireString(json, 'prestador_id'),
       servicoOferecidoId: JsonUtils.requireString(json, 'servico_oferecido_id'),
-      enderecoId: JsonUtils.optionalString(json, 'endereco_id'),
+      enderecoId: JsonUtils.requireString(json, 'endereco_id'),
       enderecoLogradouro: JsonUtils.requireString(json, 'endereco_logradouro'),
       enderecoNumero: JsonUtils.requireString(json, 'endereco_numero'),
       enderecoComplemento: JsonUtils.optionalString(

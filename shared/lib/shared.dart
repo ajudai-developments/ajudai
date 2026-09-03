@@ -31,6 +31,7 @@ export 'src/dto/endereco/obter_meus_enderecos_request_dto.dart';
 export 'src/dto/endereco/obter_meus_enderecos_response_dto.dart';
 export 'src/dto/endereco/editar_endereco_request_dto.dart';
 export 'src/dto/endereco/editar_endereco_response_dto.dart';
+export 'src/dto/notificacao/notificacao_dto.dart';
 
 export 'src/dto/prestador/solicitar_prestador_request_dto.dart';
 export 'src/dto/prestador/solicitar_prestador_response_dto.dart';
@@ -57,6 +58,14 @@ export 'src/dto/agendamento/criar_agendamento_response_dto.dart';
 export 'src/dto/agendamento/confirmar_pagamento_request_dto.dart';
 export 'src/dto/agendamento/confirmar_pagamento_response_dto.dart';
 
+export 'src/dto/agendamento/cancelar_agendamento_dto.dart';
+export 'src/dto/agendamento/concluir_agendamento_dto.dart';
+export 'src/dto/agendamento/confirmar_conclusao_agendamento_dto.dart';
+export 'src/dto/agendamento/iniciar_agendamento_dto.dart';
+export 'src/dto/agendamento/listar_agendamentos_dto.dart';
+export 'src/dto/agendamento/obter_agendamento_dto.dart';
+export 'src/dto/agendamento/responder_agendamento_dto.dart';
+
 export 'src/validators/cpf_validator.dart';
 export 'src/validators/telefone_validator.dart';
 export 'src/validators/agendamento_validator.dart';
@@ -66,3 +75,4 @@ export 'src/models/enums/user_role.dart';
 export 'src/models/enums/status_verificacao.dart';
 export 'src/models/enums/status_agendamento.dart';
 export 'src/models/enums/tipo_conquista.dart';
+export 'src/models/enums/tipo_alteracao_agendamento.dart';

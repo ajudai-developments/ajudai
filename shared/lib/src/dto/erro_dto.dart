@@ -18,6 +18,7 @@ enum ErroCodigo {
   suspensoComoPrestador,
   naoPermitido,
   pagamentoRecusado,
+  conflitoHorario,
 }
 
 class ErroDto implements WsMessage {
