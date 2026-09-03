@@ -23,6 +23,8 @@ enum TipoMensagem {
   listarServicosOk('listar_servicos_ok'),
   criarServicoOferecido('criar_servico_oferecido'),
   criarServicoOferecidoOk('criar_servico_oferecido_ok'),
+  listarMeusServicosOferecidos('listar_meus_servicos_oferecidos'),
+  listarMeusServicosOferecidosOk('listar_meus_servicos_oferecidos_ok'),
   solicitarPrestador('solicitar_prestador'),
   solicitarPrestadorOk('solicitar_prestador_ok'),
 

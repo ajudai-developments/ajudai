@@ -33,7 +33,6 @@ class CriarAgendamentoRequestDto implements WsMessage {
     'tipo': tipo.valor,
     'servico_oferecido_id': servicoOferecidoId,
     'endereco_id': enderecoId,
-
     'hora_inicio': horaInicio.toIso8601String(),
     'hora_fim': horaFim.toIso8601String(),
   };

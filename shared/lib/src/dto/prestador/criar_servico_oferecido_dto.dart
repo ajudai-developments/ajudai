@@ -1,9 +1,5 @@
-import 'package:shared/src/dto/json_utils.dart';
-import 'package:shared/src/dto/tipo_mensagem.dart';
-import 'package:shared/src/dto/ws_message.dart';
+import 'package:shared/shared.dart';
 
-/// O handler deve checar que o usuário da sessão tem
-/// `status_prestador == aprovado` antes de gravar.
 class CriarServicoOferecidoRequestDto implements WsMessage {
   final String servicoId;
   final String descricao;
@@ -18,17 +14,11 @@ class CriarServicoOferecidoRequestDto implements WsMessage {
   @override
   TipoMensagem get tipo => TipoMensagem.criarServicoOferecido;
 
-  factory CriarServicoOferecidoRequestDto.fromJson(
-    Map<String, dynamic> json,
-  ) {
-    final valor = JsonUtils.requireDouble(json, 'valor');
-    if (valor < 0) {
-      throw const FormatException('O valor não pode ser negativo.');
-    }
+  factory CriarServicoOferecidoRequestDto.fromJson(Map<String, dynamic> json) {
     return CriarServicoOferecidoRequestDto(
       servicoId: JsonUtils.requireString(json, 'servico_id'),
       descricao: JsonUtils.requireString(json, 'descricao'),
-      valor: valor,
+      valor: JsonUtils.requireDouble(json, 'valor'),
     );
   }
 
@@ -38,5 +28,19 @@ class CriarServicoOferecidoRequestDto implements WsMessage {
     'servico_id': servicoId,
     'descricao': descricao,
     'valor': valor,
+  };
+}
+
+class CriarServicoOferecidoResponseDto implements WsMessage {
+  final ServicoOferecido servicoOferecido;
+  CriarServicoOferecidoResponseDto({required this.servicoOferecido});
+
+  @override
+  TipoMensagem get tipo => TipoMensagem.criarServicoOferecidoOk;
+
+  @override
+  Map<String, dynamic> toJson() => {
+    'tipo': tipo.valor,
+    'servico_oferecido': servicoOferecido.toJson(),
   };
 }
