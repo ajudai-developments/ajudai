@@ -1,7 +1,7 @@
 import 'package:shared/shared.dart';
 
 class ListarServicosResponseDto implements WsMessage {
-  final List<Servico> servicos;
+  final List<ServicoOferecidoPreview> servicos;
 
   ListarServicosResponseDto({required this.servicos});
 
@@ -11,7 +11,7 @@ class ListarServicosResponseDto implements WsMessage {
   factory ListarServicosResponseDto.fromJson(Map<String, dynamic> json) {
     final lista = JsonUtils.requireListaDeMapas(json, 'servicos');
     return ListarServicosResponseDto(
-      servicos: lista.map(Servico.fromJson).toList(),
+      servicos: lista.map(ServicoOferecidoPreview.fromJson).toList(),
     );
   }
 

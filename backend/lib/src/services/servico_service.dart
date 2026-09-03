@@ -1,5 +1,6 @@
 import 'package:backend/src/repositories/servico_repository.dart';
 import 'package:backend/src/repositories/usuario_repository.dart';
+import 'package:backend/src/supabase/supabase_client_factory.dart';
 import 'package:shared/shared.dart';
 import 'sessao_service.dart';
 import '../ws/ws_connection.dart';
@@ -98,5 +99,24 @@ class ServicoService {
     }
 
     return detalhe;
+  }
+
+  Future<ListarServicosResponseDto> listarServicos(
+    WsConnection conexao,
+    ListarServicosRequestDto dto,
+  ) async {
+    final client = _sessaoService.clientDe(conexao);
+    if (client == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final servicos = await ServicoRepository(
+      SupabaseClientFactory.criarSecret(),
+    ).listarServicosPorCategoria(dto.categoriaId);
+
+    return ListarServicosResponseDto(servicos: servicos);
   }
 }

@@ -121,6 +121,9 @@ class WsRouter {
 
       case TipoMensagem.listarCategorias:
         await _categoriaHandler.handleListarCategorias(conexao, msg);
+
+      case TipoMensagem.listarServicos:
+        await _servicoHandler.handlerListarServicosPorCategoria(conexao, msg);
       default:
         conexao.enviar(
           ErroDto(
