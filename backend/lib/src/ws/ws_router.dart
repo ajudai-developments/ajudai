@@ -1,3 +1,4 @@
+import 'package:backend/src/handlers/admin_handler.dart';
 import 'package:backend/src/handlers/endereco_handler.dart';
 import 'package:backend/src/handlers/usuario_handler.dart';
 import 'package:shared/shared.dart';
@@ -8,7 +9,13 @@ class WsRouter {
   final AuthHandler _authHandler;
   final UsuarioHandler _usuarioHandler;
   final EnderecoHandler _enderecoHandler;
-  WsRouter(this._authHandler, this._usuarioHandler, this._enderecoHandler);
+  final AdminHandler _adminHandler;
+  WsRouter(
+    this._authHandler,
+    this._usuarioHandler,
+    this._enderecoHandler,
+    this._adminHandler,
+  );
 
   Future<void> rotear(WsConnection conexao, Map<String, dynamic> msg) async {
     final tipo = TipoMensagem.fromValor(msg['tipo'] as String?);
@@ -44,6 +51,18 @@ class WsRouter {
 
       case TipoMensagem.editarEndereco:
         await _enderecoHandler.handleEditarEndereco(conexao, msg);
+
+      case TipoMensagem.solicitarPrestador:
+        await _usuarioHandler.solicitarSerPrestador(conexao, msg);
+
+      case TipoMensagem.listarVerificacoes:
+        await _adminHandler.handleListarVerificacoes(conexao, msg);
+
+      case TipoMensagem.aprovarPrestador:
+        await _adminHandler.handleAprovarPrestador(conexao, msg);
+
+      case TipoMensagem.rejeitarPrestador:
+        await _adminHandler.handleRejeitarPrestador(conexao, msg);
       default:
         conexao.enviar(
           ErroDto(

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:backend/src/supabase/supabase_client_factory.dart';
+import 'package:shared/shared.dart';
 import 'package:supabase/supabase.dart';
 import '../repositories/auth_repository.dart';
 import '../ws/ws_connection.dart';
@@ -24,6 +25,7 @@ class SessaoAtiva {
 class SessaoService {
   final AuthRepository _authRepository;
   final Map<WsConnection, SessaoAtiva> _sessoes = {};
+  final Map<String, Set<WsConnection>> _conexoesPorUsuario = {};
 
   void Function(WsConnection conexao)? onSessaoExpirada;
 
@@ -45,6 +47,8 @@ class SessaoService {
     );
 
     _sessoes[conexao] = sessao;
+    _conexoesPorUsuario.putIfAbsent(userId, () => {}).add(conexao);
+
     _agendarRefresh(conexao);
   }
 
@@ -53,9 +57,33 @@ class SessaoService {
   SupabaseClient? clientDe(WsConnection conexao) =>
       _sessoes[conexao]?.clientAutenticado;
 
+  Set<WsConnection> conexoesDe(String userId) =>
+      _conexoesPorUsuario[userId] ?? {};
+
   void remover(WsConnection conexao) {
-    _sessoes[conexao]?.timerRefresh?.cancel();
+    final sessao = _sessoes[conexao];
+    if (sessao != null) {
+      sessao.timerRefresh?.cancel();
+
+      final conexoesDoUsuario = _conexoesPorUsuario[sessao.userId];
+      conexoesDoUsuario?.remove(conexao);
+      if (conexoesDoUsuario != null && conexoesDoUsuario.isEmpty) {
+        _conexoesPorUsuario.remove(sessao.userId);
+      }
+    }
+
     _sessoes.remove(conexao);
+  }
+
+  void enviarParaUsuario(String userId, WsMessage mensagem) {
+    final conexoes = _conexoesPorUsuario[userId];
+    if (conexoes == null) {
+      return;
+    }
+
+    for (final conexao in conexoes) {
+      conexao.enviar(mensagem);
+    }
   }
 
   void _agendarRefresh(WsConnection conexao) {
@@ -86,7 +114,7 @@ class SessaoService {
       );
       sessao.clientAutenticado = SupabaseClientFactory.criarComToken(
         session.accessToken,
-      ); // atualiza o client também
+      );
 
       _agendarRefresh(conexao);
     } catch (_) {

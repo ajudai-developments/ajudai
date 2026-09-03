@@ -2,12 +2,9 @@ import 'package:shared/shared.dart';
 
 class AprovarPrestadorResponseDto implements WsMessage {
   final Usuario usuario;
-  final Verificacao verificacao;
+  final Verificacao? verificacao;
 
-  AprovarPrestadorResponseDto({
-    required this.usuario,
-    required this.verificacao,
-  });
+  AprovarPrestadorResponseDto({required this.usuario, this.verificacao});
 
   @override
   TipoMensagem get tipo => TipoMensagem.aprovarPrestadorOk;
@@ -25,6 +22,6 @@ class AprovarPrestadorResponseDto implements WsMessage {
   Map<String, dynamic> toJson() => {
     'tipo': tipo.valor,
     'usuario': usuario.toJson(),
-    'verificacao': verificacao.toJson(),
+    'verificacao': verificacao?.toJson(),
   };
 }

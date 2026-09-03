@@ -27,4 +27,25 @@ class UsuarioHandler {
       );
     }
   }
+
+  Future<void> solicitarSerPrestador(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final dto = SolicitarPrestadorRequestDto.fromJson(msg);
+      final resposta = await _usuarioService.serPrestador(conexao, dto);
+      conexao.enviar(resposta);
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
+    } catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.erroInterno, mensagem: e.toString()),
+      );
+    }
+  }
 }

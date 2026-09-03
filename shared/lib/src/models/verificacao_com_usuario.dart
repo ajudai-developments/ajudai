@@ -1,7 +1,5 @@
 import 'package:shared/shared.dart';
 
-/// Usado na listagem de solicitações para o admin: junta a verificação
-/// com os dados básicos de quem pediu para virar prestador.
 class VerificacaoComUsuario {
   final Verificacao verificacao;
   final String usuarioNome;
@@ -16,13 +14,12 @@ class VerificacaoComUsuario {
   });
 
   factory VerificacaoComUsuario.fromJson(Map<String, dynamic> json) {
+    final usuario = json["usuarios"] as Map<String, dynamic>;
     return VerificacaoComUsuario(
-      verificacao: Verificacao.fromJson(
-        json['verificacao'] as Map<String, dynamic>,
-      ),
-      usuarioNome: JsonUtils.requireString(json, 'usuario_nome'),
-      usuarioCpf: JsonUtils.requireString(json, 'usuario_cpf'),
-      usuarioTelefone: JsonUtils.optionalString(json, 'usuario_telefone'),
+      verificacao: Verificacao.fromJson(json),
+      usuarioNome: JsonUtils.requireString(usuario, 'nome'),
+      usuarioCpf: JsonUtils.requireString(usuario, 'cpf'),
+      usuarioTelefone: JsonUtils.optionalString(usuario, 'telefone'),
     );
   }
 

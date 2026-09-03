@@ -1,22 +1,21 @@
-import 'package:shared/src/dto/json_utils.dart';
-import 'package:shared/src/dto/tipo_mensagem.dart';
-import 'package:shared/src/dto/ws_message.dart';
+import 'package:shared/shared.dart';
 
 class ListarVerificacoesRequestDto implements WsMessage {
-  /// 'pendente' | 'aprovado' | 'rejeitado'. Null = todas.
-  final String? status;
+  final StatusVerificacao status;
 
-  ListarVerificacoesRequestDto({this.status});
+  ListarVerificacoesRequestDto({required this.status});
 
   @override
   TipoMensagem get tipo => TipoMensagem.listarVerificacoes;
 
   factory ListarVerificacoesRequestDto.fromJson(Map<String, dynamic> json) {
     return ListarVerificacoesRequestDto(
-      status: JsonUtils.optionalString(json, 'status'),
+      status: StatusVerificacao.fromString(
+        JsonUtils.requireString(json, 'status'),
+      ),
     );
   }
 
   @override
-  Map<String, dynamic> toJson() => {'tipo': tipo.valor, 'status': status};
+  Map<String, dynamic> toJson() => {'tipo': tipo.valor, 'status': status.name};
 }

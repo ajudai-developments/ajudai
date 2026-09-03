@@ -13,8 +13,6 @@ enum TipoMensagem {
   obterMeusEnderecosOk('obter_meus_endereco_ok'),
   editarEndereco('editar_endereco'),
   editarEnderecoOk('editar_endereco_ok'),
-  seTornarPrestador('se_tornar_prestador'),
-  seTornarPrestadorOk('se_tornar_prestador_ok'),
   aprovarPrestador('aprovar_prestador'),
   aprovarPrestadorOk('aprovar_prestador_ok'),
   rejeitarPrestador('rejeitar_prestador'),

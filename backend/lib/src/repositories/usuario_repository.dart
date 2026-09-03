@@ -39,4 +39,18 @@ class UsuarioRepository {
 
     return Usuario.fromJson(response as Map<String, dynamic>);
   }
+
+  Future<Verificacao> solicitarSerPrestador(String userId) async {
+    await _client
+        .from('usuarios')
+        .update({"status_prestador": StatusPrestador.pendente.toDbValue()})
+        .eq('id', userId);
+
+    final solicitacao = await _client.from('verificacoes').insert({
+      "usuario_id": userId,
+      "solicitado_em": DateTime.now().toUtc().toIso8601String(),
+    }).select();
+
+    return Verificacao.fromJson(solicitacao[0]);
+  }
 }
