@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
+import 'package:shared/shared.dart';
 import '../../../session/session_storage.dart';
 import '../../../ws/ws_client.dart';
 import '../../../ws/ws_client_provider.dart';
@@ -67,7 +68,10 @@ class AuthController extends StateNotifier<AuthState> {
       return false;
     }
   }
-
+    Future<void> atualizarUsuarioLocal(Usuario usuario) async {
+    await _sessionStorage.salvar(usuario);
+    state = AuthAutenticado(usuario);
+  }
   Future<bool> login({required String email, required String senha}) async {
     state = const AuthCarregando();
     try {
