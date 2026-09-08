@@ -41,6 +41,15 @@ class EventosAgendamentoListener {
                     dados: {'agendamentoId': agendamento.id},
                   ),
                 );
+                _sessaoService.enviarParaUsuario(
+                  agendamento.usuarioId,
+                  NotificacaoDto(
+                    titulo: 'Atenção: atraso no atendimento',
+                    mensagem:
+                        'O prestador está atrasado para iniciar o atendimento.',
+                    dados: {'agendamentoId': agendamento.id},
+                  ),
+                );
                 break;
 
               case 'denuncia_atraso':
@@ -61,7 +70,7 @@ class EventosAgendamentoListener {
                   NotificacaoDto(
                     titulo: 'Agendamento não concluído',
                     mensagem:
-                        'O sistema não recebeu confirmação de conclusão a tempo.',
+                        'O prestador não marcou a conclusão do atendimento a tempo. Você pode abrir uma reclamação se desejar. O valor do agendamento será reembolsado.',
                     dados: {'agendamentoId': agendamento.id},
                   ),
                 );

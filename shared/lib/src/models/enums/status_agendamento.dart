@@ -6,6 +6,7 @@ enum StatusAgendamento {
   cancelado,
   aguardandoConfirmacao,
   concluido,
+  naoConcluido,
   contestado;
 
   String get valor {
@@ -24,6 +25,8 @@ enum StatusAgendamento {
         return 'aguardando_confirmacao';
       case StatusAgendamento.concluido:
         return 'concluido';
+      case StatusAgendamento.naoConcluido:
+        return 'nao_concluido';
       case StatusAgendamento.contestado:
         return 'contestado';
     }
