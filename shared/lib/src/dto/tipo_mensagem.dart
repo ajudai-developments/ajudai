@@ -62,6 +62,9 @@ enum TipoMensagem {
   listarAgendamentosRecebidos('listar_agendamentos_recebidos'),
   listarAgendamentosRecebidosOk('listar_agendamentos_recebidos_ok'),
 
+  listarNotificacoes('listar_notificacoes'),
+  listarNotificacoesOk('listar_notificacoes_ok'),
+
   erro('erro');
 
   final String valor;

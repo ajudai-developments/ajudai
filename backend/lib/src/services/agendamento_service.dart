@@ -268,6 +268,9 @@ class AgendamentoService {
       id: agendamento.id,
       status: StatusAgendamento.emAndamento,
       alteradoPorUsuarioId: prestadorId,
+      camposExtras: {
+        'hora_inicio_real': DateTime.now().toUtc().toIso8601String(),
+      },
     );
 
     _sessaoService.enviarParaUsuario(
@@ -319,6 +322,9 @@ class AgendamentoService {
       id: agendamento.id,
       status: StatusAgendamento.aguardandoConfirmacao,
       alteradoPorUsuarioId: prestadorId,
+      camposExtras: {
+        'hora_conclusao_prestador': DateTime.now().toUtc().toIso8601String(),
+      },
     );
 
     _sessaoService.enviarParaUsuario(
@@ -371,6 +377,9 @@ class AgendamentoService {
       id: agendamento.id,
       status: StatusAgendamento.concluido,
       alteradoPorUsuarioId: userId,
+      camposExtras: {
+        'hora_confirmacao_usuario': DateTime.now().toUtc().toIso8601String(),
+      },
     );
 
     _sessaoService.enviarParaUsuario(
@@ -489,7 +498,7 @@ class AgendamentoService {
 
     final agendamentos = await AgendamentoRepository(
       client,
-    ).listarPorUsuario(usuarioId: userId, status: dto.status);
+    ).listarPorUsuario(usuarioId: userId);
 
     return ListarAgendamentosResponseDto(
       agendamentos: agendamentos,
@@ -512,7 +521,7 @@ class AgendamentoService {
 
     final agendamentos = await AgendamentoRepository(
       client,
-    ).listarPorPrestador(prestadorId: prestadorId, status: dto.status);
+    ).listarPorPrestador(prestadorId: prestadorId);
 
     return ListarAgendamentosResponseDto(
       agendamentos: agendamentos,

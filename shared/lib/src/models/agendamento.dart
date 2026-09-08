@@ -20,6 +20,9 @@ class Agendamento {
   final StatusAgendamento status;
   final DateTime criadoEm;
   final DateTime? editadoEm;
+  final DateTime? horaInicioReal;
+  final DateTime? horaConclusaoPrestador;
+  final DateTime? horaConfirmacaoUsuario;
 
   Agendamento({
     required this.id,
@@ -40,6 +43,9 @@ class Agendamento {
     required this.status,
     required this.criadoEm,
     this.editadoEm,
+    this.horaInicioReal,
+    this.horaConclusaoPrestador,
+    this.horaConfirmacaoUsuario,
   });
 
   factory Agendamento.fromJson(Map<String, dynamic> json) {
@@ -67,6 +73,15 @@ class Agendamento {
       ),
       criadoEm: JsonUtils.requireDateTime(json, 'criado_em'),
       editadoEm: JsonUtils.optionalDateTime(json, 'editado_em'),
+      horaInicioReal: JsonUtils.optionalDateTime(json, 'hora_inicio_real'),
+      horaConclusaoPrestador: JsonUtils.optionalDateTime(
+        json,
+        'hora_conclusao_prestador',
+      ),
+      horaConfirmacaoUsuario: JsonUtils.optionalDateTime(
+        json,
+        'hora_confirmacao_usuario',
+      ),
     );
   }
 
@@ -89,5 +104,8 @@ class Agendamento {
     'status': status.valor,
     'criado_em': criadoEm.toIso8601String(),
     'editado_em': editadoEm?.toIso8601String(),
+    'hora_inicio_real': horaInicioReal?.toIso8601String(),
+    'hora_conclusao_prestador': horaConclusaoPrestador?.toIso8601String(),
+    'hora_confirmacao_usuario': horaConfirmacaoUsuario?.toIso8601String(),
   };
 }

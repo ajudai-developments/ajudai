@@ -4,6 +4,7 @@ import 'package:backend/src/handlers/categorias_handler.dart';
 import 'package:backend/src/handlers/endereco_handler.dart';
 import 'package:backend/src/handlers/servico_handler.dart';
 import 'package:backend/src/handlers/usuario_handler.dart';
+import 'package:backend/src/handlers/notificacao_handler.dart';
 import 'package:shared/shared.dart';
 import '../handlers/auth_handler.dart';
 import 'ws_connection.dart';
@@ -16,6 +17,7 @@ class WsRouter {
   final AgendamentoHandler _agendamentoHandler;
   final ServicoHandler _servicoHandler;
   final CategoriaHandler _categoriaHandler;
+  final NotificacaoHandler _notificacaoHandler;
 
   WsRouter(
     this._authHandler,
@@ -25,6 +27,7 @@ class WsRouter {
     this._agendamentoHandler,
     this._servicoHandler,
     this._categoriaHandler,
+    this._notificacaoHandler,
   );
 
   Future<void> rotear(WsConnection conexao, Map<String, dynamic> msg) async {
@@ -109,6 +112,9 @@ class WsRouter {
           conexao,
           msg,
         );
+
+      case TipoMensagem.listarNotificacoes:
+        await _notificacaoHandler.handleListarNotificacoes(conexao, msg);
 
       case TipoMensagem.criarServicoOferecido:
         await _servicoHandler.handleCriarServicoOferecido(conexao, msg);

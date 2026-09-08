@@ -65,6 +65,9 @@ export 'src/dto/agendamento/listar_agendamentos_dto.dart';
 export 'src/dto/agendamento/obter_agendamento_dto.dart';
 export 'src/dto/agendamento/responder_agendamento_dto.dart';
 
+export 'src/dto/notificacao/listar_minhas_notificacoes_response_dto.dart';
+export 'src/dto/notificacao/listar_minhas_notificacoes_request_dto.dart';
+
 export 'src/validators/cpf_validator.dart';
 export 'src/validators/telefone_validator.dart';
 export 'src/validators/agendamento_validator.dart';

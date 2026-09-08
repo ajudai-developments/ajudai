@@ -9,7 +9,7 @@ class EnderecoService {
   final CepClient _cepClient;
   final SessaoService _sessaoService;
 
-  EnderecoService(this._cepClient, this._sessaoService);
+  const EnderecoService(this._cepClient, this._sessaoService);
 
   Future<ConsultarCepResponseDto> consultarCep(
     ConsultarCepRequestDto dto,

@@ -77,4 +77,15 @@ class JsonUtils {
     }
     throw FormatException('Campo "$campo" ausente ou inválido');
   }
+
+  static Map<String, dynamic>? optionalMap(
+    Map<String, dynamic> json,
+    String campo,
+  ) {
+    final valor = json[campo];
+    if (valor is Map) {
+      return valor.cast<String, dynamic>();
+    }
+    return null;
+  }
 }

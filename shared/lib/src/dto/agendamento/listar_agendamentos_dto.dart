@@ -1,26 +1,21 @@
 import 'package:shared/shared.dart';
 
 class ListarMeusAgendamentosRequestDto implements WsMessage {
-  final List<String>? status;
-  ListarMeusAgendamentosRequestDto({this.status});
+  ListarMeusAgendamentosRequestDto();
 
   @override
   TipoMensagem get tipo => TipoMensagem.listarMeusAgendamentos;
 
   factory ListarMeusAgendamentosRequestDto.fromJson(Map<String, dynamic> json) {
-    final raw = json['status'];
-    return ListarMeusAgendamentosRequestDto(
-      status: raw == null ? null : List<String>.from(raw as List),
-    );
+    return ListarMeusAgendamentosRequestDto();
   }
 
   @override
-  Map<String, dynamic> toJson() => {'tipo': tipo.valor, 'status': status};
+  Map<String, dynamic> toJson() => {'tipo': tipo.valor};
 }
 
 class ListarAgendamentosRecebidosRequestDto implements WsMessage {
-  final List<String>? status;
-  ListarAgendamentosRecebidosRequestDto({this.status});
+  ListarAgendamentosRecebidosRequestDto();
 
   @override
   TipoMensagem get tipo => TipoMensagem.listarAgendamentosRecebidos;
@@ -28,14 +23,11 @@ class ListarAgendamentosRecebidosRequestDto implements WsMessage {
   factory ListarAgendamentosRecebidosRequestDto.fromJson(
     Map<String, dynamic> json,
   ) {
-    final raw = json['status'];
-    return ListarAgendamentosRecebidosRequestDto(
-      status: raw == null ? null : List<String>.from(raw as List),
-    );
+    return ListarAgendamentosRecebidosRequestDto();
   }
 
   @override
-  Map<String, dynamic> toJson() => {'tipo': tipo.valor, 'status': status};
+  Map<String, dynamic> toJson() => {'tipo': tipo.valor};
 }
 
 class ListarAgendamentosResponseDto implements WsMessage {

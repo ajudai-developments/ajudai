@@ -4,15 +4,20 @@ import 'package:backend/src/handlers/agendamento_handler.dart';
 import 'package:backend/src/handlers/categorias_handler.dart';
 import 'package:backend/src/handlers/endereco_handler.dart';
 import 'package:backend/src/handlers/servico_handler.dart';
+import 'package:backend/src/handlers/notificacao_handler.dart';
 import 'package:backend/src/handlers/usuario_handler.dart';
+import 'package:backend/src/repositories/agendamento_repository.dart';
+import 'package:backend/src/repositories/notificacao_repository.dart';
 import 'package:backend/src/repositories/usuario_repository.dart';
 import 'package:backend/src/services/admin_service.dart';
 import 'package:backend/src/services/agendamento_service.dart';
 import 'package:backend/src/services/categoria_service.dart';
 import 'package:backend/src/services/endereco_service.dart';
+import 'package:backend/src/services/eventos_agendamento_listener.dart';
 import 'package:backend/src/services/pagamento_service.dart';
 import 'package:backend/src/services/servico_service.dart';
 import 'package:backend/src/services/usuario_service.dart';
+import 'package:backend/src/services/notificacao_service.dart';
 import 'package:backend/src/supabase/supabase_client_factory.dart';
 import 'package:backend/src/repositories/auth_repository.dart';
 import 'package:backend/src/services/sessao_service.dart';
@@ -26,7 +31,10 @@ Future<void> main() async {
   final supabase = SupabaseClientFactory.criarPublishable();
   final usuarioRepository = UsuarioRepository(supabase);
   final authRepository = AuthRepository(supabase);
-  final sessaoService = SessaoService(authRepository);
+  final notificacaoRepository = NotificacaoRepository(
+    SupabaseClientFactory.criarSecret(),
+  );
+  final sessaoService = SessaoService(authRepository, notificacaoRepository);
   sessaoService.onSessaoExpirada = (conexao) {
     conexao.enviar(
       ErroDto(
@@ -48,6 +56,15 @@ Future<void> main() async {
     sessaoService,
     pagamentoService,
   );
+  final agendamentoRepositoryParaEventos = AgendamentoRepository(
+    SupabaseClientFactory.criarSecret(),
+  );
+
+  EventosAgendamentoListener(
+    client: SupabaseClientFactory.criarSecret(),
+    sessaoService: sessaoService,
+    agendamentoRepository: agendamentoRepositoryParaEventos,
+  ).iniciar();
   final categoriaService = CategoriaService(sessaoService);
   final servicoService = ServicoService(sessaoService);
   final usuarioHandler = UsuarioHandler(usuarioService);
@@ -57,6 +74,11 @@ Future<void> main() async {
   final agendamentoHandler = AgendamentoHandler(agendamentoService);
   final servicoHandler = ServicoHandler(servicoService);
   final categoriaHandler = CategoriaHandler(categoriaService);
+  final notificacaoService = NotificacaoService(
+    sessaoService,
+    notificacaoRepository,
+  );
+  final notificacaoHandler = NotificacaoHandler(notificacaoService);
   final router = WsRouter(
     authHandler,
     usuarioHandler,
@@ -65,6 +87,7 @@ Future<void> main() async {
     agendamentoHandler,
     servicoHandler,
     categoriaHandler,
+    notificacaoHandler,
   );
   final server = WsServer(router, sessaoService);
 

@@ -113,10 +113,8 @@ class AgendamentoRepository {
   }
 
   // Listar agendamentos do usuário
-  Future<List<Agendamento>> listarMeusAgendamentos({
-    List<String>? status,
-  }) async {
-    final request = ListarMeusAgendamentosRequestDto(status: status);
+  Future<List<Agendamento>> listarMeusAgendamentos() async {
+    final request = ListarMeusAgendamentosRequestDto();
 
     final response = await _wsClient.enviarEAguardar(
       request,

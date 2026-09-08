@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:backend/src/repositories/notificacao_repository.dart';
 import 'package:backend/src/supabase/supabase_client_factory.dart';
 import 'package:shared/shared.dart';
 import 'package:supabase/supabase.dart';
@@ -24,12 +25,13 @@ class SessaoAtiva {
 
 class SessaoService {
   final AuthRepository _authRepository;
+  final NotificacaoRepository _notificacaoRepository;
   final Map<WsConnection, SessaoAtiva> _sessoes = {};
   final Map<String, Set<WsConnection>> _conexoesPorUsuario = {};
 
   void Function(WsConnection conexao)? onSessaoExpirada;
 
-  SessaoService(this._authRepository);
+  SessaoService(this._authRepository, this._notificacaoRepository);
 
   void criarSessao(WsConnection conexao, String userId, Session session) {
     _sessoes[conexao]?.timerRefresh?.cancel();
@@ -76,6 +78,19 @@ class SessaoService {
   }
 
   void enviarParaUsuario(String userId, WsMessage mensagem) {
+    if (mensagem is NotificacaoDto) {
+      _notificacaoRepository
+          .salvar(
+            usuarioId: userId,
+            titulo: mensagem.titulo,
+            mensagem: mensagem.mensagem,
+            dados: mensagem.dados,
+          )
+          .catchError((Object e) {
+            print('Erro ao salvar notificação para $userId: $e');
+          });
+    }
+
     final conexoes = _conexoesPorUsuario[userId];
     if (conexoes == null) {
       return;

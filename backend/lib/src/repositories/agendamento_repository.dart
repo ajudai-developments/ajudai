@@ -72,12 +72,14 @@ class AgendamentoRepository {
     required String id,
     required StatusAgendamento status,
     required String alteradoPorUsuarioId,
+    Map<String, dynamic> camposExtras = const {},
   }) async {
     final response = await _client
         .from('agendamentos')
         .update({
           'status': status.valor,
           'editado_em': DateTime.now().toUtc().toIso8601String(),
+          ...camposExtras,
         })
         .eq('id', id)
         .select()
@@ -123,15 +125,12 @@ class AgendamentoRepository {
 
   Future<List<Agendamento>> listarPorUsuario({
     required String usuarioId,
-    List<String>? status,
   }) async {
     var query = _client
         .from('agendamentos')
         .select()
         .eq('usuario_id', usuarioId);
-    if (status != null && status.isNotEmpty) {
-      query = query.inFilter('status', status);
-    }
+
     final response = await query.order('hora_inicio', ascending: false);
     return (response as List)
         .map((r) => Agendamento.fromJson(r as Map<String, dynamic>))
@@ -140,15 +139,12 @@ class AgendamentoRepository {
 
   Future<List<Agendamento>> listarPorPrestador({
     required String prestadorId,
-    List<String>? status,
   }) async {
     var query = _client
         .from('agendamentos')
         .select()
         .eq('prestador_id', prestadorId);
-    if (status != null && status.isNotEmpty) {
-      query = query.inFilter('status', status);
-    }
+
     final response = await query.order('hora_inicio', ascending: false);
     return (response as List)
         .map((r) => Agendamento.fromJson(r as Map<String, dynamic>))
