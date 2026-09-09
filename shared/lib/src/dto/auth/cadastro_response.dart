@@ -9,8 +9,10 @@ class CadastroResponseDto implements WsMessage {
   TipoMensagem get tipo => TipoMensagem.cadastroOk;
 
   factory CadastroResponseDto.fromJson(Map<String, dynamic> json) {
-    return CadastroResponseDto(usuario: Usuario.fromJson(json));
-  }
+  return CadastroResponseDto(
+    usuario: Usuario.fromJson(json['usuario'] as Map<String, dynamic>),
+  );
+}
 
   @override
   Map<String, dynamic> toJson() => {

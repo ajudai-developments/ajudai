@@ -6,11 +6,13 @@ class EditarEnderecoResponseDto implements WsMessage {
   const EditarEnderecoResponseDto({required this.endereco});
 
   @override
-  TipoMensagem get tipo => TipoMensagem.criarEnderecoOk;
+  TipoMensagem get tipo => TipoMensagem.editarEnderecoOk;
 
   factory EditarEnderecoResponseDto.fromJson(Map<String, dynamic> json) {
-    return EditarEnderecoResponseDto(endereco: Endereco.fromJson(json));
-  }
+  return EditarEnderecoResponseDto(
+    endereco: Endereco.fromJson(json['endereco'] as Map<String, dynamic>),
+  );
+}
 
   @override
   Map<String, dynamic> toJson() => {

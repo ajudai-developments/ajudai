@@ -9,8 +9,10 @@ class CriarEnderecoResponseDto implements WsMessage {
   TipoMensagem get tipo => TipoMensagem.criarEnderecoOk;
 
   factory CriarEnderecoResponseDto.fromJson(Map<String, dynamic> json) {
-    return CriarEnderecoResponseDto(endereco: Endereco.fromJson(json));
-  }
+  return CriarEnderecoResponseDto(
+    endereco: Endereco.fromJson(json['endereco'] as Map<String, dynamic>),
+  );
+}
 
   @override
   Map<String, dynamic> toJson() => {

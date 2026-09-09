@@ -1,1 +1,2 @@
 .env
+lib/core/config/env.dart
