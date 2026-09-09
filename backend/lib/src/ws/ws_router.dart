@@ -1,5 +1,6 @@
 import 'package:backend/src/handlers/admin_handler.dart';
 import 'package:backend/src/handlers/agendamento_handler.dart';
+import 'package:backend/src/handlers/avaliacao_handler.dart';
 import 'package:backend/src/handlers/categorias_handler.dart';
 import 'package:backend/src/handlers/endereco_handler.dart';
 import 'package:backend/src/handlers/servico_handler.dart';
@@ -18,6 +19,7 @@ class WsRouter {
   final ServicoHandler _servicoHandler;
   final CategoriaHandler _categoriaHandler;
   final NotificacaoHandler _notificacaoHandler;
+  final AvaliacaoHandler _avaliacaoHandler;
 
   WsRouter(
     this._authHandler,
@@ -28,6 +30,7 @@ class WsRouter {
     this._servicoHandler,
     this._categoriaHandler,
     this._notificacaoHandler,
+    this._avaliacaoHandler,
   );
 
   Future<void> rotear(WsConnection conexao, Map<String, dynamic> msg) async {
@@ -130,6 +133,13 @@ class WsRouter {
 
       case TipoMensagem.listarServicos:
         await _servicoHandler.handlerListarServicosPorCategoria(conexao, msg);
+
+      case TipoMensagem.avaliarAgendamento:
+        await _avaliacaoHandler.handleAvaliarAgendamento(conexao, msg);
+
+      case TipoMensagem.avaliarUsuario:
+        await _avaliacaoHandler.handleAvaliarUsuario(conexao, msg);
+
       default:
         conexao.enviar(
           ErroDto(

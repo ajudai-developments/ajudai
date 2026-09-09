@@ -94,6 +94,23 @@ class EventosAgendamentoListener {
                     dados: {'agendamentoId': agendamento.id},
                   ),
                 );
+
+                _sessaoService.enviarParaUsuario(
+                  agendamento.usuarioId,
+                  NotificacaoDto(
+                    titulo: 'Avalie o serviço',
+                    mensagem: 'Você tem 15 minutos para avaliar o atendimento.',
+                    dados: {'agendamentoId': agendamento.id},
+                  ),
+                );
+                _sessaoService.enviarParaUsuario(
+                  agendamento.prestadorId,
+                  NotificacaoDto(
+                    titulo: 'Avalie o cliente',
+                    mensagem: 'Você tem 15 minutos para avaliar o cliente.',
+                    dados: {'agendamentoId': agendamento.id},
+                  ),
+                );
                 break;
             }
           },

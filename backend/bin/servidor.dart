@@ -1,6 +1,7 @@
 import 'package:backend/src/clients/cep_client.dart';
 import 'package:backend/src/handlers/admin_handler.dart';
 import 'package:backend/src/handlers/agendamento_handler.dart';
+import 'package:backend/src/handlers/avaliacao_handler.dart';
 import 'package:backend/src/handlers/categorias_handler.dart';
 import 'package:backend/src/handlers/endereco_handler.dart';
 import 'package:backend/src/handlers/servico_handler.dart';
@@ -11,6 +12,7 @@ import 'package:backend/src/repositories/notificacao_repository.dart';
 import 'package:backend/src/repositories/usuario_repository.dart';
 import 'package:backend/src/services/admin_service.dart';
 import 'package:backend/src/services/agendamento_service.dart';
+import 'package:backend/src/services/avaliacao_service.dart';
 import 'package:backend/src/services/categoria_service.dart';
 import 'package:backend/src/services/endereco_service.dart';
 import 'package:backend/src/services/eventos_agendamento_listener.dart';
@@ -78,7 +80,9 @@ Future<void> main() async {
     sessaoService,
     notificacaoRepository,
   );
+  final avaliacaoService = AvaliacaoService(sessaoService);
   final notificacaoHandler = NotificacaoHandler(notificacaoService);
+  final avaliacaoHandler = AvaliacaoHandler(avaliacaoService);
   final router = WsRouter(
     authHandler,
     usuarioHandler,
@@ -88,6 +92,7 @@ Future<void> main() async {
     servicoHandler,
     categoriaHandler,
     notificacaoHandler,
+    avaliacaoHandler,
   );
   final server = WsServer(router, sessaoService);
 

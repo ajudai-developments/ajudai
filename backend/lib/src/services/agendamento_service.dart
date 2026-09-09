@@ -383,6 +383,23 @@ class AgendamentoService {
     );
 
     _sessaoService.enviarParaUsuario(
+      atualizado.usuarioId,
+      NotificacaoDto(
+        titulo: 'Avalie o serviço',
+        mensagem: 'Você tem 15 minutos para avaliar o atendimento.',
+        dados: {'agendamentoId': atualizado.id},
+      ),
+    );
+    _sessaoService.enviarParaUsuario(
+      atualizado.prestadorId,
+      NotificacaoDto(
+        titulo: 'Avalie o cliente',
+        mensagem: 'Você tem 15 minutos para avaliar o cliente.',
+        dados: {'agendamentoId': atualizado.id},
+      ),
+    );
+
+    _sessaoService.enviarParaUsuario(
       atualizado.prestadorId,
       NotificacaoDto(
         titulo: 'Agendamento concluído',
