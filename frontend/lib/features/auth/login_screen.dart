@@ -1,3 +1,6 @@
+import 'package:ajudai/core/widgets/app_button.dart';
+import 'package:ajudai/core/widgets/app_text_field.dart';
+import 'package:ajudai/core/widgets/error_banner.dart';
 import 'package:ajudai/core/ws/ws_message_stream.dart';
 import 'package:flutter/material.dart';
 
@@ -80,59 +83,23 @@ class _LoginScreenState extends State<LoginScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 24),
-                if (_erroGeral != null) ...[
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    margin: const EdgeInsets.only(bottom: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade100,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      _erroGeral!,
-                      style: TextStyle(color: Colors.red.shade900),
-                    ),
-                  ),
-                ],
-                TextField(
-                  decoration: InputDecoration(
-                    labelText: 'E-mail',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
+                ErrorBanner(mensagem: _erroGeral),
+                AppTextField(
+                  label: 'E-mail',
                   controller: _emailController,
                   keyboardType: TextInputType.emailAddress,
                 ),
                 const SizedBox(height: 16),
-                TextField(
-                  decoration: InputDecoration(
-                    labelText: 'Senha',
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
+                AppTextField(
+                  label: 'Senha',
                   controller: _senhaController,
                   obscureText: true,
                 ),
                 const SizedBox(height: 24),
-                TextButton(
-                  onPressed: _carregando ? null : _entrar,
-                  style: TextButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: AppColors.background,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: _carregando
-                      ? const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Entrar'),
+                AppButton(
+                  label: 'Entrar',
+                  loading: _carregando,
+                  onPressed: _entrar,
                 ),
                 const SizedBox(height: 16),
                 TextButton(

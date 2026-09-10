@@ -1,1 +1,1 @@
-const String wsUrl = "https://aerosol-fondling-reseller.ngrok-free.dev";
+const String wsUrl = "wss://aerosol-fondling-reseller.ngrok-free.dev";

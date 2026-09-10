@@ -1,3 +1,6 @@
+import 'package:ajudai/core/widgets/app_button.dart';
+import 'package:ajudai/core/widgets/app_text_field.dart';
+import 'package:ajudai/core/widgets/error_banner.dart';
 import 'package:ajudai/core/ws/ws_message_stream.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
@@ -80,10 +83,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
       Navigator.of(context).pushReplacementNamed(AppRoutes.home);
     } on WsErroException catch (e) {
       setState(() {
-        _erroGeral = ErroMapper.paraMensagem(
-          e.codigo,
-          mensagemServidor: e.mensagem,
-        );
+        _erroGeral = ErroMapper.paraMensagem(e.codigo, mensagemServidor: e.mensagem);
       });
     } on WsTimeoutException {
       setState(() {
@@ -105,107 +105,37 @@ class _CadastroScreenState extends State<CadastroScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(
-                'Criar conta',
-                style: AppTextStyles.titulo,
-                textAlign: TextAlign.center,
-              ),
+              Text('Criar conta', style: AppTextStyles.titulo, textAlign: TextAlign.center),
               const SizedBox(height: 24),
-              if (_erroGeral != null) ...[
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    margin: const EdgeInsets.only(bottom: 16),
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade100,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      _erroGeral!,
-                      style: TextStyle(color: Colors.red.shade900),
-                    ),
-                  ),
-                ],
-              TextField(
-                decoration: InputDecoration(
-                  labelText: 'Nome completo',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                controller: _nomeController,
-              ),
+              ErrorBanner(mensagem: _erroGeral),
+              AppTextField(label: 'Nome completo', controller: _nomeController),
               const SizedBox(height: 16),
-              TextField(
-                decoration: InputDecoration(
-                  labelText: 'E-mail',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
+              AppTextField(
+                label: 'E-mail',
                 controller: _emailController,
                 keyboardType: TextInputType.emailAddress,
               ),
               const SizedBox(height: 16),
-              TextField(
-                decoration: InputDecoration(
-                  labelText: 'Senha',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                controller: _senhaController,
-                obscureText: true,
-              ),
+              AppTextField(label: 'Senha', controller: _senhaController, obscureText: true),
               const SizedBox(height: 16),
-              TextField(
-                decoration: InputDecoration(
-                  labelText: 'CPF',
-                  errorText: _erroCpf,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
+              AppTextField(
+                label: 'CPF',
                 controller: _cpfController,
                 keyboardType: TextInputType.number,
-                obscureText: false,
+                erro: _erroCpf,
               ),
               const SizedBox(height: 16),
-              TextField(
-                decoration: InputDecoration(
-                  labelText: 'Telefone (opcional)',
-                  errorText: _erroTelefone,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
+              AppTextField(
+                label: 'Telefone (opcional)',
                 controller: _telefoneController,
                 keyboardType: TextInputType.phone,
-                obscureText: false,
+                erro: _erroTelefone,
               ),
               const SizedBox(height: 24),
-              TextButton(
-                onPressed: _carregando ? null : _cadastrar,
-                style: TextButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: AppColors.background,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: _carregando
-                    ? const SizedBox(
-                        width: 24,
-                        height: 24,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('Cadastrar'),
-              ),
+              AppButton(label: 'Cadastrar', loading: _carregando, onPressed: _cadastrar),
               const SizedBox(height: 16),
               TextButton(
-                onPressed: _carregando
-                    ? null
-                    : () => Navigator.of(context).pop(),
+                onPressed: _carregando ? null : () => Navigator.of(context).pop(),
                 child: Text('Já tem conta? Entrar', style: AppTextStyles.corpo),
               ),
             ],

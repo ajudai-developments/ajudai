@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
-
-/// Nomes de rota centralizados + onGenerateRoute.
+/// Nomes de rota centralizados.
 ///
-/// Telas que precisam de parâmetro (ex: id do agendamento, id do usuário)
-/// devem receber via `arguments` no Navigator.pushNamed.
+/// Este arquivo só define os NOMES das rotas (constantes) — não conhece
+/// nenhuma tela, de propósito, pra não fazer `core/` depender de
+/// `features/`. A tabela nome -> widget fica em `app.dart`, que é quem
+/// tem legitimidade de conhecer todas as features.
 class AppRoutes {
   AppRoutes._();
 
@@ -52,19 +52,4 @@ class AppRoutes {
   // admin
   static const String verificacoes = '/admin/verificacoes';
   static const String verificacaoDetalhe = '/admin/verificacoes/detalhe';
-
-  static Route<dynamic>? onGenerateRoute(RouteSettings settings) {
-    switch (settings.name) {
-      // TODO: mapear cada rota acima para sua respectiva Screen,
-      // extraindo `settings.arguments` quando necessário. Ex:
-      //
-      // case perfilPublico:
-      //   final usuarioId = settings.arguments as String;
-      //   return MaterialPageRoute(
-      //     builder: (_) => PerfilPublicoScreen(usuarioId: usuarioId),
-      //   );
-      default:
-        return null;
-    }
-  }
 }
