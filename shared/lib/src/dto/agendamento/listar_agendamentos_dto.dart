@@ -40,6 +40,13 @@ class ListarAgendamentosResponseDto implements WsMessage {
     required this.tipo,
   });
 
+  factory ListarAgendamentosResponseDto.fromJson(Map<String, dynamic> json) {
+    final lista = JsonUtils.requireListaDeMapas(json, 'agendamentos');
+    return ListarAgendamentosResponseDto(
+      agendamentos: lista.map(Agendamento.fromJson).toList(),
+      tipo: TipoMensagem.fromValor(json['tipo'] as String?)!,
+    );
+  }
   @override
   Map<String, dynamic> toJson() => {
     'tipo': tipo.valor,
