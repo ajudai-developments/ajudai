@@ -9,12 +9,17 @@ import 'features/agendamento/criar_agendamento_screen.dart';
 import 'features/agendamento/meus_agendamentos_screen.dart';
 import 'features/auth/cadastro_screen.dart';
 import 'features/auth/login_screen.dart';
+import 'features/avaliacao/avaliar_agendamento_screen.dart';
+import 'features/avaliacao/avaliar_usuario_screen.dart';
 import 'features/endereco/form_endereco_screen.dart';
 import 'features/endereco/meus_enderecos_screen.dart';
+import 'features/perfil/perfil_publico_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/servico/categorias_screen.dart';
 import 'features/servico/servico_detalhe_screen.dart';
 import 'features/servico/servicos_lista_screen.dart';
+import 'features/usuario/editar_perfil_screen.dart';
+import 'features/usuario/meu_perfil_screen.dart';
 
 /// Widget raiz do app.
 ///
@@ -43,8 +48,11 @@ class App extends StatelessWidget {
       AppRoutes.login: (_) => const LoginScreen(),
       AppRoutes.cadastro: (_) => const CadastroScreen(),
       AppRoutes.home: (_) => const HomeScreen(),
+      AppRoutes.meuPerfil: (_) => const MeuPerfilScreen(),
+      AppRoutes.editarPerfil: (_) => const EditarPerfilScreen(),
       AppRoutes.meusEnderecos: (_) => const MeusEnderecosScreen(),
       AppRoutes.formEndereco: (_) => const FormEnderecoScreen(),
+      AppRoutes.perfilPublico: (_) => const PerfilPublicoScreen(),
       AppRoutes.categorias: (_) => const CategoriasScreen(),
       AppRoutes.servicosLista: (_) => const ServicosListaScreen(),
       AppRoutes.servicoDetalhe: (_) => const ServicoDetalheScreen(),
@@ -53,8 +61,10 @@ class App extends StatelessWidget {
       AppRoutes.meusAgendamentos: (_) => const MeusAgendamentosScreen(),
       AppRoutes.agendamentosRecebidos: (_) => const AgendamentosRecebidosScreen(),
       AppRoutes.agendamentoDetalhe: (_) => const AgendamentoDetalheScreen(),
-      // TODO: demais rotas (perfil, prestador, avaliacao, notificacao,
-      // admin) — entram aqui conforme as telas forem feitas.
+      AppRoutes.avaliarAgendamento: (_) => const AvaliarAgendamentoScreen(),
+      AppRoutes.avaliarUsuario: (_) => const AvaliarUsuarioScreen(),
+      // TODO: demais rotas (perfil, prestador, notificacao, admin) —
+      // entram aqui conforme as telas forem feitas.
     };
 
     final builder = builders[settings.name];

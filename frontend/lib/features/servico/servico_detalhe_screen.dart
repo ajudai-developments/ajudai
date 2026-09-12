@@ -1,13 +1,15 @@
-import 'package:ajudai/core/ws/ws_message_stream.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
 import '../../core/errors/erro_mapper.dart';
+import '../../core/ws/ws_message_stream.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/error_banner.dart';
 import '../../core/widgets/rating_display.dart';
+import '../perfil/widgets/comentarios_list.dart';
+import '../perfil/widgets/selos_list.dart';
 import 'servico_repository.dart';
 
 /// Detalhe completo de um serviço oferecido: dados do serviço, do
@@ -68,10 +70,10 @@ class _ServicoDetalheScreenState extends State<ServicoDetalheScreen> {
     }
   }
 
-  void _abrirPerfilPrestador(Usuario prestador) {
+  void _abrirPerfilPrestador() {
     Navigator.of(context).pushNamed(
       AppRoutes.perfilPublico,
-      arguments: prestador.id,
+      arguments: _servicoOferecidoId,
     );
   }
 
@@ -126,7 +128,7 @@ class _ServicoDetalheScreenState extends State<ServicoDetalheScreen> {
       ),
       const SizedBox(height: 16),
       InkWell(
-        onTap: () => _abrirPerfilPrestador(dados.prestador),
+        onTap: _abrirPerfilPrestador,
         child: Row(
           children: [
             const CircleAvatar(child: Icon(Icons.person)),
@@ -155,55 +157,12 @@ class _ServicoDetalheScreenState extends State<ServicoDetalheScreen> {
         const SizedBox(height: 16),
         Text('Selos', style: AppTextStyles.titulo),
         const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (final selo in dados.selos)
-              Chip(
-                avatar: const Icon(Icons.emoji_events, size: 18),
-                label: Text(selo.conquista.nome),
-              ),
-          ],
-        ),
+        SelosList(selos: dados.selos),
       ],
       const SizedBox(height: 16),
       Text('Comentários', style: AppTextStyles.titulo),
       const SizedBox(height: 8),
-      if (dados.comentarios.isEmpty)
-        Text('Ainda não há comentários.', style: AppTextStyles.corpo)
-      else
-        for (final comentario in dados.comentarios)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            comentario.avaliadorNome,
-                            style: AppTextStyles.corpo,
-                          ),
-                        ),
-                        const Icon(Icons.star, size: 16, color: Colors.amber),
-                        const SizedBox(width: 4),
-                        Text(comentario.avaliacao.toStringAsFixed(1)),
-                      ],
-                    ),
-                    if (comentario.mensagem != null) ...[
-                      const SizedBox(height: 4),
-                      Text(comentario.mensagem!, style: AppTextStyles.corpo),
-                    ],
-                  ],
-                ),
-              ),
-            ),
-          ),
+      ComentariosList(comentarios: dados.comentarios),
       const SizedBox(height: 80), // espaço pro botão fixo de agendar
     ];
   }

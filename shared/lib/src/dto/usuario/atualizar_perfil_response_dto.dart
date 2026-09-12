@@ -11,6 +11,12 @@ class AtualizarPerfilResponseDto implements WsMessage {
   @override
   TipoMensagem get tipo => TipoMensagem.atualizarPerfilOk;
 
+  factory AtualizarPerfilResponseDto.fromJson(Map<String, dynamic> json) {
+  return AtualizarPerfilResponseDto(
+    usuario: Usuario.fromJson(json['usuario'] as Map<String, dynamic>),
+  );
+  }
+
   @override
   Map<String, dynamic> toJson() => {
     'tipo': tipo.valor,

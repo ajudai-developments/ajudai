@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:ajudai/core/config/env.dart' as Env;
+import 'package:ajudai/core/config/env.dart';
 import 'package:shared/shared.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'ws_message_stream.dart';
