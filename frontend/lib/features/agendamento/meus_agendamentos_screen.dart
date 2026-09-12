@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/widgets/app_bottom_nav.dart';
 import '../../core/widgets/async_list_view.dart';
 import '../servico/servico_repository.dart';
 import 'agendamento_com_detalhes.dart';
@@ -42,6 +43,7 @@ class MeusAgendamentosScreen extends StatelessWidget {
           ],
         ),
       ),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 0),
     );
   }
 }

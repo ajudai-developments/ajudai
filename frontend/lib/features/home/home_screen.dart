@@ -1,3 +1,4 @@
+import 'package:ajudai/core/widgets/app_bottom_nav.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -51,7 +52,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
-      // TODO: bottom navigation bar (Agenda / Home / Perfil)
+      bottomNavigationBar: const AppBottomNav(currentIndex: 1),
     );
   }
 }

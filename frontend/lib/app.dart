@@ -14,6 +14,8 @@ import 'features/avaliacao/avaliar_usuario_screen.dart';
 import 'features/endereco/form_endereco_screen.dart';
 import 'features/endereco/meus_enderecos_screen.dart';
 import 'features/perfil/perfil_publico_screen.dart';
+import 'features/prestador/meus_servicos_oferecidos_screen.dart';
+import 'features/prestador/solicitar_prestador_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/servico/categorias_screen.dart';
 import 'features/servico/servico_detalhe_screen.dart';
@@ -63,8 +65,12 @@ class App extends StatelessWidget {
       AppRoutes.agendamentoDetalhe: (_) => const AgendamentoDetalheScreen(),
       AppRoutes.avaliarAgendamento: (_) => const AvaliarAgendamentoScreen(),
       AppRoutes.avaliarUsuario: (_) => const AvaliarUsuarioScreen(),
-      // TODO: demais rotas (perfil, prestador, notificacao, admin) —
-      // entram aqui conforme as telas forem feitas.
+      AppRoutes.solicitarPrestador: (_) => const SolicitarPrestadorScreen(),
+      AppRoutes.meusServicosOferecidos: (_) => const MeusServicosOferecidosScreen(),
+      // TODO: formServicoOferecido fica de fora por enquanto — falta
+      // endpoint pra listar o catálogo de tipos de Servico (ver
+      // prestador_repository.dart). Demais rotas (notificacao, admin)
+      // — entram aqui conforme as telas forem feitas.
     };
 
     final builder = builders[settings.name];

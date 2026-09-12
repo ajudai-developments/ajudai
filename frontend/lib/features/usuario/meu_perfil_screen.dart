@@ -5,6 +5,7 @@ import '../../core/routes/app_routes.dart';
 import '../../core/session/sessao.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/widgets/app_bottom_nav.dart';
 import '../../core/widgets/app_button.dart';
 import '../auth/auth_repository.dart';
 
@@ -31,6 +32,11 @@ class _MeuPerfilScreenState extends State<MeuPerfilScreen> {
     // só precisamos forçar este widget a reconstruir e reler o valor
     // atual — não importa se a edição foi salva ou cancelada, reler é
     // inofensivo nos dois casos.
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _abrirSolicitarPrestador() async {
+    await Navigator.of(context).pushNamed(AppRoutes.solicitarPrestador);
     if (mounted) setState(() {});
   }
 
@@ -114,6 +120,7 @@ class _MeuPerfilScreenState extends State<MeuPerfilScreen> {
           ],
         ),
       ),
+      bottomNavigationBar: const AppBottomNav(currentIndex: 2),
     );
   }
 
@@ -143,8 +150,7 @@ class _MeuPerfilScreenState extends State<MeuPerfilScreen> {
         return [
           AppButton(
             label: 'Quero ser prestador',
-            onPressed: () =>
-                Navigator.of(context).pushNamed(AppRoutes.solicitarPrestador),
+            onPressed: _abrirSolicitarPrestador,
           ),
         ];
       case StatusPrestador.pendente:
