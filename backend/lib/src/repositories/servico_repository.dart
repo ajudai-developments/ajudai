@@ -83,7 +83,8 @@ class ServicoRepository {
     final response = await _client
         .from('servicos_oferecidos')
         .select()
-        .eq('usuario_id', usuarioId);
+        .eq('usuario_id', usuarioId)
+        .eq('ativo', true);
 
     return (response as List)
         .map((r) => ServicoOferecido.fromJson(r as Map<String, dynamic>))
