@@ -15,21 +15,22 @@ class ServicoRepository {
 
     WsClient.instance.enviar(ListarCategoriasRequestDto());
 
-    final json = await WsMessageStream.instance
-        .aguardar(TipoMensagem.listarCategoriasOk);
+    final json = await WsMessageStream.instance.aguardar(
+      TipoMensagem.listarCategoriasOk,
+    );
     return ListarCategoriasResponseDto.fromJson(json).categorias;
   }
 
-  Future<List<ServicoOferecidoPreview>> listarServicos({
-    required String categoriaId,
-  }) async {
+  Future<List<Servico>> listarServicos({required String categoriaId}) async {
     await WsClient.instance.conectar();
 
-    WsClient.instance
-        .enviar(ListarServicosRequestDto(categoriaId: categoriaId));
+    WsClient.instance.enviar(
+      ListarServicosRequestDto(categoriaId: categoriaId),
+    );
 
-    final json =
-        await WsMessageStream.instance.aguardar(TipoMensagem.listarServicosOk);
+    final json = await WsMessageStream.instance.aguardar(
+      TipoMensagem.listarServicosOk,
+    );
     return ListarServicosResponseDto.fromJson(json).servicos;
   }
 
@@ -42,8 +43,9 @@ class ServicoRepository {
       ObterServicoOferecidoRequestDto(servicoOferecidoId: servicoOferecidoId),
     );
 
-    final json = await WsMessageStream.instance
-        .aguardar(TipoMensagem.obterServicoOferecidoOk);
+    final json = await WsMessageStream.instance.aguardar(
+      TipoMensagem.obterServicoOferecidoOk,
+    );
     return ObterServicoOferecidoResponseDto.fromJson(json);
   }
 }

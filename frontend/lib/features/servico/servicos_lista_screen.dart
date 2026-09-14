@@ -22,7 +22,10 @@ class ServicosListaScreen extends StatelessWidget {
     );
   }
 
-  void _abrirAgendamento(BuildContext context, ServicoOferecidoPreview servico) {
+  void _abrirAgendamento(
+    BuildContext context,
+    ServicoOferecidoPreview servico,
+  ) {
     Navigator.of(context).pushNamed(
       AppRoutes.criarAgendamento,
       arguments: servico.servicoOferecidoId,
@@ -37,13 +40,18 @@ class ServicosListaScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(title: Text(categoria.nome)),
-      body: AsyncListView<ServicoOferecidoPreview>(
-        carregar: () => servicoRepository.listarServicos(categoriaId: categoria.id),
+      body: AsyncListView<Servico>(
+        carregar: () =>
+            servicoRepository.listarServicos(categoriaId: categoria.id),
         mensagemVazio: 'Nenhum serviço disponível nessa categoria ainda.',
         builder: (context, servicos) => Column(
           children: [
             for (final servico in servicos)
               ServicoCard(
+                //CARA FIZ UMA ALTERACAO NO BACKEND PORQUE NAO TINHA ROTA PARA TRAZER SOMENTE SERVICOS GERAIS E SERVICOS OFERECIDOS
+                // ISSO LEMBRANDO AQUELE PADRAO DE: CATEGORIAS -> SERVICOS -> SERVICOS OFERECIDOS (DE UM ID DE SERVICO OU DE UMA CATEGORIA).
+                // ENTAO AJUSTA ISSO AQUI PORQUE EU FIZ AQUELA ALTERACAO, E ACREDITO QUE AINDA VOU FINALIZAR A PARTE DE LISTAR SERVICOS OFERECIDOS
+                // POR CATEGORIA E SERVICO.
                 servico: servico,
                 onTapDetalhe: () => _abrirDetalhe(context, servico),
                 onTapAgendar: () => _abrirAgendamento(context, servico),
