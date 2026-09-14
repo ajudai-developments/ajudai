@@ -37,6 +37,9 @@ enum TipoMensagem {
   obterServicoOferecido('obter_servico_oferecido'),
   obterServicoOferecidoOk('obter_servico_oferecido_ok'),
 
+  editarServicoOferecido('editar_servico_oferecido'),
+  editarServicoOferecidoOk('editar_servico_oferecido_ok'),
+
   criarAgendamento('criar_agendamento'),
   criarAgendamentoOk('criar_agendamento_ok'),
 
