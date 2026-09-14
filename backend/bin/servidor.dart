@@ -67,8 +67,8 @@ Future<void> main() async {
     sessaoService: sessaoService,
     agendamentoRepository: agendamentoRepositoryParaEventos,
   ).iniciar();
-  final categoriaService = CategoriaService(sessaoService);
-  final servicoService = ServicoService(sessaoService);
+  final categoriaService = CategoriaService(sessaoService, supabase);
+  final servicoService = ServicoService(sessaoService, supabase);
   final usuarioHandler = UsuarioHandler(usuarioService);
   final authHandler = AuthHandler(authService);
   final enderecoHandler = EnderecoHandler(enderecoService);

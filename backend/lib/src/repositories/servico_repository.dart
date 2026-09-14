@@ -163,12 +163,16 @@ class ServicoRepository {
     );
   }
 
-  Future<List<ServicoOferecidoPreview>> listarServicosPorCategoria(
-    String categoriaId,
-  ) async {
+  Future<List<ServicoOferecidoPreview>> listarServicosOferecidosPorCategoria(
+    String categoriaId, {
+    String? usuarioAtualId,
+  }) async {
     final response = await _client.rpc(
       'listar_servicos_por_categoria',
-      params: {'p_categoria_id': categoriaId},
+      params: {
+        'p_categoria_id': categoriaId,
+        'p_usuario_atual_id': ?usuarioAtualId,
+      },
     );
 
     final lista = (response as List).cast<Map<String, dynamic>>();

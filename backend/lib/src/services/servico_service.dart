@@ -1,14 +1,15 @@
 import 'package:backend/src/repositories/servico_repository.dart';
 import 'package:backend/src/repositories/usuario_repository.dart';
-import 'package:backend/src/supabase/supabase_client_factory.dart';
 import 'package:shared/shared.dart';
+import 'package:supabase/supabase.dart';
 import 'sessao_service.dart';
 import '../ws/ws_connection.dart';
 
 class ServicoService {
   final SessaoService _sessaoService;
+  final SupabaseClient _clientAnonimo;
 
-  ServicoService(this._sessaoService);
+  ServicoService(this._sessaoService, this._clientAnonimo);
 
   Future<CriarServicoOferecidoResponseDto> criarOferecido(
     WsConnection conexao,
@@ -101,21 +102,31 @@ class ServicoService {
     return detalhe;
   }
 
+  Future<ListarServicosOferecidosResponse> listarServicosOferecidos(
+    WsConnection conexao,
+    ListarServicosOferecidosRequestDto dto,
+  ) async {
+    final client = _sessaoService.clientDe(conexao) ?? _clientAnonimo;
+    final userid = _sessaoService.userIdDe(conexao);
+
+    final servicos = await ServicoRepository(client)
+        .listarServicosOferecidosPorCategoria(
+          dto.categoriaId,
+          usuarioAtualId: userid,
+        );
+
+    return ListarServicosOferecidosResponse(servicos: servicos);
+  }
+
   Future<ListarServicosResponseDto> listarServicos(
     WsConnection conexao,
     ListarServicosRequestDto dto,
   ) async {
-    final client = _sessaoService.clientDe(conexao);
-    if (client == null) {
-      throw ErroDto(
-        codigo: ErroCodigo.naoAutenticado,
-        mensagem: 'Não autenticado',
-      );
-    }
+    final client = _sessaoService.clientDe(conexao) ?? _clientAnonimo;
 
     final servicos = await ServicoRepository(
-      SupabaseClientFactory.criarSecret(),
-    ).listarServicosPorCategoria(dto.categoriaId);
+      client,
+    ).listarServicos(categoriaId: dto.categoriaId);
 
     return ListarServicosResponseDto(servicos: servicos);
   }
