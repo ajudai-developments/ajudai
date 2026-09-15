@@ -9,6 +9,7 @@ import 'package:backend/src/handlers/notificacao_handler.dart';
 import 'package:backend/src/handlers/usuario_handler.dart';
 import 'package:backend/src/repositories/agendamento_repository.dart';
 import 'package:backend/src/repositories/notificacao_repository.dart';
+import 'package:backend/src/repositories/servico_repository.dart';
 import 'package:backend/src/repositories/usuario_repository.dart';
 import 'package:backend/src/services/admin_service.dart';
 import 'package:backend/src/services/agendamento_service.dart';
@@ -51,6 +52,7 @@ Future<void> main() async {
     usuarioRepository,
   );
   final usuarioService = UsuarioService(sessaoService);
+  final servicoRepository = ServicoRepository(supabase);
   final enderecoService = EnderecoService(CepClient(), sessaoService);
   final adminService = AdminService(sessaoService);
   final pagamentoService = PagamentoService();
@@ -68,7 +70,11 @@ Future<void> main() async {
     agendamentoRepository: agendamentoRepositoryParaEventos,
   ).iniciar();
   final categoriaService = CategoriaService(sessaoService, supabase);
-  final servicoService = ServicoService(sessaoService, supabase);
+  final servicoService = ServicoService(
+    sessaoService,
+    supabase,
+    servicoRepository,
+  );
   final usuarioHandler = UsuarioHandler(usuarioService);
   final authHandler = AuthHandler(authService);
   final enderecoHandler = EnderecoHandler(enderecoService);

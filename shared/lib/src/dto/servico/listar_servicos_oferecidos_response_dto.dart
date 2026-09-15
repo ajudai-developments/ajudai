@@ -6,7 +6,7 @@ class ListarServicosOferecidosResponse implements WsMessage {
   ListarServicosOferecidosResponse({required this.servicos});
 
   @override
-  TipoMensagem get tipo => TipoMensagem.listarMeusServicosOferecidosOk;
+  TipoMensagem get tipo => TipoMensagem.listarServicosOferecidosOk;
 
   factory ListarServicosOferecidosResponse.fromJson(Map<String, dynamic> json) {
     final lista = JsonUtils.requireListaDeMapas(json, 'servicos_oferecidos');

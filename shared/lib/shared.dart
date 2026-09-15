@@ -50,7 +50,7 @@ export 'src/dto/servico/obter_servico_oferecido_request_dto.dart';
 export 'src/dto/servico/obter_servico_oferecido_response_dto.dart';
 export 'src/dto/servico/listar_servico_dto.dart';
 export 'src/dto/servico/editar_servico_oferecido_dto.dart';
-export 'src/dto/servico/excluir_servico_oferecido_dto.dart';
+export 'src/dto/servico/desativar_servico_oferecido_dto.dart';
 
 export 'src/dto/prestador/criar_servico_oferecido_dto.dart';
 export 'src/dto/prestador/meus_servicos_oferecidos_dto.dart';

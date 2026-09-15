@@ -146,6 +146,12 @@ class WsRouter {
       case TipoMensagem.avaliarUsuario:
         await _avaliacaoHandler.handleAvaliarUsuario(conexao, msg);
 
+      case TipoMensagem.editarServicoOferecido:
+        await _servicoHandler.handleEditarServicoOferecido(conexao, msg);
+
+      case TipoMensagem.desativarServicoOferecido:
+        await _servicoHandler.handleDesativarServicoOferecido(conexao, msg);
+
       default:
         conexao.enviar(
           ErroDto(

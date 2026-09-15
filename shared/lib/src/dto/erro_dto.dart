@@ -19,6 +19,7 @@ enum ErroCodigo {
   naoPermitido,
   pagamentoRecusado,
   conflitoHorario,
+  usuarioInexistente,
 }
 
 class ErroDto implements WsMessage {

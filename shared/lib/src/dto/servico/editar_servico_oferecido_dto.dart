@@ -2,8 +2,8 @@ import 'package:shared/shared.dart';
 
 class EditarServicoOferecidoRequestDto implements WsMessage {
   final String servicoOferecidoId;
-  final String descricao;
-  final double valor;
+  final String? descricao;
+  final double? valor;
 
   const EditarServicoOferecidoRequestDto({
     required this.servicoOferecidoId,
@@ -14,8 +14,8 @@ class EditarServicoOferecidoRequestDto implements WsMessage {
   factory EditarServicoOferecidoRequestDto.fromJson(Map<String, dynamic> json) {
     return EditarServicoOferecidoRequestDto(
       servicoOferecidoId: JsonUtils.requireString(json, 'servico_oferecido_id'),
-      descricao: JsonUtils.requireString(json, 'descricao'),
-      valor: JsonUtils.requireDouble(json, 'valor'),
+      descricao: JsonUtils.optionalString(json, 'descricao'),
+      valor: JsonUtils.optionalDouble(json, 'valor'),
     );
   }
 
@@ -32,14 +32,16 @@ class EditarServicoOferecidoRequestDto implements WsMessage {
 }
 
 class EditarServicoOferecidoResponseDto implements WsMessage {
-  final Servico servico;
+  final ServicoOferecido servico;
 
   const EditarServicoOferecidoResponseDto({required this.servico});
 
   factory EditarServicoOferecidoResponseDto.fromJson(
     Map<String, dynamic> json,
   ) {
-    return EditarServicoOferecidoResponseDto(servico: Servico.fromJson(json));
+    return EditarServicoOferecidoResponseDto(
+      servico: ServicoOferecido.fromJson(json),
+    );
   }
 
   @override

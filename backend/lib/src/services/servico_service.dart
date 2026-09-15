@@ -8,8 +8,13 @@ import '../ws/ws_connection.dart';
 class ServicoService {
   final SessaoService _sessaoService;
   final SupabaseClient _clientAnonimo;
+  final ServicoRepository _servicoRepository;
 
-  ServicoService(this._sessaoService, this._clientAnonimo);
+  ServicoService(
+    this._sessaoService,
+    this._clientAnonimo,
+    this._servicoRepository,
+  );
 
   Future<CriarServicoOferecidoResponseDto> criarOferecido(
     WsConnection conexao,
@@ -122,12 +127,97 @@ class ServicoService {
     WsConnection conexao,
     ListarServicosRequestDto dto,
   ) async {
-    final client = _sessaoService.clientDe(conexao) ?? _clientAnonimo;
-
-    final servicos = await ServicoRepository(
-      client,
-    ).listarServicos(categoriaId: dto.categoriaId);
+    final servicos = await _servicoRepository.listarServicos(
+      categoriaId: dto.categoriaId,
+    );
 
     return ListarServicosResponseDto(servicos: servicos);
+  }
+
+  Future<EditarServicoOferecidoResponseDto> editarServicoOferecido(
+    WsConnection conexao,
+    EditarServicoOferecidoRequestDto dto,
+  ) async {
+    final client = _sessaoService.clientDe(conexao);
+    final userId = _sessaoService.userIdDe(conexao);
+
+    if (client == null || userId == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final usuario = await UsuarioRepository(client).buscarPorId(userId);
+
+    if (usuario == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.usuarioInexistente,
+        mensagem: "Esse usuário não existe",
+      );
+    }
+
+    if (usuario.userRole != UserRole.prestador) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoPermitido,
+        mensagem: "Você não está autorizado a fazer isso",
+      );
+    }
+
+    if (dto.descricao == null && dto.valor == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.dadosInvalidos,
+        mensagem: "Nenhum campo para atualizar encontrado",
+      );
+    }
+
+    final servico = await _servicoRepository.atualizarServico(
+      dto.servicoOferecidoId,
+      usuarioId: userId,
+      descricao: dto.descricao,
+      valor: dto.valor,
+    );
+
+    return EditarServicoOferecidoResponseDto(servico: servico);
+  }
+
+  Future<DesativarServicoOferecidoResponseDto> desativarServicoOferecido(
+    WsConnection conexao,
+    DesativarServicoOferecidoRequestDto dto,
+  ) async {
+    final client = _sessaoService.clientDe(conexao);
+    final userId = _sessaoService.userIdDe(conexao);
+
+    if (client == null || userId == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final usuario = await UsuarioRepository(client).buscarPorId(userId);
+
+    if (usuario == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.usuarioInexistente,
+        mensagem: "Esse usuário não existe",
+      );
+    }
+
+    if (usuario.userRole != UserRole.prestador) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoPermitido,
+        mensagem: "Você não está autorizado a fazer isso",
+      );
+    }
+
+    await _servicoRepository.desativarServicoOferecido(
+      dto.servicoOferecidoId,
+      usuarioId: userId,
+    );
+
+    return DesativarServicoOferecidoResponseDto(
+      mensagem: "Serviço excluído com sucesso!",
+    );
   }
 }

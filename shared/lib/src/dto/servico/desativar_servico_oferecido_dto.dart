@@ -40,8 +40,5 @@ class DesativarServicoOferecidoResponseDto implements WsMessage {
   TipoMensagem get tipo => TipoMensagem.desativarServicoOferecidoOk;
 
   @override
-  Map<String, dynamic> toJson() => {
-    "tipo": tipo.valor,
-    "mensagem": "Servico excluído com sucesso!",
-  };
+  Map<String, dynamic> toJson() => {"tipo": tipo.valor, "mensagem": mensagem};
 }

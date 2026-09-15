@@ -179,4 +179,32 @@ class ServicoRepository {
     final lista = (response as List).cast<Map<String, dynamic>>();
     return lista.map(ServicoOferecidoPreview.fromJson).toList();
   }
+
+  Future<ServicoOferecido> atualizarServico(
+    String servicoOferecidoId, {
+    required String usuarioId,
+    String? descricao,
+    double? valor,
+  }) async {
+    final response = await _client
+        .from('servicos_oferecidos')
+        .update({'descricao': ?descricao, 'valor': ?valor})
+        .eq('id', servicoOferecidoId)
+        .eq('usuario_id', usuarioId)
+        .select()
+        .single();
+
+    return ServicoOferecido.fromJson(response);
+  }
+
+  Future<void> desativarServicoOferecido(
+    String servicoOferecidoId, {
+    required String usuarioId,
+  }) async {
+    await _client
+        .from('servicos_oferecidos')
+        .update({"ativo": false})
+        .eq('id', servicoOferecidoId)
+        .eq('usuario_id', usuarioId);
+  }
 }
