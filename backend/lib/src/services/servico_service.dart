@@ -107,9 +107,10 @@ class ServicoService {
     return detalhe;
   }
 
-  Future<ListarServicosOferecidosResponse> listarServicosOferecidos(
+  Future<ListarServicosOferecidosPorCategoriaResponseDto>
+  listarServicosOferecidosPorCategoria(
     WsConnection conexao,
-    ListarServicosOferecidosRequestDto dto,
+    ListarServicosOferecidosPorCategoriaRequestDto dto,
   ) async {
     final client = _sessaoService.clientDe(conexao) ?? _clientAnonimo;
     final userid = _sessaoService.userIdDe(conexao);
@@ -120,7 +121,7 @@ class ServicoService {
           usuarioAtualId: userid,
         );
 
-    return ListarServicosOferecidosResponse(servicos: servicos);
+    return ListarServicosOferecidosPorCategoriaResponseDto(servicos: servicos);
   }
 
   Future<ListarServicosResponseDto> listarServicos(

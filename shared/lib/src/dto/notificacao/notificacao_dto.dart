@@ -1,8 +1,5 @@
 import 'package:shared/shared.dart';
 
-import '../tipo_mensagem.dart';
-import '../ws_message.dart';
-
 class NotificacaoDto implements WsMessage {
   final String titulo;
   final String mensagem;

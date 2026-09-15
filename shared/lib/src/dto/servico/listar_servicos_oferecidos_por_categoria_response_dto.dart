@@ -1,16 +1,18 @@
 import 'package:shared/shared.dart';
 
-class ListarServicosOferecidosResponse implements WsMessage {
+class ListarServicosOferecidosPorCategoriaResponseDto implements WsMessage {
   final List<ServicoOferecidoPreview> servicos;
 
-  ListarServicosOferecidosResponse({required this.servicos});
+  ListarServicosOferecidosPorCategoriaResponseDto({required this.servicos});
 
   @override
   TipoMensagem get tipo => TipoMensagem.listarServicosOferecidosOk;
 
-  factory ListarServicosOferecidosResponse.fromJson(Map<String, dynamic> json) {
+  factory ListarServicosOferecidosPorCategoriaResponseDto.fromJson(
+    Map<String, dynamic> json,
+  ) {
     final lista = JsonUtils.requireListaDeMapas(json, 'servicos_oferecidos');
-    return ListarServicosOferecidosResponse(
+    return ListarServicosOferecidosPorCategoriaResponseDto(
       servicos: lista.map(ServicoOferecidoPreview.fromJson).toList(),
     );
   }

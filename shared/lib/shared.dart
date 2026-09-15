@@ -44,8 +44,8 @@ export 'src/dto/prestador/listar_verificacoes_response_dto.dart';
 
 export 'src/dto/servico/listar_categorias_request_dto.dart';
 export 'src/dto/servico/listar_categorias_response_dto.dart';
-export 'src/dto/servico/listar_servicos_oferecidos_request_dto.dart';
-export 'src/dto/servico/listar_servicos_oferecidos_response_dto.dart';
+export 'src/dto/servico/listar_servicos_oferecidos_por_categoria_request_dto.dart';
+export 'src/dto/servico/listar_servicos_oferecidos_por_categoria_response_dto.dart';
 export 'src/dto/servico/obter_servico_oferecido_request_dto.dart';
 export 'src/dto/servico/obter_servico_oferecido_response_dto.dart';
 export 'src/dto/servico/listar_servico_dto.dart';

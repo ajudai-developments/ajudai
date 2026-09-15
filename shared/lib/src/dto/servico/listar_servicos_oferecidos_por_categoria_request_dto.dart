@@ -2,18 +2,18 @@ import 'package:shared/src/dto/json_utils.dart';
 import 'package:shared/src/dto/tipo_mensagem.dart';
 import 'package:shared/src/dto/ws_message.dart';
 
-class ListarServicosOferecidosRequestDto implements WsMessage {
+class ListarServicosOferecidosPorCategoriaRequestDto implements WsMessage {
   final String categoriaId;
 
-  ListarServicosOferecidosRequestDto({required this.categoriaId});
+  ListarServicosOferecidosPorCategoriaRequestDto({required this.categoriaId});
 
   @override
   TipoMensagem get tipo => TipoMensagem.listarServicosOferecidos;
 
-  factory ListarServicosOferecidosRequestDto.fromJson(
+  factory ListarServicosOferecidosPorCategoriaRequestDto.fromJson(
     Map<String, dynamic> json,
   ) {
-    return ListarServicosOferecidosRequestDto(
+    return ListarServicosOferecidosPorCategoriaRequestDto(
       categoriaId: JsonUtils.requireString(json, 'categoria_id'),
     );
   }

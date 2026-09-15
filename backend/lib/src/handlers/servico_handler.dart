@@ -104,11 +104,9 @@ class ServicoHandler {
     Map<String, dynamic> msg,
   ) async {
     try {
-      final dto = ListarServicosOferecidosRequestDto.fromJson(msg);
-      final resposta = await _servicoService.listarServicosOferecidos(
-        conexao,
-        dto,
-      );
+      final dto = ListarServicosOferecidosPorCategoriaRequestDto.fromJson(msg);
+      final resposta = await _servicoService
+          .listarServicosOferecidosPorCategoria(conexao, dto);
       conexao.enviar(resposta);
     } on FormatException catch (e) {
       conexao.enviar(
