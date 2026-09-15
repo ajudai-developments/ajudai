@@ -1,7 +1,5 @@
 import 'package:shared/shared.dart';
 
-/// Dados completos para a tela de detalhe: o card de preview já foi
-/// mostrado antes, aqui é o "clicou e abriu o perfil/serviço".
 class ObterServicoOferecidoResponseDto implements WsMessage {
   final ServicoOferecido servicoOferecido;
   final Servico servico;
@@ -26,9 +24,7 @@ class ObterServicoOferecidoResponseDto implements WsMessage {
   @override
   TipoMensagem get tipo => TipoMensagem.obterServicoOferecidoOk;
 
-  factory ObterServicoOferecidoResponseDto.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory ObterServicoOferecidoResponseDto.fromJson(Map<String, dynamic> json) {
     final selos = JsonUtils.requireListaDeMapas(json, 'selos');
     final comentarios = JsonUtils.requireListaDeMapas(json, 'comentarios');
 
@@ -37,16 +33,11 @@ class ObterServicoOferecidoResponseDto implements WsMessage {
         json['servico_oferecido'] as Map<String, dynamic>,
       ),
       servico: Servico.fromJson(json['servico'] as Map<String, dynamic>),
-      categoria: Categoria.fromJson(
-        json['categoria'] as Map<String, dynamic>,
-      ),
+      categoria: Categoria.fromJson(json['categoria'] as Map<String, dynamic>),
       prestador: Usuario.fromJson(json['prestador'] as Map<String, dynamic>),
       selos: selos.map(ConquistaUsuario.fromJson).toList(),
       mediaAvaliacao: JsonUtils.optionalDouble(json, 'media_avaliacao'),
-      quantidadeAvaliacoes: JsonUtils.requireInt(
-        json,
-        'quantidade_avaliacoes',
-      ),
+      quantidadeAvaliacoes: JsonUtils.requireInt(json, 'quantidade_avaliacoes'),
       comentarios: comentarios.map(AvaliacaoUsuario.fromJson).toList(),
     );
   }

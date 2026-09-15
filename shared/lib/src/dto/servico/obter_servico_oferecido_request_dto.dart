@@ -10,14 +10,9 @@ class ObterServicoOferecidoRequestDto implements WsMessage {
   @override
   TipoMensagem get tipo => TipoMensagem.obterServicoOferecido;
 
-  factory ObterServicoOferecidoRequestDto.fromJson(
-    Map<String, dynamic> json,
-  ) {
+  factory ObterServicoOferecidoRequestDto.fromJson(Map<String, dynamic> json) {
     return ObterServicoOferecidoRequestDto(
-      servicoOferecidoId: JsonUtils.requireString(
-        json,
-        'servico_oferecido_id',
-      ),
+      servicoOferecidoId: JsonUtils.requireString(json, 'servico_oferecido_id'),
     );
   }
 

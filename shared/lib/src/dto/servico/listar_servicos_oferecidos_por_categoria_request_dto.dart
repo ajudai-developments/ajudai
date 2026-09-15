@@ -8,7 +8,7 @@ class ListarServicosOferecidosPorCategoriaRequestDto implements WsMessage {
   ListarServicosOferecidosPorCategoriaRequestDto({required this.categoriaId});
 
   @override
-  TipoMensagem get tipo => TipoMensagem.listarServicosOferecidos;
+  TipoMensagem get tipo => TipoMensagem.listarServicoOferecidoPorCategoria;
 
   factory ListarServicosOferecidosPorCategoriaRequestDto.fromJson(
     Map<String, dynamic> json,

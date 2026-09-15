@@ -27,7 +27,7 @@ class ListarServicosResponseDto implements WsMessage {
   ListarServicosResponseDto({required this.servicos});
 
   @override
-  TipoMensagem get tipo => TipoMensagem.listarMeusServicosOferecidosOk;
+  TipoMensagem get tipo => TipoMensagem.listarServicosOk;
 
   factory ListarServicosResponseDto.fromJson(Map<String, dynamic> json) {
     final lista = JsonUtils.requireListaDeMapas(json, 'servicos');

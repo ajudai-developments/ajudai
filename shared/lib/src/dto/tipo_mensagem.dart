@@ -31,11 +31,16 @@ enum TipoMensagem {
   listarVerificacoes('listar_verificacoes'),
   listarVerificacoesOk('listar_verificacoesOk'),
 
-  listarServicosOferecidos('listar_servicos_oferecidos'),
-  listarServicosOferecidosOk('listar_servicos_oferecidos_ok'),
-
   obterServicoOferecido('obter_servico_oferecido'),
   obterServicoOferecidoOk('obter_servico_oferecido_ok'),
+
+  listarServicoOferecidoPorCategoria('listar_servico_oferecido_por_categoria'),
+  listarServicoOferecidoPorCategoriaOk(
+    'listar_servico_oferecido_por_categoria_ok',
+  ),
+
+  listarServicoOferecidoPorServico('listar_servico_oferecido_por_servico'),
+  listarServicoOferecidoPorServicoOk('listar_servico_oferecido_por_servico_ok'),
 
   editarServicoOferecido('editar_servico_oferecido'),
   editarServicoOferecidoOk('editar_servico_oferecido_ok'),
