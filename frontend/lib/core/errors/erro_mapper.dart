@@ -39,6 +39,8 @@ class ErroMapper {
         return 'Esse horário já está ocupado.';
       case ErroCodigo.erroInterno:
         return 'Ocorreu um erro inesperado. Tente novamente.';
+      case ErroCodigo.usuarioInexistente:
+        return 'O usuário não existe.';
     }
   }
 }
