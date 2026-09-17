@@ -18,6 +18,7 @@ import 'features/prestador/form_servico_oferecido_screen.dart';
 import 'features/prestador/meus_servicos_oferecidos_screen.dart';
 import 'features/prestador/solicitar_prestador_screen.dart';
 import 'features/home/home_screen.dart';
+import 'features/notificacao/notificacoes_screen.dart';
 import 'features/servico/categorias_screen.dart';
 import 'features/servico/servico_detalhe_screen.dart';
 import 'features/servico/servicos_lista_screen.dart';
@@ -51,6 +52,7 @@ class App extends StatelessWidget {
       AppRoutes.login: (_) => const LoginScreen(),
       AppRoutes.cadastro: (_) => const CadastroScreen(),
       AppRoutes.home: (_) => const HomeScreen(),
+      AppRoutes.notificacoes: (_) => const NotificacoesScreen(),
       AppRoutes.meuPerfil: (_) => const MeuPerfilScreen(),
       AppRoutes.editarPerfil: (_) => const EditarPerfilScreen(),
       AppRoutes.meusEnderecos: (_) => const MeusEnderecosScreen(),
@@ -71,8 +73,8 @@ class App extends StatelessWidget {
       AppRoutes.meusServicosOferecidos: (_) =>
           const MeusServicosOferecidosScreen(),
       AppRoutes.formServicoOferecido: (_) => const FormServicoOferecidoScreen(),
-      // TODO: falta servicosOferecidosLista (endpoint ainda não pronto
-      // no backend) e as rotas de notificacao/admin.
+      // TODO: rotas de notificacao/admin — entram aqui conforme as
+      // telas forem feitas.
     };
 
     final builder = builders[settings.name];

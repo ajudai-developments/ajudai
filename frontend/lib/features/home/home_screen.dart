@@ -1,8 +1,9 @@
-import 'package:ajudai/core/widgets/app_bottom_nav.dart';
 import 'package:flutter/material.dart';
 
+import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/widgets/app_bottom_nav.dart';
 import 'widgets/mapa_placeholder.dart';
 
 /// Tela inicial do app (ver protótipo compartilhado).
@@ -36,11 +37,20 @@ class _HomeScreenState extends State<HomeScreen> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            Text('Início', style: AppTextStyles.titulo),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('Início', style: AppTextStyles.titulo),
+                IconButton(
+                  icon: const Icon(Icons.notifications_none),
+                  onPressed: () =>
+                      Navigator.of(context).pushNamed(AppRoutes.notificacoes),
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
 
             // TODO: busca — sem filtro implementado no backend ainda.
-
             const MapaPlaceholder(),
             const SizedBox(height: 24),
 

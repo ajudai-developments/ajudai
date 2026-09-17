@@ -11,10 +11,10 @@ import '../../core/ws/ws_message_stream.dart';
 /// CategoriasScreen usam este repositório, em vez de cada uma ter sua
 /// própria cópia da chamada.
 ///
-/// Funil real (corrigido): Categoria -> Ofertas (`listarServicosOferecidos`,
-/// usado pelo CLIENTE navegando/agendando) — NÃO passa por "tipo de
-/// serviço" nesse caminho, porque o request de ofertas já filtra por
-/// categoria inteira, não por um tipo específico.
+/// Funil real: Categoria -> Ofertas (`listarServicosOferecidos`, usado
+/// pelo CLIENTE navegando/agendando a partir de categorias_screen) —
+/// NÃO passa por "tipo de serviço" nesse caminho, porque o request de
+/// ofertas já filtra por categoria inteira, não por um tipo específico.
 ///
 /// `listarServicos` (catálogo de `Servico`, com id+nome) é uma chamada
 /// SEPARADA, usada só pelo PRESTADOR em form_servico_oferecido_screen.dart
@@ -56,13 +56,15 @@ class ServicoRepository {
     await WsClient.instance.conectar();
 
     WsClient.instance.enviar(
-      ListarServicosOferecidosRequestDto(categoriaId: categoriaId),
+      ListarServicosOferecidosPorCategoriaRequestDto(categoriaId: categoriaId),
     );
 
     final json = await WsMessageStream.instance.aguardar(
-      TipoMensagem.listarServicosOferecidosOk,
+      TipoMensagem.listarServicoOferecidoPorCategoriaOk,
     );
-    return ListarServicosOferecidosResponse.fromJson(json).servicos;
+    return ListarServicosOferecidosPorCategoriaResponseDto.fromJson(
+      json,
+    ).servicos;
   }
 
   Future<ObterServicoOferecidoResponseDto> obterServicoOferecido({
