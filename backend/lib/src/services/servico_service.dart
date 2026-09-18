@@ -124,6 +124,21 @@ class ServicoService {
     return ListarServicosOferecidosPorCategoriaResponseDto(servicos: servicos);
   }
 
+  Future<ListarServicosOferecidosPorServicoResponseDto>
+  listarServicosOferecidosPorServico(
+    WsConnection conexao,
+    ListarServicosOferecidosPorServicoRequestDto dto,
+  ) async {
+    final client = _sessaoService.clientDe(conexao) ?? _clientAnonimo;
+    final userid = _sessaoService.userIdDe(conexao);
+
+    final servicos = await ServicoRepository(
+      client,
+    ).listarServicosOferecidosPorservico(dto.servicoId, usuarioAtualId: userid);
+
+    return ListarServicosOferecidosPorServicoResponseDto(servicos: servicos);
+  }
+
   Future<ListarServicosResponseDto> listarServicos(
     WsConnection conexao,
     ListarServicosRequestDto dto,

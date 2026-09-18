@@ -59,11 +59,22 @@ class AuthHandler {
               "A senha deve conter 8 caracteres e deve conter letras entre A e Z e conter ao menos 1 número!",
         ),
       );
-    } on AuthApiException {
+    } on AuthApiException catch (e, stackTrace) {
+      print("Um erro ocorreu ao fazer cadastro: ${e.toString()}");
+      print(stackTrace);
+      if (e.statusCode == "400") {
+        conexao.enviar(
+          ErroDto(
+            codigo: ErroCodigo.emailInvalido,
+            mensagem: "Este e-mail é inválido!",
+          ),
+        );
+        return;
+      }
       conexao.enviar(
         ErroDto(
           codigo: ErroCodigo.emailJaCadastrado,
-          mensagem: "Este e-mail já está cadastrador no sistema!",
+          mensagem: "Este e-mail já está cadastrado no sistema!",
         ),
       );
     } on AuthException catch (e) {

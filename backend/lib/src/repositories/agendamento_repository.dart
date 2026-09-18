@@ -150,4 +150,50 @@ class AgendamentoRepository {
         .map((r) => Agendamento.fromJson(r as Map<String, dynamic>))
         .toList();
   }
+
+  Future<AgendamentoDetalhadoCliente> buscarAgendamentoDetalhadoCliente(
+    String agendamentoId,
+    String usuarioAtualId,
+  ) async {
+    final response = await _client.rpc(
+      'buscar_agendamento_detalhado_cliente',
+      params: {
+        'p_agendamento_id': agendamentoId,
+        'p_usuario_atual_id': usuarioAtualId,
+      },
+    );
+
+    final lista = (response as List).cast<Map<String, dynamic>>();
+    if (lista.isEmpty) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoEncontrado,
+        mensagem: 'Agendamento não encontrado',
+      );
+    }
+
+    return AgendamentoDetalhadoCliente.fromJson(lista.first);
+  }
+
+  Future<AgendamentoDetalhadoPrestador> buscarAgendamentoDetalhadoPrestador(
+    String agendamentoId,
+    String usuarioAtualId,
+  ) async {
+    final response = await _client.rpc(
+      'buscar_agendamento_detalhado_prestador',
+      params: {
+        'p_agendamento_id': agendamentoId,
+        'p_usuario_atual_id': usuarioAtualId,
+      },
+    );
+
+    final lista = (response as List).cast<Map<String, dynamic>>();
+    if (lista.isEmpty) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoEncontrado,
+        mensagem: 'Agendamento não encontrado',
+      );
+    }
+
+    return AgendamentoDetalhadoPrestador.fromJson(lista.first);
+  }
 }

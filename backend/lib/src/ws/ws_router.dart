@@ -104,8 +104,11 @@ class WsRouter {
       case TipoMensagem.cancelarAgendamento:
         await _agendamentoHandler.handleCancelarAgendamento(conexao, msg);
 
-      case TipoMensagem.obterAgendamento:
-        await _agendamentoHandler.handleObterAgendamento(conexao, msg);
+      case TipoMensagem.obterAgendamentoCliente:
+        await _agendamentoHandler.handleObterAgendamentoCliente(conexao, msg);
+
+      case TipoMensagem.obterAgendamentoPrestador:
+        await _agendamentoHandler.handleObterAgendamentoPrestador(conexao, msg);
 
       case TipoMensagem.listarMeusAgendamentos:
         await _agendamentoHandler.handleListarMeusAgendamentos(conexao, msg);
@@ -131,14 +134,19 @@ class WsRouter {
       case TipoMensagem.listarCategorias:
         await _categoriaHandler.handleListarCategorias(conexao, msg);
 
-      case TipoMensagem.listarServicosOferecidos:
+      case TipoMensagem.listarServicoOferecidoPorCategoria:
         await _servicoHandler.handlerListarServicosOferecidosPorCategoria(
+          conexao,
+          msg,
+        );
+      case TipoMensagem.listarServicoOferecidoPorServico:
+        await _servicoHandler.handlerListarServicosOferecidosPorServico(
           conexao,
           msg,
         );
 
       case TipoMensagem.listarServicos:
-        await _servicoHandler.handlerListarServicosPorCategoria(conexao, msg);
+        await _servicoHandler.handlerListarServicos(conexao, msg);
 
       case TipoMensagem.avaliarAgendamento:
         await _avaliacaoHandler.handleAvaliarAgendamento(conexao, msg);

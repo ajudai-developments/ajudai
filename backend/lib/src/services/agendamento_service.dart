@@ -2,8 +2,10 @@ import 'package:backend/src/models/endereco_resolvido.dart';
 import 'package:backend/src/repositories/agendamento_repository.dart';
 import 'package:backend/src/repositories/endereco_repository.dart';
 import 'package:backend/src/repositories/servico_repository.dart';
+import 'package:backend/src/repositories/usuario_repository.dart';
 import 'package:backend/src/services/pagamento_service.dart';
 import 'package:backend/src/services/sessao_service.dart';
+import 'package:backend/src/supabase/supabase_client_factory.dart';
 import 'package:backend/src/ws/ws_connection.dart';
 import 'package:shared/shared.dart';
 import 'package:supabase/supabase.dart';
@@ -51,6 +53,13 @@ class AgendamentoService {
       throw ErroDto(
         codigo: ErroCodigo.naoAutenticado,
         mensagem: 'Não autenticado',
+      );
+    }
+
+    if (userId == dto.prestadorId) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoPermitido,
+        mensagem: "Você não pode agendar um serviço consigo mesmo",
       );
     }
 
@@ -105,6 +114,13 @@ class AgendamentoService {
       throw ErroDto(
         codigo: ErroCodigo.naoAutenticado,
         mensagem: 'Não autenticado',
+      );
+    }
+
+    if (userId == dto.prestadorId) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoPermitido,
+        mensagem: "Você não pode agendar um serviço consigo mesmo",
       );
     }
 
@@ -261,6 +277,18 @@ class AgendamentoService {
       throw ErroDto(
         codigo: ErroCodigo.dadosInvalidos,
         mensagem: 'Esse agendamento não pode ser iniciado',
+      );
+    }
+
+    final agora = DateTime.now().toUtc();
+    final limiteAntecedencia = agendamento.horaInicio.subtract(
+      const Duration(minutes: 5),
+    );
+    if (agora.isBefore(limiteAntecedencia)) {
+      throw ErroDto(
+        codigo: ErroCodigo.dadosInvalidos,
+        mensagem:
+            'Você só pode iniciar o atendimento a partir de 5 minutos antes do horário agendado',
       );
     }
 
@@ -469,9 +497,9 @@ class AgendamentoService {
     return CancelarAgendamentoResponseDto(agendamento: atualizado);
   }
 
-  Future<ObterAgendamentoResponseDto> obter(
+  Future<ObterAgendamentoClienteResponseDto> obterAgendamentoCliente(
     WsConnection conexao,
-    ObterAgendamentoRequestDto dto,
+    ObterAgendamentoRequestClienteDto dto,
   ) async {
     final client = _sessaoService.clientDe(conexao);
     final userId = _sessaoService.userIdDe(conexao);
@@ -481,23 +509,55 @@ class AgendamentoService {
         mensagem: 'Não autenticado',
       );
     }
-
+    print("userId logado: $userId");
+    print("agendamentoId recebido: '${dto.agendamentoId}'");
     final repo = AgendamentoRepository(client);
-    final agendamento = await repo.buscarPorId(dto.agendamentoId);
-    if (agendamento == null) {
-      throw ErroDto(
-        codigo: ErroCodigo.dadosInvalidos,
-        mensagem: 'Agendamento não encontrado',
-      );
-    }
-    if (agendamento.usuarioId != userId && agendamento.prestadorId != userId) {
+    final agendamentoDetalhado = await repo.buscarAgendamentoDetalhadoCliente(
+      dto.agendamentoId,
+      userId,
+    );
+    if (agendamentoDetalhado.agendamento.usuarioId != userId) {
       throw ErroDto(
         codigo: ErroCodigo.naoPermitido,
         mensagem: 'Você não está autorizado a fazer isso',
       );
     }
 
-    return ObterAgendamentoResponseDto(agendamento: agendamento);
+    return ObterAgendamentoClienteResponseDto(
+      agendamento: agendamentoDetalhado,
+    );
+  }
+
+  Future<ObterAgendamentoPrestadorResponseDto> obterAgendamentoPrestador(
+    WsConnection conexao,
+    ObterAgendamentoRequestPrestadorDto dto,
+  ) async {
+    final client = _sessaoService.clientDe(conexao);
+    final userId = _sessaoService.userIdDe(conexao);
+    if (client == null || userId == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+    print("userId logado: $userId");
+    print("agendamentoId recebido: '${dto.agendamentoId}'");
+
+    final repo = AgendamentoRepository(client);
+    final agendamentoDetalhado = await repo.buscarAgendamentoDetalhadoPrestador(
+      dto.agendamentoId,
+      userId,
+    );
+    if (agendamentoDetalhado.agendamento.prestadorId != userId) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoPermitido,
+        mensagem: 'Você não está autorizado a fazer isso',
+      );
+    }
+
+    return ObterAgendamentoPrestadorResponseDto(
+      agendamento: agendamentoDetalhado,
+    );
   }
 
   Future<ListarAgendamentosResponseDto> listarMeus(
@@ -533,6 +593,24 @@ class AgendamentoService {
       throw ErroDto(
         codigo: ErroCodigo.naoAutenticado,
         mensagem: 'Não autenticado',
+      );
+    }
+
+    final usuario = await UsuarioRepository(
+      SupabaseClientFactory.criarSecret(),
+    ).buscarPorId(prestadorId);
+
+    if (usuario == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.usuarioInexistente,
+        mensagem: 'usuário inválido',
+      );
+    }
+
+    if (usuario.userRole != UserRole.prestador) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoPermitido,
+        mensagem: 'Você não é permitido para realizar esta ação.',
       );
     }
 

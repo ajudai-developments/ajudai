@@ -169,7 +169,7 @@ class ServicoRepository {
     String? usuarioAtualId,
   }) async {
     final response = await _client.rpc(
-      'listar_servicos_por_categoria',
+      'listar_servicos_oferecidos_por_categoria_id',
       params: {
         'p_categoria_id': categoriaId,
         'p_usuario_atual_id': ?usuarioAtualId,
@@ -178,6 +178,28 @@ class ServicoRepository {
 
     final lista = (response as List).cast<Map<String, dynamic>>();
     return lista.map(ServicoOferecidoPreview.fromJson).toList();
+  }
+
+  Future<List<ServicoOferecidoPreview>> listarServicosOferecidosPorservico(
+    String servicoId, {
+    String? usuarioAtualId,
+  }) async {
+    try {
+      final response = await _client.rpc(
+        'listar_servicos_oferecidos_por_servico_id',
+        params: {
+          'p_servico_id': servicoId,
+          'p_usuario_atual_id': ?usuarioAtualId,
+        },
+      );
+
+      final lista = (response as List).cast<Map<String, dynamic>>();
+      return lista.map(ServicoOferecidoPreview.fromJson).toList();
+    } catch (e, st) {
+      print('RPC ERRO: $e');
+      print(st);
+      rethrow;
+    }
   }
 
   Future<ServicoOferecido> atualizarServico(

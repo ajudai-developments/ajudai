@@ -32,7 +32,9 @@ import 'package:shared/shared.dart';
 
 Future<void> main() async {
   final supabase = SupabaseClientFactory.criarPublishable();
-  final usuarioRepository = UsuarioRepository(supabase);
+  final usuarioRepository = UsuarioRepository(
+    SupabaseClientFactory.criarSecret(),
+  );
   final authRepository = AuthRepository(supabase);
   final notificacaoRepository = NotificacaoRepository(
     SupabaseClientFactory.criarSecret(),

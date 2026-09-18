@@ -222,13 +222,16 @@ class AgendamentoHandler {
     }
   }
 
-  Future<void> handleObterAgendamento(
+  Future<void> handleObterAgendamentoCliente(
     WsConnection conexao,
     Map<String, dynamic> msg,
   ) async {
     try {
-      final dto = ObterAgendamentoRequestDto.fromJson(msg);
-      final resposta = await _agendamentoService.obter(conexao, dto);
+      final dto = ObterAgendamentoRequestClienteDto.fromJson(msg);
+      final resposta = await _agendamentoService.obterAgendamentoCliente(
+        conexao,
+        dto,
+      );
       conexao.enviar(resposta);
     } on FormatException catch (e) {
       conexao.enviar(
@@ -236,6 +239,65 @@ class AgendamentoHandler {
       );
     } on ErroDto catch (erro) {
       conexao.enviar(erro);
+    } on PostgrestException catch (e, stackTrace) {
+      if (e.code == "P0002") {
+        conexao.enviar(
+          ErroDto(codigo: ErroCodigo.naoEncontrado, mensagem: e.message),
+        );
+        return;
+      }
+      print("Erro ao obter agendamento: ${e.toString()}");
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: "Erro ao obter agendamento",
+        ),
+      );
+    } catch (e, stackTrace) {
+      print('Erro ao obter agendamento: $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao obter agendamento',
+        ),
+      );
+    }
+  }
+
+  Future<void> handleObterAgendamentoPrestador(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final dto = ObterAgendamentoRequestPrestadorDto.fromJson(msg);
+      final resposta = await _agendamentoService.obterAgendamentoPrestador(
+        conexao,
+        dto,
+      );
+      conexao.enviar(resposta);
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } on PostgrestException catch (e, stackTrace) {
+      if (e.code == "P0002") {
+        conexao.enviar(
+          ErroDto(codigo: ErroCodigo.naoEncontrado, mensagem: e.message),
+        );
+        return;
+      }
+      print("Erro ao obter agendamento: ${e.toString()}");
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: "Erro ao obter agendamento",
+        ),
+      );
     } catch (e, stackTrace) {
       print('Erro ao obter agendamento: $e');
       print(stackTrace);

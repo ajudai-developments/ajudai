@@ -115,18 +115,18 @@ class ServicoHandler {
     } on ErroDto catch (erro) {
       conexao.enviar(erro);
     } catch (e, stackTrace) {
-      print('Erro ao listar serviços oferecidos por categoria: $e');
+      print('Erro ao listar serviços oferecidos: $e');
       print(stackTrace);
       conexao.enviar(
         ErroDto(
           codigo: ErroCodigo.erroInterno,
-          mensagem: 'Erro ao listar serviços oferecidos por categoria',
+          mensagem: 'Erro ao listar serviços oferecidos',
         ),
       );
     }
   }
 
-  Future<void> handlerListarServicosPorCategoria(
+  Future<void> handlerListarServicos(
     WsConnection conexao,
     Map<String, dynamic> msg,
   ) async {
@@ -141,12 +141,41 @@ class ServicoHandler {
     } on ErroDto catch (erro) {
       conexao.enviar(erro);
     } catch (e, stackTrace) {
-      print('Erro ao listar serviços por categoria: $e');
+      print('Erro ao listar serviços: $e');
       print(stackTrace);
       conexao.enviar(
         ErroDto(
           codigo: ErroCodigo.erroInterno,
-          mensagem: 'Erro ao listar serviços por categoria',
+          mensagem: 'Erro ao listar serviços.',
+        ),
+      );
+    }
+  }
+
+  Future<void> handlerListarServicosOferecidosPorServico(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final dto = ListarServicosOferecidosPorServicoRequestDto.fromJson(msg);
+      final resposta = await _servicoService.listarServicosOferecidosPorServico(
+        conexao,
+        dto,
+      );
+      conexao.enviar(resposta);
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } catch (e, stackTrace) {
+      print('Erro ao listar serviços oferecidos: $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao listar serviços oferecidos',
         ),
       );
     }
