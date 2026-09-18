@@ -1,7 +1,7 @@
 class AgendamentoValidator {
-  static const _antecedenciaMinima = Duration(hours: 1, minutes: 30);
+  static const _antecedenciaMinima = Duration(minutes: 1);
   static const _antecedenciaMaxima = Duration(days: 30);
-  static const _duracaoMinima = Duration(minutes: 30);
+  static const _duracaoMinima = Duration(minutes: 10);
   static const _duracaoMaxima = Duration(hours: 6);
   static const _offsetBrasil = Duration(hours: -3);
   static const _horaMinimaPermitida = 6;
