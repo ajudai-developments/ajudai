@@ -39,6 +39,13 @@ class AvaliacaoService {
         mensagem: 'Você não está autorizado a fazer isso',
       );
     }
+    if (agendamento.prestadorId == userId) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoPermitido,
+        mensagem: 'Você não pode avaliar seu próprio serviço',
+      );
+    }
+
     if (agendamento.status != StatusAgendamento.concluido) {
       throw ErroDto(
         codigo: ErroCodigo.dadosInvalidos,

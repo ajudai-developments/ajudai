@@ -310,13 +310,16 @@ class AgendamentoHandler {
     }
   }
 
-  Future<void> handleListarMeusAgendamentos(
+  Future<void> handleListarAgendamentosCliente(
     WsConnection conexao,
     Map<String, dynamic> msg,
   ) async {
     try {
-      final dto = ListarMeusAgendamentosRequestDto.fromJson(msg);
-      final resposta = await _agendamentoService.listarMeus(conexao, dto);
+      final dto = ListarAgendamentosClienteRequestDto.fromJson(msg);
+      final resposta = await _agendamentoService.listarAgendamentosCliente(
+        conexao,
+        dto,
+      );
       conexao.enviar(resposta);
     } on FormatException catch (e) {
       conexao.enviar(
@@ -330,18 +333,18 @@ class AgendamentoHandler {
       conexao.enviar(
         ErroDto(
           codigo: ErroCodigo.erroInterno,
-          mensagem: 'Erro ao listar meus agendamentos',
+          mensagem: 'Erro ao listar os agendamentos',
         ),
       );
     }
   }
 
-  Future<void> handleListarAgendamentosRecebidos(
+  Future<void> handleListarAgendamentosPrestador(
     WsConnection conexao,
     Map<String, dynamic> msg,
   ) async {
     try {
-      final dto = ListarAgendamentosRecebidosRequestDto.fromJson(msg);
+      final dto = ListarAgendamentosPrestadorRequestDto.fromJson(msg);
       final resposta = await _agendamentoService.listarRecebidos(conexao, dto);
       conexao.enviar(resposta);
     } on FormatException catch (e) {

@@ -123,32 +123,28 @@ class AgendamentoRepository {
     });
   }
 
-  Future<List<Agendamento>> listarPorUsuario({
+  Future<List<AgendamentoDetalhadoCliente>> listarAgendamentosCliente({
     required String usuarioId,
   }) async {
-    var query = _client
-        .from('agendamentos')
-        .select()
-        .eq('usuario_id', usuarioId);
+    final response = await _client.rpc(
+      'listar_agendamentos_cliente',
+      params: {'p_usuario_atual_id': usuarioId},
+    );
 
-    final response = await query.order('hora_inicio', ascending: false);
-    return (response as List)
-        .map((r) => Agendamento.fromJson(r as Map<String, dynamic>))
-        .toList();
+    final lista = (response as List).cast<Map<String, dynamic>>();
+    return lista.map((r) => AgendamentoDetalhadoCliente.fromJson(r)).toList();
   }
 
-  Future<List<Agendamento>> listarPorPrestador({
+  Future<List<AgendamentoDetalhadoPrestador>> listarAgendamentosPrestador({
     required String prestadorId,
   }) async {
-    var query = _client
-        .from('agendamentos')
-        .select()
-        .eq('prestador_id', prestadorId);
+    final response = await _client.rpc(
+      'listar_agendamentos_prestador',
+      params: {'p_usuario_atual_id': prestadorId},
+    );
 
-    final response = await query.order('hora_inicio', ascending: false);
-    return (response as List)
-        .map((r) => Agendamento.fromJson(r as Map<String, dynamic>))
-        .toList();
+    final lista = (response as List).cast<Map<String, dynamic>>();
+    return lista.map((r) => AgendamentoDetalhadoPrestador.fromJson(r)).toList();
   }
 
   Future<AgendamentoDetalhadoCliente> buscarAgendamentoDetalhadoCliente(

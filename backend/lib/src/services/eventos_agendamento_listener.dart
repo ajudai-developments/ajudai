@@ -22,16 +22,18 @@ class EventosAgendamentoListener {
           schema: 'public',
           table: 'eventos_agendamento',
           callback: (payload) async {
-            final tipo = payload.newRecord['tipo'] as String;
+            final tipo = EventosAgendamentos.fromValor(
+              payload.newRecord['tipo'] as String,
+            );
             final agendamentoId = payload.newRecord['agendamento_id'] as String;
 
             final agendamento = await _agendamentoRepository.buscarPorId(
               agendamentoId,
             );
-            if (agendamento == null) return;
+            if (agendamento == null || tipo == null) return;
 
             switch (tipo) {
-              case 'alerta_atraso':
+              case EventosAgendamentos.alertaAtraso:
                 _sessaoService.enviarParaUsuario(
                   agendamento.prestadorId,
                   NotificacaoDto(
@@ -51,8 +53,7 @@ class EventosAgendamentoListener {
                   ),
                 );
                 break;
-
-              case 'denuncia_atraso':
+              case EventosAgendamentos.denunciaAtraso:
                 _sessaoService.enviarParaUsuario(
                   agendamento.prestadorId,
                   NotificacaoDto(
@@ -64,13 +65,13 @@ class EventosAgendamentoListener {
                 );
                 break;
 
-              case 'nao_concluido':
+              case EventosAgendamentos.naoConcluido:
                 _sessaoService.enviarParaUsuario(
                   agendamento.usuarioId,
                   NotificacaoDto(
                     titulo: 'Agendamento não concluído',
                     mensagem:
-                        'O prestador não marcou a conclusão do atendimento a tempo. Você pode abrir uma reclamação se desejar. O valor do agendamento será reembolsado.',
+                        'O prestador não marcou a conclusão do atendimento a tempo. Você pode abrir uma reclamação se desejar. O valor de R\$${agendamento.valor} do agendamento será reembolsado.',
                     dados: {'agendamentoId': agendamento.id},
                   ),
                 );
@@ -84,7 +85,7 @@ class EventosAgendamentoListener {
                 );
                 break;
 
-              case 'confirmacao_automatica':
+              case EventosAgendamentos.confirmacaoAutomatica:
                 _sessaoService.enviarParaUsuario(
                   agendamento.prestadorId,
                   NotificacaoDto(
@@ -108,6 +109,50 @@ class EventosAgendamentoListener {
                   NotificacaoDto(
                     titulo: 'Avalie o cliente',
                     mensagem: 'Você tem 15 minutos para avaliar o cliente.',
+                    dados: {'agendamentoId': agendamento.id},
+                  ),
+                );
+                break;
+
+              case EventosAgendamentos.alertaInicio:
+                _sessaoService.enviarParaUsuario(
+                  agendamento.prestadorId,
+                  NotificacaoDto(
+                    titulo: 'Seu atendimento está próximo',
+                    mensagem:
+                        'Faltam poucos minutos para o início do atendimento. Você já pode iniciá-lo.',
+                    dados: {'agendamentoId': agendamento.id},
+                  ),
+                );
+                break;
+
+              case EventosAgendamentos.alertaFinalizacao:
+                _sessaoService.enviarParaUsuario(
+                  agendamento.prestadorId,
+                  NotificacaoDto(
+                    titulo: 'Hora de finalizar o atendimento',
+                    mensagem:
+                        'O horário previsto para o término do atendimento chegou. Marque como concluído.',
+                    dados: {'agendamentoId': agendamento.id},
+                  ),
+                );
+                break;
+
+              case EventosAgendamentos.canceladoPorAtraso:
+                _sessaoService.enviarParaUsuario(
+                  agendamento.usuarioId,
+                  NotificacaoDto(
+                    titulo: 'Agendamento cancelado',
+                    mensagem:
+                        'O prestador não confirmou o agendamento a tempo. O valor será reembolsado.',
+                    dados: {'agendamentoId': agendamento.id},
+                  ),
+                );
+                _sessaoService.enviarParaUsuario(
+                  agendamento.prestadorId,
+                  NotificacaoDto(
+                    titulo: 'Agendamento cancelado automaticamente',
+                    mensagem: 'Você não confirmou o agendamento a tempo.',
                     dados: {'agendamentoId': agendamento.id},
                   ),
                 );

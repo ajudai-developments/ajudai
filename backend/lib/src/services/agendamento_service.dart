@@ -223,6 +223,24 @@ class AgendamentoService {
       );
     }
 
+    final agora = DateTime.now().toUtc();
+    if (agendamento.horaInicio.isBefore(agora)) {
+      throw ErroDto(
+        codigo: ErroCodigo.dadosInvalidos,
+        mensagem: 'Esse agendamento já passou do horário de início',
+      );
+    }
+
+    if (agora.isAfter(
+      agendamento.horaInicio.subtract(const Duration(minutes: 5)),
+    )) {
+      throw ErroDto(
+        codigo: ErroCodigo.dadosInvalidos,
+        mensagem:
+            'Você só pode aceitar ou recusar o agendamento até 5 minutos antes do horário de início',
+      );
+    }
+
     final novoStatus = dto.aceitar
         ? StatusAgendamento.aceito
         : StatusAgendamento.recusado;
@@ -237,8 +255,8 @@ class AgendamentoService {
       NotificacaoDto(
         titulo: dto.aceitar ? 'Agendamento aceito' : 'Agendamento recusado',
         mensagem: dto.aceitar
-            ? 'Seu prestador aceitou o agendamento'
-            : 'Seu prestador recusou o agendamento',
+            ? 'Seu prestador aceitou o agendamento.'
+            : 'Seu prestador recusou o agendamento. O valor de R\$${agendamento.valor} do agendamento será reembolsado.',
         dados: {'agendamentoId': atualizado.id},
       ),
     );
@@ -560,9 +578,9 @@ class AgendamentoService {
     );
   }
 
-  Future<ListarAgendamentosResponseDto> listarMeus(
+  Future<ListarAgendamentosClienteResponseDto> listarAgendamentosCliente(
     WsConnection conexao,
-    ListarMeusAgendamentosRequestDto dto,
+    ListarAgendamentosClienteRequestDto dto,
   ) async {
     final client = _sessaoService.clientDe(conexao);
     final userId = _sessaoService.userIdDe(conexao);
@@ -575,17 +593,14 @@ class AgendamentoService {
 
     final agendamentos = await AgendamentoRepository(
       client,
-    ).listarPorUsuario(usuarioId: userId);
+    ).listarAgendamentosCliente(usuarioId: userId);
 
-    return ListarAgendamentosResponseDto(
-      agendamentos: agendamentos,
-      tipo: TipoMensagem.listarMeusAgendamentosOk,
-    );
+    return ListarAgendamentosClienteResponseDto(agendamentos: agendamentos);
   }
 
-  Future<ListarAgendamentosResponseDto> listarRecebidos(
+  Future<ListarAgendamentosPrestadorResponseDto> listarRecebidos(
     WsConnection conexao,
-    ListarAgendamentosRecebidosRequestDto dto,
+    ListarAgendamentosPrestadorRequestDto dto,
   ) async {
     final client = _sessaoService.clientDe(conexao);
     final prestadorId = _sessaoService.userIdDe(conexao);
@@ -616,11 +631,8 @@ class AgendamentoService {
 
     final agendamentos = await AgendamentoRepository(
       client,
-    ).listarPorPrestador(prestadorId: prestadorId);
+    ).listarAgendamentosPrestador(prestadorId: prestadorId);
 
-    return ListarAgendamentosResponseDto(
-      agendamentos: agendamentos,
-      tipo: TipoMensagem.listarAgendamentosRecebidosOk,
-    );
+    return ListarAgendamentosPrestadorResponseDto(agendamentos: agendamentos);
   }
 }

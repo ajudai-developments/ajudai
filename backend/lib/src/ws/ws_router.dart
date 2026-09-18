@@ -110,11 +110,11 @@ class WsRouter {
       case TipoMensagem.obterAgendamentoPrestador:
         await _agendamentoHandler.handleObterAgendamentoPrestador(conexao, msg);
 
-      case TipoMensagem.listarMeusAgendamentos:
-        await _agendamentoHandler.handleListarMeusAgendamentos(conexao, msg);
+      case TipoMensagem.listarAgendamentosCliente:
+        await _agendamentoHandler.handleListarAgendamentosCliente(conexao, msg);
 
-      case TipoMensagem.listarAgendamentosRecebidos:
-        await _agendamentoHandler.handleListarAgendamentosRecebidos(
+      case TipoMensagem.listarAgendamentosPrestador:
+        await _agendamentoHandler.handleListarAgendamentosPrestador(
           conexao,
           msg,
         );
