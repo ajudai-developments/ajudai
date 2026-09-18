@@ -9,6 +9,8 @@ export 'src/models/servico_oferecido_preview.dart';
 export 'src/models/verificacao.dart';
 export 'src/models/verificacao_com_usuario.dart';
 export 'src/models/agendamento.dart';
+export 'src/models/agendamento_detalhado_cliente.dart';
+export 'src/models/agendamento_detalhado_prestador.dart';
 export 'src/models/conquista.dart';
 export 'src/models/conquista_usuario.dart';
 export 'src/models/avaliacao_usuario.dart';
@@ -66,7 +68,8 @@ export 'src/dto/agendamento/concluir_agendamento_dto.dart';
 export 'src/dto/agendamento/confirmar_conclusao_agendamento_dto.dart';
 export 'src/dto/agendamento/iniciar_agendamento_dto.dart';
 export 'src/dto/agendamento/listar_agendamentos_dto.dart';
-export 'src/dto/agendamento/obter_agendamento_dto.dart';
+export 'src/dto/agendamento/obter_agendamento_cliente_dto.dart';
+export 'src/dto/agendamento/obter_agendamento_prestador_dto.dart';
 export 'src/dto/agendamento/responder_agendamento_dto.dart';
 
 export 'src/dto/avaliacao/avaliacao_agendamento_dto.dart';

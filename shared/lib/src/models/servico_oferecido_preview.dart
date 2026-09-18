@@ -29,24 +29,15 @@ class ServicoOferecidoPreview {
 
   factory ServicoOferecidoPreview.fromJson(Map<String, dynamic> json) {
     return ServicoOferecidoPreview(
-      servicoOferecidoId: JsonUtils.requireString(
-        json,
-        'servico_oferecido_id',
-      ),
+      servicoOferecidoId: JsonUtils.requireString(json, 'servico_oferecido_id'),
       servicoNome: JsonUtils.requireString(json, 'servico_nome'),
       categoriaNome: JsonUtils.requireString(json, 'categoria_nome'),
       valor: JsonUtils.requireDouble(json, 'valor'),
       prestadorId: JsonUtils.requireString(json, 'prestador_id'),
       prestadorNome: JsonUtils.requireString(json, 'prestador_nome'),
-      prestadorVerificado: JsonUtils.requireBool(
-        json,
-        'prestador_verificado',
-      ),
+      prestadorVerificado: JsonUtils.requireBool(json, 'prestador_verificado'),
       mediaAvaliacao: JsonUtils.optionalDouble(json, 'media_avaliacao'),
-      quantidadeAvaliacoes: JsonUtils.requireInt(
-        json,
-        'quantidade_avaliacoes',
-      ),
+      quantidadeAvaliacoes: JsonUtils.requireInt(json, 'quantidade_avaliacoes'),
       quantidadeSelos: JsonUtils.requireInt(json, 'quantidade_selos'),
     );
   }

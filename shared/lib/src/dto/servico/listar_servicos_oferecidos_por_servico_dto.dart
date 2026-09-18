@@ -12,7 +12,7 @@ class ListarServicosOferecidosPorServicoRequestDto implements WsMessage {
     Map<String, dynamic> json,
   ) {
     return ListarServicosOferecidosPorServicoRequestDto(
-      servicoId: JsonUtils.requireString(json, 'categoria_id'),
+      servicoId: JsonUtils.requireString(json, 'servico_id'),
     );
   }
 

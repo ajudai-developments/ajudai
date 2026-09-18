@@ -3,12 +3,14 @@ import 'package:shared/src/dto/tipo_mensagem.dart';
 import 'package:shared/src/dto/ws_message.dart';
 
 class CriarAgendamentoRequestDto implements WsMessage {
+  final String prestadorId;
   final String servicoOferecidoId;
   final String enderecoId;
   final DateTime horaInicio;
   final DateTime horaFim;
 
   CriarAgendamentoRequestDto({
+    required this.prestadorId,
     required this.servicoOferecidoId,
     required this.enderecoId,
     required this.horaInicio,
@@ -20,9 +22,9 @@ class CriarAgendamentoRequestDto implements WsMessage {
 
   factory CriarAgendamentoRequestDto.fromJson(Map<String, dynamic> json) {
     return CriarAgendamentoRequestDto(
+      prestadorId: JsonUtils.requireString(json, 'prestador_id'),
       servicoOferecidoId: JsonUtils.requireString(json, 'servico_oferecido_id'),
       enderecoId: JsonUtils.requireString(json, 'endereco_id'),
-
       horaInicio: JsonUtils.requireDateTime(json, 'hora_inicio'),
       horaFim: JsonUtils.requireDateTime(json, 'hora_fim'),
     );
@@ -31,6 +33,7 @@ class CriarAgendamentoRequestDto implements WsMessage {
   @override
   Map<String, dynamic> toJson() => {
     'tipo': tipo.valor,
+    'prestador_id': prestadorId,
     'servico_oferecido_id': servicoOferecidoId,
     'endereco_id': enderecoId,
     'hora_inicio': horaInicio.toIso8601String(),
