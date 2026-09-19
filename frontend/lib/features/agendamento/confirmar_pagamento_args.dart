@@ -9,12 +9,14 @@ import 'package:shared/shared.dart';
 /// agendamento, é só o que se mostra na tela antes de confirmar.
 class ConfirmarPagamentoArgs {
   final CriarAgendamentoResponseDto preview;
+  final String prestadorId;
   final String enderecoId;
   final DateTime horaInicio;
   final DateTime horaFim;
 
   ConfirmarPagamentoArgs({
     required this.preview,
+    required this.prestadorId,
     required this.enderecoId,
     required this.horaInicio,
     required this.horaFim,

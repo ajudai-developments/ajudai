@@ -2,85 +2,93 @@ import 'package:shared/shared.dart';
 
 import '../servico/servico_repository.dart';
 
-/// Agendamento acompanhado do nome do serviço e, quando visto pelo
-/// cliente, do nome do prestador.
+/// Um agendamento (visto pelo cliente OU pelo prestador) acompanhado do
+/// nome do serviço.
 ///
-/// O modelo `Agendamento` só tem IDs (servicoOferecidoId, prestadorId,
-/// usuarioId), sem nome legível. `nomeServico`/`nomePrestador` são
-/// resolvidos via ServicoRepository.obterServicoOferecido — isso dá o
-/// nome do PRESTADOR, então só faz sentido exibir quando quem está
-/// olhando é o cliente (`comoCliente: true`).
-///
-/// Quando é o prestador vendo seus agendamentos recebidos, o "outro
-/// lado" é o cliente (usuarioId) — e não existe endpoint pra obter nome
-/// de usuário a partir de um id ainda. Nesse caso `nomePrestador` fica
-/// `null` de propósito, e a UI deve mostrar um placeholder genérico
-/// ("Cliente") em vez de tentar exibir um nome que não temos.
+/// `AgendamentoDetalhadoCliente`/`AgendamentoDetalhadoPrestador` já vêm
+/// com o nome da CONTRAPARTE (prestadorNome/clienteNome) direto do
+/// backend — não precisa mais resolver isso à parte (antes disso
+/// existir, o prestador via "Cliente" como placeholder genérico; não é
+/// mais o caso). O que nenhum dos dois carrega é o nome do SERVIÇO —
+/// isso continua vindo via `obterServicoOferecido`.
 class AgendamentoComDetalhes {
   final Agendamento agendamento;
+  final String nomeContraparte;
   final String nomeServico;
-  final String? nomePrestador;
 
   AgendamentoComDetalhes({
     required this.agendamento,
+    required this.nomeContraparte,
     required this.nomeServico,
-    required this.nomePrestador,
   });
 }
 
-/// Resolve nome do serviço (e, se `comoCliente`, do prestador) pra uma
-/// lista de agendamentos.
-///
+/// Resolve o nome do serviço pra uma lista de agendamentos do CLIENTE.
+Future<List<AgendamentoComDetalhes>> carregarComDetalhesCliente(
+  List<AgendamentoDetalhadoCliente> agendamentos,
+  ServicoRepository servicoRepository,
+) {
+  return _resolverNomeServico(
+    itens: agendamentos,
+    agendamentoDe: (item) => item.agendamento,
+    nomeContraparteDe: (item) => item.prestadorNome,
+    servicoRepository: servicoRepository,
+  );
+}
+
+/// Resolve o nome do serviço pra uma lista de agendamentos do PRESTADOR.
+Future<List<AgendamentoComDetalhes>> carregarComDetalhesPrestador(
+  List<AgendamentoDetalhadoPrestador> agendamentos,
+  ServicoRepository servicoRepository,
+) {
+  return _resolverNomeServico(
+    itens: agendamentos,
+    agendamentoDe: (item) => item.agendamento,
+    nomeContraparteDe: (item) => item.clienteNome,
+    servicoRepository: servicoRepository,
+  );
+}
+
 /// IMPORTANTE: as chamadas a `obterServicoOferecido` são feitas EM
 /// SEQUÊNCIA (await dentro do for), nunca em paralelo — o protocolo
 /// atual não tem id de correlação nas mensagens (ver a limitação
 /// documentada em WsMessageStream.aguardar), então disparar várias
 /// chamadas do mesmo tipo ao mesmo tempo faria a primeira resposta que
 /// chegasse resolver qualquer uma das pendentes, misturando os dados
-/// entre agendamentos diferentes. Isso deixa o carregamento mais lento
-/// (uma ida e volta por serviço distinto, um de cada vez) em troca de
-/// corretude.
-///
-/// Um cache local evita repetir a chamada quando vários agendamentos
-/// apontam pro mesmo servicoOferecidoId.
-///
-/// Se a busca de um serviço específico falhar (ex: foi removido), esse
-/// item entra com nome de fallback em vez de quebrar a lista inteira.
-Future<List<AgendamentoComDetalhes>> carregarAgendamentosComDetalhes(
-  List<Agendamento> agendamentos,
-  ServicoRepository servicoRepository, {
-  required bool comoCliente,
+/// entre agendamentos diferentes. Um cache local evita repetir a
+/// chamada quando vários agendamentos apontam pro mesmo
+/// servicoOferecidoId.
+Future<List<AgendamentoComDetalhes>> _resolverNomeServico<T>({
+  required List<T> itens,
+  required Agendamento Function(T) agendamentoDe,
+  required String Function(T) nomeContraparteDe,
+  required ServicoRepository servicoRepository,
 }) async {
-  final cache = <String, ObterServicoOferecidoResponseDto>{};
+  final cache = <String, String>{};
   final resultado = <AgendamentoComDetalhes>[];
 
-  for (final agendamento in agendamentos) {
+  for (final item in itens) {
+    final agendamento = agendamentoDe(item);
     final id = agendamento.servicoOferecidoId;
 
-    var detalhe = cache[id];
-    if (detalhe == null) {
+    var nomeServico = cache[id];
+    if (nomeServico == null) {
       try {
-        detalhe = await servicoRepository.obterServicoOferecido(
+        final detalhe = await servicoRepository.obterServicoOferecido(
           servicoOferecidoId: id,
         );
-        cache[id] = detalhe;
+        nomeServico = detalhe.servico.nome;
+        cache[id] = nomeServico;
       } catch (_) {
-        resultado.add(
-          AgendamentoComDetalhes(
-            agendamento: agendamento,
-            nomeServico: 'Serviço indisponível',
-            nomePrestador: comoCliente ? 'Prestador indisponível' : null,
-          ),
-        );
-        continue;
+        nomeServico = 'Serviço indisponível';
       }
     }
 
     resultado.add(
       AgendamentoComDetalhes(
         agendamento: agendamento,
-        nomeServico: detalhe.servico.nome,
-        nomePrestador: comoCliente ? detalhe.prestador.nome : null,
+        nomeContraparte: nomeContraparteDe(item),
+        nomeServico: nomeServico,
       ),
     );
   }

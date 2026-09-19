@@ -10,6 +10,7 @@ import '../../core/widgets/error_banner.dart';
 import '../../core/widgets/rating_display.dart';
 import '../perfil/widgets/comentarios_list.dart';
 import '../perfil/widgets/selos_list.dart';
+import '../agendamento/criar_agendamento_args.dart';
 import 'servico_repository.dart';
 
 /// Detalhe completo de um serviço oferecido: dados do serviço, do
@@ -80,7 +81,10 @@ class _ServicoDetalheScreenState extends State<ServicoDetalheScreen> {
   void _agendar() {
     Navigator.of(context).pushNamed(
       AppRoutes.criarAgendamento,
-      arguments: _servicoOferecidoId,
+      arguments: CriarAgendamentoArgs(
+        servicoOferecidoId: _servicoOferecidoId,
+        prestadorId: _dados!.prestador.id,
+      ),
     );
   }
 

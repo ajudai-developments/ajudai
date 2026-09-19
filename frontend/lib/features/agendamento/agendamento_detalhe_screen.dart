@@ -3,21 +3,25 @@ import 'package:shared/shared.dart';
 
 import '../../core/errors/erro_mapper.dart';
 import '../../core/routes/app_routes.dart';
-import '../../core/session/sessao.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/app_button.dart';
 import '../../core/widgets/error_banner.dart';
 import '../../core/ws/ws_message_stream.dart';
 import '../servico/servico_repository.dart';
+import 'agendamento_detalhe_args.dart';
 import 'agendamento_repository.dart';
 import 'widgets/status_badge.dart';
 
 /// Detalhe de um agendamento — mostra dados e as ações disponíveis,
-/// que dependem do `status` atual E de quem está olhando (o cliente que
-/// pediu ou o prestador que recebeu o pedido).
+/// que dependem do `status` atual E de quem está olhando.
 ///
-/// Recebe `agendamentoId` (String) via argumento da rota.
+/// Recebe um `AgendamentoDetalheArgs` (agendamentoId + comoCliente) via
+/// argumento da rota — o papel vem de fora (de qual tela de listagem a
+/// pessoa veio), não é mais descoberto comparando ids depois de buscar,
+/// porque agora existem dois endpoints diferentes
+/// (`obterAgendamentoCliente`/`Prestador`) e é preciso saber qual
+/// chamar ANTES de ter os dados.
 class AgendamentoDetalheScreen extends StatefulWidget {
   const AgendamentoDetalheScreen({super.key});
 
@@ -29,14 +33,14 @@ class _AgendamentoDetalheScreenState extends State<AgendamentoDetalheScreen> {
   final _agendamentoRepository = AgendamentoRepository();
   final _servicoRepository = ServicoRepository();
 
-  late String _agendamentoId;
+  late AgendamentoDetalheArgs _args;
   bool _argumentosCarregados = false;
 
   bool _carregando = true;
   String? _erro;
   Agendamento? _agendamento;
+  String? _nomeContraparte;
   String? _nomeServico;
-  String? _nomePrestador; // só resolvido quando eu sou o cliente
 
   bool _executandoAcao = false;
 
@@ -46,12 +50,12 @@ class _AgendamentoDetalheScreenState extends State<AgendamentoDetalheScreen> {
     if (_argumentosCarregados) return;
     _argumentosCarregados = true;
 
-    _agendamentoId = ModalRoute.of(context)!.settings.arguments as String;
+    _args = ModalRoute.of(context)!.settings.arguments as AgendamentoDetalheArgs;
     _carregar();
   }
 
-  bool get _souCliente => _agendamento?.usuarioId == Sessao.instance.usuario?.id;
-  bool get _souPrestador => _agendamento?.prestadorId == Sessao.instance.usuario?.id;
+  bool get _souCliente => _args.comoCliente;
+  bool get _souPrestador => !_args.comoCliente;
 
   Future<void> _carregar() async {
     setState(() {
@@ -60,29 +64,35 @@ class _AgendamentoDetalheScreenState extends State<AgendamentoDetalheScreen> {
     });
 
     try {
-      final agendamento = await _agendamentoRepository.obterAgendamento(_agendamentoId);
+      final Agendamento agendamento;
+      final String nomeContraparte;
 
-      // Resolve nome do serviço/prestador com a mesma limitação de
-      // agendamento_com_detalhes.dart: sem endpoint de usuário por id,
-      // só faz sentido mostrar nome do prestador (via
-      // obterServicoOferecido) quando quem olha é o cliente.
-      String? nomeServico;
-      String? nomePrestador;
+      if (_args.comoCliente) {
+        final detalhado =
+            await _agendamentoRepository.obterAgendamentoCliente(_args.agendamentoId);
+        agendamento = detalhado.agendamento;
+        nomeContraparte = detalhado.prestadorNome;
+      } else {
+        final detalhado = await _agendamentoRepository
+            .obterAgendamentoPrestador(_args.agendamentoId);
+        agendamento = detalhado.agendamento;
+        nomeContraparte = detalhado.clienteNome;
+      }
+
+      String nomeServico;
       try {
-        final detalhe = await _servicoRepository.obterServicoOferecido(
+        final servico = await _servicoRepository.obterServicoOferecido(
           servicoOferecidoId: agendamento.servicoOferecidoId,
         );
-        nomeServico = detalhe.servico.nome;
-        final souCliente = agendamento.usuarioId == Sessao.instance.usuario?.id;
-        nomePrestador = souCliente ? detalhe.prestador.nome : null;
+        nomeServico = servico.servico.nome;
       } catch (_) {
         nomeServico = 'Serviço indisponível';
       }
 
       setState(() {
         _agendamento = agendamento;
+        _nomeContraparte = nomeContraparte;
         _nomeServico = nomeServico;
-        _nomePrestador = nomePrestador;
       });
     } on WsErroException catch (e) {
       setState(() {
@@ -125,7 +135,7 @@ class _AgendamentoDetalheScreenState extends State<AgendamentoDetalheScreen> {
 
     await _executar(
       () => _agendamentoRepository.cancelarAgendamento(
-        agendamentoId: _agendamentoId,
+        agendamentoId: _args.agendamentoId,
         motivo: motivo.trim(),
       ),
     );
@@ -196,10 +206,8 @@ class _AgendamentoDetalheScreenState extends State<AgendamentoDetalheScreen> {
           StatusBadge(status: agendamento.status),
         ],
       ),
-      if (_nomePrestador != null) ...[
-        const SizedBox(height: 4),
-        Text('com $_nomePrestador', style: AppTextStyles.corpo),
-      ],
+      const SizedBox(height: 4),
+      Text('com $_nomeContraparte', style: AppTextStyles.corpo),
       const SizedBox(height: 16),
       _linha('Data e horário', _formatarData(agendamento.horaInicio)),
       _linha(
@@ -241,7 +249,7 @@ class _AgendamentoDetalheScreenState extends State<AgendamentoDetalheScreen> {
           loading: _executandoAcao,
           onPressed: () => _executar(
             () => _agendamentoRepository.responderAgendamento(
-              agendamentoId: _agendamentoId,
+              agendamentoId: _args.agendamentoId,
               aceitar: true,
             ),
           ),
@@ -252,7 +260,7 @@ class _AgendamentoDetalheScreenState extends State<AgendamentoDetalheScreen> {
               ? null
               : () => _executar(
                     () => _agendamentoRepository.responderAgendamento(
-                      agendamentoId: _agendamentoId,
+                      agendamentoId: _args.agendamentoId,
                       aceitar: false,
                     ),
                   ),
@@ -266,7 +274,7 @@ class _AgendamentoDetalheScreenState extends State<AgendamentoDetalheScreen> {
         label: 'Iniciar atendimento',
         loading: _executandoAcao,
         onPressed: () => _executar(
-          () => _agendamentoRepository.iniciarAgendamento(_agendamentoId),
+          () => _agendamentoRepository.iniciarAgendamento(_args.agendamentoId),
         ),
       ));
     }
@@ -276,7 +284,7 @@ class _AgendamentoDetalheScreenState extends State<AgendamentoDetalheScreen> {
         label: 'Concluir atendimento',
         loading: _executandoAcao,
         onPressed: () => _executar(
-          () => _agendamentoRepository.concluirAgendamento(_agendamentoId),
+          () => _agendamentoRepository.concluirAgendamento(_args.agendamentoId),
         ),
       ));
     }
@@ -286,7 +294,8 @@ class _AgendamentoDetalheScreenState extends State<AgendamentoDetalheScreen> {
         label: 'Confirmar conclusão',
         loading: _executandoAcao,
         onPressed: () => _executar(
-          () => _agendamentoRepository.confirmarConclusaoAgendamento(_agendamentoId),
+          () => _agendamentoRepository
+              .confirmarConclusaoAgendamento(_args.agendamentoId),
         ),
       ));
     }
@@ -315,7 +324,7 @@ class _AgendamentoDetalheScreenState extends State<AgendamentoDetalheScreen> {
         label: 'Avaliar',
         onPressed: () => Navigator.of(context).pushNamed(
           AppRoutes.avaliarAgendamento,
-          arguments: _agendamentoId,
+          arguments: _args.agendamentoId,
         ),
       ));
     }

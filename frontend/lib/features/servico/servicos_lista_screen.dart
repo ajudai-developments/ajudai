@@ -5,6 +5,7 @@ import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/async_list_view.dart';
 import '../../core/widgets/servico_card.dart';
+import '../agendamento/criar_agendamento_args.dart';
 import 'servico_repository.dart';
 
 /// Lista as OFERTAS (prestadores + valor + avaliação) de uma categoria
@@ -24,13 +25,13 @@ class ServicosListaScreen extends StatelessWidget {
     );
   }
 
-  void _abrirAgendamento(
-    BuildContext context,
-    ServicoOferecidoPreview servico,
-  ) {
+  void _abrirAgendamento(BuildContext context, ServicoOferecidoPreview servico) {
     Navigator.of(context).pushNamed(
       AppRoutes.criarAgendamento,
-      arguments: servico.servicoOferecidoId,
+      arguments: CriarAgendamentoArgs(
+        servicoOferecidoId: servico.servicoOferecidoId,
+        prestadorId: servico.prestadorId,
+      ),
     );
   }
 
@@ -43,9 +44,8 @@ class ServicosListaScreen extends StatelessWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(title: Text(categoria.nome)),
       body: AsyncListView<ServicoOferecidoPreview>(
-        carregar: () => servicoRepository.listarServicosOferecidos(
-          categoriaId: categoria.id,
-        ),
+        carregar: () =>
+            servicoRepository.listarServicosOferecidos(categoriaId: categoria.id),
         mensagemVazio: 'Nenhum serviço disponível nessa categoria ainda.',
         builder: (context, servicos) => Column(
           children: [

@@ -9,6 +9,7 @@ import '../../core/widgets/error_banner.dart';
 import '../../core/widgets/rating_display.dart';
 import '../../core/ws/ws_message_stream.dart';
 import '../servico/servico_repository.dart';
+import '../agendamento/criar_agendamento_args.dart';
 import 'widgets/comentarios_list.dart';
 import 'widgets/selos_list.dart';
 
@@ -154,7 +155,10 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
           trailing: TextButton(
             onPressed: () => Navigator.of(context).pushNamed(
               AppRoutes.criarAgendamento,
-              arguments: _servicoOferecidoId,
+              arguments: CriarAgendamentoArgs(
+                servicoOferecidoId: _servicoOferecidoId,
+                prestadorId: dados.prestador.id,
+              ),
             ),
             child: const Text('Agendar'),
           ),

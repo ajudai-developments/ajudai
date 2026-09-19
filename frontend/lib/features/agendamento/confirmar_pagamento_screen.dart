@@ -1,7 +1,7 @@
-import 'package:ajudai/core/ws/ws_message_stream.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/errors/erro_mapper.dart';
+import '../../core/ws/ws_message_stream.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -58,6 +58,7 @@ class _ConfirmarPagamentoScreenState extends State<ConfirmarPagamentoScreen> {
 
     try {
       await _agendamentoRepository.confirmarPagamento(
+        prestadorId: _args.prestadorId,
         servicoOferecidoId: _args.preview.servicoOferecidoId,
         enderecoId: _args.enderecoId,
         horaInicio: _args.horaInicio,

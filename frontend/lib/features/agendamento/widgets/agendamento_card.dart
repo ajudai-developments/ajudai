@@ -36,10 +36,7 @@ class AgendamentoCard extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              item.nomePrestador != null ? 'com ${item.nomePrestador}' : 'Cliente',
-              style: AppTextStyles.corpo,
-            ),
+            Text('com ${item.nomeContraparte}', style: AppTextStyles.corpo),
             Text(_formatarData(agendamento.horaInicio), style: AppTextStyles.legenda),
             Text(
               '${agendamento.enderecoLogradouro}, ${agendamento.enderecoNumero}',

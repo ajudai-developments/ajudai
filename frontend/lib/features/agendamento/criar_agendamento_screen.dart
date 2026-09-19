@@ -1,8 +1,8 @@
-import 'package:ajudai/core/ws/ws_message_stream.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
 import '../../core/errors/erro_mapper.dart';
+import '../../core/ws/ws_message_stream.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -10,6 +10,7 @@ import '../../core/widgets/app_button.dart';
 import '../../core/widgets/error_banner.dart';
 import '../endereco/endereco_repository.dart';
 import 'agendamento_repository.dart';
+import 'criar_agendamento_args.dart';
 import 'confirmar_pagamento_args.dart';
 
 /// Tela de criação de agendamento.
@@ -32,6 +33,7 @@ class _CriarAgendamentoScreenState extends State<CriarAgendamentoScreen> {
   final _agendamentoRepository = AgendamentoRepository();
 
   late String _servicoOferecidoId;
+  late String _prestadorId;
   bool _argumentosCarregados = false;
 
   bool _carregandoEnderecos = true;
@@ -52,7 +54,9 @@ class _CriarAgendamentoScreenState extends State<CriarAgendamentoScreen> {
     if (_argumentosCarregados) return;
     _argumentosCarregados = true;
 
-    _servicoOferecidoId = ModalRoute.of(context)!.settings.arguments as String;
+    final args = ModalRoute.of(context)!.settings.arguments as CriarAgendamentoArgs;
+    _servicoOferecidoId = args.servicoOferecidoId;
+    _prestadorId = args.prestadorId;
     _carregarEnderecos();
   }
 
@@ -150,6 +154,7 @@ class _CriarAgendamentoScreenState extends State<CriarAgendamentoScreen> {
 
     try {
       final preview = await _agendamentoRepository.criarAgendamento(
+        prestadorId: _prestadorId,
         servicoOferecidoId: _servicoOferecidoId,
         enderecoId: endereco.id,
         horaInicio: horaInicioUtc,
@@ -161,6 +166,7 @@ class _CriarAgendamentoScreenState extends State<CriarAgendamentoScreen> {
         AppRoutes.confirmarPagamento,
         arguments: ConfirmarPagamentoArgs(
           preview: preview,
+          prestadorId: _prestadorId,
           enderecoId: endereco.id,
           horaInicio: horaInicioUtc,
           horaFim: horaFimUtc,

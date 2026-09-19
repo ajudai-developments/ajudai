@@ -17,6 +17,8 @@ class ErroMapper {
         return mensagemServidor ?? 'Dados inválidos.';
       case ErroCodigo.emailJaCadastrado:
         return 'Este e-mail já está cadastrado.';
+      case ErroCodigo.emailInvalido:
+        return 'E-mail inválido.';
       case ErroCodigo.cpfJaCadastrado:
         return 'Este CPF já está cadastrado.';
       case ErroCodigo.senhaFraca:
@@ -37,10 +39,12 @@ class ErroMapper {
         return 'Pagamento recusado. Tente novamente.';
       case ErroCodigo.conflitoHorario:
         return 'Esse horário já está ocupado.';
+      case ErroCodigo.naoEncontrado:
+        return mensagemServidor ?? 'Não encontrado.';
+      case ErroCodigo.usuarioInexistente:
+        return 'Usuário não encontrado.';
       case ErroCodigo.erroInterno:
         return 'Ocorreu um erro inesperado. Tente novamente.';
-      case ErroCodigo.usuarioInexistente:
-        return 'O usuário não existe.';
     }
   }
 }
