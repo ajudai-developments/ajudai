@@ -3,8 +3,11 @@ enum TipoMensagem {
   loginOk('login_ok'),
   cadastro('cadastro'),
   cadastroOk('cadastro_ok'),
+  restaurarSessao('restaurar_sessao'),
+  restaurarSessaoOk('restaurar_sessao_ok'),
   atualizarPerfil('atualizar_perfil'),
   atualizarPerfilOk('atualizar_perfil_ok'),
+
   consultarCep('consultar_cep'),
   consultarCepOk('consultar_cep_ok'),
   criarEndereco('criar_endereco'),
@@ -13,18 +16,22 @@ enum TipoMensagem {
   obterMeusEnderecosOk('obter_meus_endereco_ok'),
   editarEndereco('editar_endereco'),
   editarEnderecoOk('editar_endereco_ok'),
+
   aprovarPrestador('aprovar_prestador'),
   aprovarPrestadorOk('aprovar_prestador_ok'),
   rejeitarPrestador('rejeitar_prestador'),
   rejeitarPrestadorOk('rejeitar_prestador_ok'),
+
   listarCategorias('listar_categorias'),
   listarCategoriasOk('listar_categorias_ok'),
   listarServicos('listar_servicos'),
   listarServicosOk('listar_servicos_ok'),
+
   criarServicoOferecido('criar_servico_oferecido'),
   criarServicoOferecidoOk('criar_servico_oferecido_ok'),
   listarMeusServicosOferecidos('listar_meus_servicos_oferecidos'),
   listarMeusServicosOferecidosOk('listar_meus_servicos_oferecidos_ok'),
+
   solicitarPrestador('solicitar_prestador'),
   solicitarPrestadorOk('solicitar_prestador_ok'),
 
@@ -33,29 +40,23 @@ enum TipoMensagem {
 
   obterServicoOferecido('obter_servico_oferecido'),
   obterServicoOferecidoOk('obter_servico_oferecido_ok'),
-
   listarServicoOferecidoPorCategoria('listar_servico_oferecido_por_categoria'),
   listarServicoOferecidoPorCategoriaOk(
     'listar_servico_oferecido_por_categoria_ok',
   ),
-
   listarServicoOferecidoPorPrestador('listar_servico_oferecido_por_prestador'),
   listarServicoOferecidoPorPrestadorOk(
     'listar_servico_oferecido_por_prestador_ok',
   ),
-
   listarServicoOferecidoPorServico('listar_servico_oferecido_por_servico'),
   listarServicoOferecidoPorServicoOk('listar_servico_oferecido_por_servico_ok'),
-
   editarServicoOferecido('editar_servico_oferecido'),
   editarServicoOferecidoOk('editar_servico_oferecido_ok'),
-
   desativarServicoOferecido('desativar_servico_oferecido'),
   desativarServicoOferecidoOk('desativar_servico_oferecido_ok'),
 
   criarAgendamento('criar_agendamento'),
   criarAgendamentoOk('criar_agendamento_ok'),
-
   confirmarPagamento('confirmar_pagamento'),
   confirmarPagamentoOk('confirmar_pagamento_ok'),
 
@@ -81,9 +82,6 @@ enum TipoMensagem {
   listarAgendamentosClienteOk('listar_agendamentos_cliente_ok'),
   listarAgendamentosPrestador('listar_agendamentos_prestador'),
   listarAgendamentosPrestadorOk('listar_agendamentos_prestador_ok'),
-
-  listarAgendamentosRecebidos('listar_agendamentos_recebidos'),
-  listarAgendamentosRecebidosOk('listar_agendamentos_recebidos_ok'),
 
   listarNotificacoes('listar_notificacoes'),
   listarNotificacoesOk('listar_notificacoes_ok'),
