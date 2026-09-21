@@ -53,6 +53,10 @@ class WsRouter {
         await _authHandler.handleCadastro(conexao, msg);
         break;
 
+      case TipoMensagem.restaurarSessao:
+        await _authHandler.handleRestaurarSessao(conexao, msg);
+        break;
+
       case TipoMensagem.atualizarPerfil:
         await _usuarioHandler.handleAtualizarPerfil(conexao, msg);
 

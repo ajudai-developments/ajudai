@@ -527,8 +527,6 @@ class AgendamentoService {
         mensagem: 'Não autenticado',
       );
     }
-    print("userId logado: $userId");
-    print("agendamentoId recebido: '${dto.agendamentoId}'");
     final repo = AgendamentoRepository(client);
     final agendamentoDetalhado = await repo.buscarAgendamentoDetalhadoCliente(
       dto.agendamentoId,

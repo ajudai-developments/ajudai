@@ -44,7 +44,10 @@ class AuthService {
       );
     }
 
-    return LoginResponseDto(usuario: usuario);
+    return LoginResponseDto(
+      usuario: usuario,
+      refreshToken: session.refreshToken!,
+    );
   }
 
   Future<CadastroResponseDto> cadastrar(
@@ -106,6 +109,48 @@ class AuthService {
       );
     }
 
-    return CadastroResponseDto(usuario: usuario);
+    return CadastroResponseDto(
+      usuario: usuario,
+      refreshToken: session.refreshToken!,
+    );
+  }
+
+  Future<RestaurarSessaoResponseDto> restaurarSessao(
+    WsConnection conexao,
+    RestaurarSessaoRequestDto dto,
+  ) async {
+    final response = await _authRepository.refresh(dto.refreshToken).catchError(
+      (_) {
+        throw ErroDto(
+          codigo: ErroCodigo.sessaoExpirada,
+          mensagem: 'Sessão expirada. Entre novamente.',
+        );
+      },
+    );
+
+    final userId = response.user?.id;
+    final session = response.session;
+    if (userId == null || session == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.sessaoExpirada,
+        mensagem: 'Sessão expirada. Entre novamente.',
+      );
+    }
+
+    _sessaoService.criarSessao(conexao, userId, session);
+    final client = _sessaoService.clientDe(conexao)!;
+    final usuario = await UsuarioRepository(client).buscarPorId(userId);
+
+    if (usuario == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.erroInterno,
+        mensagem: 'Perfil não encontrado ao restaurar sessão',
+      );
+    }
+
+    return RestaurarSessaoResponseDto(
+      usuario: usuario,
+      refreshToken: session.refreshToken!,
+    );
   }
 }

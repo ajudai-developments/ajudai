@@ -102,4 +102,37 @@ class AuthHandler {
       );
     }
   }
+
+  Future<void> handleRestaurarSessao(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final dto = RestaurarSessaoRequestDto.fromJson(msg);
+      final resposta = await _authService.restaurarSessao(conexao, dto);
+      conexao.enviar(resposta);
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } on AuthApiException {
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.sessaoExpirada,
+          mensagem: "Sessão expirada. Entre novamente.",
+        ),
+      );
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
+    } catch (e, stackTrace) {
+      print("Um erro ocorreu: ${e.toString()}");
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: "Ocorreu um erro interno",
+        ),
+      );
+    }
+  }
 }
