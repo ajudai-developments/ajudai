@@ -1,7 +1,6 @@
 import 'package:shared/src/dto/json_utils.dart';
 import 'package:shared/src/models/conquista.dart';
 
-/// Um "selo" que o prestador já conquistou, para exibir no perfil dele.
 class ConquistaUsuario {
   final String id;
   final String usuarioId;

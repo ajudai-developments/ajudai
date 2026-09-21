@@ -1,6 +1,7 @@
 library;
 
 export 'src/models/usuario.dart';
+export 'src/models/usuario_basico.dart';
 export 'src/models/endereco.dart';
 export 'src/models/categoria.dart';
 export 'src/models/servico.dart';
@@ -14,6 +15,7 @@ export 'src/models/agendamento_detalhado_prestador.dart';
 export 'src/models/conquista.dart';
 export 'src/models/conquista_usuario.dart';
 export 'src/models/avaliacao_usuario.dart';
+export 'src/models/avaliacao_servico.dart';
 
 export 'src/dto/ws_message.dart';
 export 'src/dto/auth/login_request_dto.dart';

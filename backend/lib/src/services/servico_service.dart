@@ -1,5 +1,6 @@
 import 'package:backend/src/repositories/servico_repository.dart';
 import 'package:backend/src/repositories/usuario_repository.dart';
+import 'package:backend/src/supabase/supabase_client_factory.dart';
 import 'package:shared/shared.dart';
 import 'package:supabase/supabase.dart';
 import 'sessao_service.dart';
@@ -87,15 +88,9 @@ class ServicoService {
     ObterServicoOferecidoRequestDto dto,
   ) async {
     final client = _sessaoService.clientDe(conexao);
-    if (client == null) {
-      throw ErroDto(
-        codigo: ErroCodigo.naoAutenticado,
-        mensagem: 'Não autenticado',
-      );
-    }
 
     final detalhe = await ServicoRepository(
-      client,
+      client ?? SupabaseClientFactory.criarPublishable(),
     ).obterDetalheCompleto(dto.servicoOferecidoId);
     if (detalhe == null) {
       throw ErroDto(
