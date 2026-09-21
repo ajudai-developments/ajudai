@@ -26,7 +26,8 @@ class AgendamentoDetalheScreen extends StatefulWidget {
   const AgendamentoDetalheScreen({super.key});
 
   @override
-  State<AgendamentoDetalheScreen> createState() => _AgendamentoDetalheScreenState();
+  State<AgendamentoDetalheScreen> createState() =>
+      _AgendamentoDetalheScreenState();
 }
 
 class _AgendamentoDetalheScreenState extends State<AgendamentoDetalheScreen> {
@@ -50,7 +51,8 @@ class _AgendamentoDetalheScreenState extends State<AgendamentoDetalheScreen> {
     if (_argumentosCarregados) return;
     _argumentosCarregados = true;
 
-    _args = ModalRoute.of(context)!.settings.arguments as AgendamentoDetalheArgs;
+    _args =
+        ModalRoute.of(context)!.settings.arguments as AgendamentoDetalheArgs;
     _carregar();
   }
 
@@ -68,8 +70,9 @@ class _AgendamentoDetalheScreenState extends State<AgendamentoDetalheScreen> {
       final String nomeContraparte;
 
       if (_args.comoCliente) {
-        final detalhado =
-            await _agendamentoRepository.obterAgendamentoCliente(_args.agendamentoId);
+        final detalhado = await _agendamentoRepository.obterAgendamentoCliente(
+          _args.agendamentoId,
+        );
         agendamento = detalhado.agendamento;
         nomeContraparte = detalhado.prestadorNome;
       } else {
@@ -150,7 +153,9 @@ class _AgendamentoDetalheScreenState extends State<AgendamentoDetalheScreen> {
         content: TextField(
           controller: controller,
           autofocus: true,
-          decoration: const InputDecoration(labelText: 'Motivo do cancelamento'),
+          decoration: const InputDecoration(
+            labelText: 'Motivo do cancelamento',
+          ),
         ),
         actions: [
           TextButton(
@@ -202,7 +207,9 @@ class _AgendamentoDetalheScreenState extends State<AgendamentoDetalheScreen> {
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(child: Text(_nomeServico ?? 'Serviço', style: AppTextStyles.titulo)),
+          Expanded(
+            child: Text(_nomeServico ?? 'Serviço', style: AppTextStyles.titulo),
+          ),
           StatusBadge(status: agendamento.status),
         ],
       ),
@@ -228,7 +235,10 @@ class _AgendamentoDetalheScreenState extends State<AgendamentoDetalheScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(width: 120, child: Text(label, style: AppTextStyles.legenda)),
+          SizedBox(
+            width: 120,
+            child: Text(label, style: AppTextStyles.legenda),
+          ),
           Expanded(child: Text(valor, style: AppTextStyles.corpo)),
         ],
       ),
@@ -259,52 +269,63 @@ class _AgendamentoDetalheScreenState extends State<AgendamentoDetalheScreen> {
           onPressed: _executandoAcao
               ? null
               : () => _executar(
-                    () => _agendamentoRepository.responderAgendamento(
-                      agendamentoId: _args.agendamentoId,
-                      aceitar: false,
-                    ),
+                  () => _agendamentoRepository.responderAgendamento(
+                    agendamentoId: _args.agendamentoId,
+                    aceitar: false,
                   ),
+                ),
           child: const Text('Recusar'),
         ),
       ]);
     }
 
     if (_souPrestador && agendamento.status == StatusAgendamento.aceito) {
-      botoes.add(AppButton(
-        label: 'Iniciar atendimento',
-        loading: _executandoAcao,
-        onPressed: () => _executar(
-          () => _agendamentoRepository.iniciarAgendamento(_args.agendamentoId),
+      botoes.add(
+        AppButton(
+          label: 'Iniciar atendimento',
+          loading: _executandoAcao,
+          onPressed: () => _executar(
+            () =>
+                _agendamentoRepository.iniciarAgendamento(_args.agendamentoId),
+          ),
         ),
-      ));
+      );
     }
 
     if (_souPrestador && agendamento.status == StatusAgendamento.emAndamento) {
-      botoes.add(AppButton(
-        label: 'Concluir atendimento',
-        loading: _executandoAcao,
-        onPressed: () => _executar(
-          () => _agendamentoRepository.concluirAgendamento(_args.agendamentoId),
+      botoes.add(
+        AppButton(
+          label: 'Concluir atendimento',
+          loading: _executandoAcao,
+          onPressed: () => _executar(
+            () =>
+                _agendamentoRepository.concluirAgendamento(_args.agendamentoId),
+          ),
         ),
-      ));
+      );
     }
 
-    if (_souCliente && agendamento.status == StatusAgendamento.aguardandoConfirmacao) {
-      botoes.add(AppButton(
-        label: 'Confirmar conclusão',
-        loading: _executandoAcao,
-        onPressed: () => _executar(
-          () => _agendamentoRepository
-              .confirmarConclusaoAgendamento(_args.agendamentoId),
+    if (_souCliente &&
+        agendamento.status == StatusAgendamento.aguardandoConfirmacao) {
+      botoes.add(
+        AppButton(
+          label: 'Confirmar conclusão',
+          loading: _executandoAcao,
+          onPressed: () => _executar(
+            () => _agendamentoRepository.confirmarConclusaoAgendamento(
+              _args.agendamentoId,
+            ),
+          ),
         ),
-      ));
+      );
     }
 
     // Cancelar: cliente pode cancelar em pendente ou aceito. Prestador só
     // a partir de aceito — em pendente ele já tem "Recusar" (uma linha
     // acima), que cobre o mesmo caso de "declinar o pedido"; oferecer os
     // dois botões ali seria redundante.
-    final podeCancelar = (_souCliente &&
+    final podeCancelar =
+        (_souCliente &&
             (agendamento.status == StatusAgendamento.pendente ||
                 agendamento.status == StatusAgendamento.aceito)) ||
         (_souPrestador && agendamento.status == StatusAgendamento.aceito);
@@ -320,13 +341,15 @@ class _AgendamentoDetalheScreenState extends State<AgendamentoDetalheScreen> {
     }
 
     if (_souCliente && agendamento.status == StatusAgendamento.concluido) {
-      botoes.add(AppButton(
-        label: 'Avaliar',
-        onPressed: () => Navigator.of(context).pushNamed(
-          AppRoutes.avaliarAgendamento,
-          arguments: _args.agendamentoId,
+      botoes.add(
+        AppButton(
+          label: 'Avaliar',
+          onPressed: () => Navigator.of(context).pushNamed(
+            AppRoutes.avaliarAgendamento,
+            arguments: _args.agendamentoId,
+          ),
         ),
-      ));
+      );
     }
 
     return botoes;

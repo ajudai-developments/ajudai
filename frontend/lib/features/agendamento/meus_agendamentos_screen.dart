@@ -23,7 +23,8 @@ class MeusAgendamentosScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Meus agendamentos')),
       body: AsyncListView<AgendamentoComDetalhes>(
         carregar: () async {
-          final agendamentos = await agendamentoRepository.listarAgendamentosCliente();
+          final agendamentos = await agendamentoRepository
+              .listarAgendamentosCliente();
           return carregarComDetalhesCliente(agendamentos, servicoRepository);
         },
         mensagemVazio: 'Você ainda não tem agendamentos.',
