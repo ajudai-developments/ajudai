@@ -16,7 +16,7 @@ class MapaPlaceholder extends StatelessWidget {
       height: 160,
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.textoSecundario.withOpacity(0.15),
+        color: AppColors.textoSecundario.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(12),
       ),
       alignment: Alignment.center,
