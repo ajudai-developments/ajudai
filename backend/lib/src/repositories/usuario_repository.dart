@@ -53,4 +53,19 @@ class UsuarioRepository {
 
     return Verificacao.fromJson(solicitacao[0]);
   }
+
+  Future<ObterPerfilPublicoResponseDto?> obterPerfilPublico(
+    String usuarioId,
+  ) async {
+    final response = await _client.rpc(
+      'obter_perfil_publico_usuario',
+      params: {'p_usuario_id': usuarioId},
+    );
+
+    if (response == null) return null;
+
+    return ObterPerfilPublicoResponseDto.fromJson(
+      response as Map<String, dynamic>,
+    );
+  }
 }

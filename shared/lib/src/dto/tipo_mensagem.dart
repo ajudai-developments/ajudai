@@ -94,6 +94,9 @@ enum TipoMensagem {
   avaliarUsuario('avaliar_usuario'),
   avaliarUsuarioOk('avaliar_usuario_ok'),
 
+  obterPerfilPublico('obter_perfil_publico'),
+  obterPerfilPublicoOk('obter_perfil_publico_ok'),
+
   erro('erro');
 
   final String valor;

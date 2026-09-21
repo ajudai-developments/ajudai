@@ -6,4 +6,5 @@ class Env {
   static String get supabaseUrl => _env['SUPABASE_URL']!;
   static String get supabasePublishableKey => _env['SUPABASE_PUBLISHABLE_KEY']!;
   static String get supabaseSecretKey => _env['SECRET_KEY'] ?? '';
+  static String get supabaseAnonKey => _env['SUPABASE_ANON_KEY'] ?? '';
 }

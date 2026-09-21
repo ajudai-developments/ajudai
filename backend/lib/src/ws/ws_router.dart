@@ -160,6 +160,9 @@ class WsRouter {
       case TipoMensagem.desativarServicoOferecido:
         await _servicoHandler.handleDesativarServicoOferecido(conexao, msg);
 
+      case TipoMensagem.obterPerfilPublico:
+        await _usuarioHandler.obterPerfilPublico(conexao, msg);
+
       default:
         conexao.enviar(
           ErroDto(

@@ -48,4 +48,25 @@ class UsuarioHandler {
       );
     }
   }
+
+  Future<void> obterPerfilPublico(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final dto = ObterPerfilPublicoRequestDto.fromJson(msg);
+      final resposta = await _usuarioService.obterPerfilPublico(conexao, dto);
+      conexao.enviar(resposta);
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
+    } catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.erroInterno, mensagem: e.toString()),
+      );
+    }
+  }
 }

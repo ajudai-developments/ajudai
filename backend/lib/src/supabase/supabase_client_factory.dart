@@ -18,6 +18,14 @@ class SupabaseClientFactory {
     );
   }
 
+  static SupabaseClient criarAnonimo() {
+    return SupabaseClient(
+      Env.supabaseUrl,
+      Env.supabaseAnonKey,
+      authOptions: const AuthClientOptions(authFlowType: AuthFlowType.implicit),
+    );
+  }
+
   static SupabaseClient criarComToken(String accessToken) {
     return SupabaseClient(
       Env.supabaseUrl,

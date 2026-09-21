@@ -1,12 +1,15 @@
 import 'package:backend/src/repositories/usuario_repository.dart';
+import 'package:backend/src/supabase/supabase_client_factory.dart';
 import 'package:shared/shared.dart';
+import 'package:supabase/supabase.dart';
 import 'sessao_service.dart';
 import '../ws/ws_connection.dart';
 
 class UsuarioService {
   final SessaoService _sessaoService;
-
-  UsuarioService(this._sessaoService);
+  final SupabaseClient _clienteAnonimo;
+  UsuarioService(this._sessaoService)
+    : _clienteAnonimo = SupabaseClientFactory.criarAnonimo();
 
   Future<AtualizarPerfilResponseDto> atualizarPerfil(
     WsConnection conexao,
@@ -93,5 +96,27 @@ class UsuarioService {
       usuario: usuario,
       verificacao: verificacao,
     );
+  }
+
+  Future<ObterPerfilPublicoResponseDto> obterPerfilPublico(
+    WsConnection conexao,
+    ObterPerfilPublicoRequestDto dto,
+  ) async {
+    final client = _sessaoService.clientDe(conexao) ?? _clienteAnonimo;
+
+    final usuarioRepository = UsuarioRepository(client);
+
+    final perfilPublico = await usuarioRepository.obterPerfilPublico(
+      dto.usuarioId,
+    );
+
+    if (perfilPublico == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoEncontrado,
+        mensagem: 'Usuário não encontrado',
+      );
+    }
+
+    return perfilPublico;
   }
 }
