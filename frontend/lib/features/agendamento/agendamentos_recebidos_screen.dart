@@ -5,6 +5,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/widgets/async_list_view.dart';
 import '../servico/servico_repository.dart';
 import 'agendamento_com_detalhes.dart';
+import 'agendamento_detalhe_args.dart';
 import 'agendamento_repository.dart';
 import 'widgets/agendamento_card.dart';
 
@@ -25,7 +26,8 @@ class AgendamentosRecebidosScreen extends StatelessWidget {
       appBar: AppBar(title: const Text('Agendamentos recebidos')),
       body: AsyncListView<AgendamentoComDetalhes>(
         carregar: () async {
-          final agendamentos = await agendamentoRepository.listarAgendamentosPrestador();
+          final agendamentos = await agendamentoRepository
+              .listarAgendamentosPrestador();
           return carregarComDetalhesPrestador(agendamentos, servicoRepository);
         },
         mensagemVazio: 'Você ainda não recebeu nenhum pedido de agendamento.',
@@ -36,7 +38,10 @@ class AgendamentosRecebidosScreen extends StatelessWidget {
                 item: item,
                 onTap: () => Navigator.of(context).pushNamed(
                   AppRoutes.agendamentoDetalhe,
-                  arguments: item.agendamento.id,
+                  arguments: AgendamentoDetalheArgs(
+                    agendamentoId: item.agendamento.id,
+                    comoCliente: false,
+                  ),
                 ),
               ),
           ],
