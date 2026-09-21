@@ -1,3 +1,4 @@
+import 'package:ajudai/features/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 
 import 'core/routes/app_routes.dart';
@@ -42,7 +43,7 @@ class App extends StatelessWidget {
       title: 'Ajudaí',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      initialRoute: AppRoutes.home,
+      initialRoute: AppRoutes.splash,
       onGenerateRoute: _onGenerateRoute,
     );
   }
@@ -52,6 +53,7 @@ class App extends StatelessWidget {
       AppRoutes.login: (_) => const LoginScreen(),
       AppRoutes.cadastro: (_) => const CadastroScreen(),
       AppRoutes.home: (_) => const HomeScreen(),
+      AppRoutes.splash: (_) => const SplashScreen(),
       AppRoutes.notificacoes: (_) => const NotificacoesScreen(),
       AppRoutes.meuPerfil: (_) => const MeuPerfilScreen(),
       AppRoutes.editarPerfil: (_) => const EditarPerfilScreen(),

@@ -9,6 +9,7 @@ class AppRoutes {
 
   // home
   static const String home = '/home';
+  static const String splash = '/';
 
   // auth
   static const String login = '/login';
