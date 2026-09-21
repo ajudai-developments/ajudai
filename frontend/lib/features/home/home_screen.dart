@@ -107,7 +107,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 16),
 
-              // TODO: busca — sem filtro implementado no backend ainda.
               const MapaPlaceholder(),
               const SizedBox(height: 24),
 
