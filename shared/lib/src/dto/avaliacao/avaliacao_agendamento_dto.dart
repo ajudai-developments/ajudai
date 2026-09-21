@@ -1,18 +1,18 @@
-import '../json_utils.dart';
-import '../tipo_mensagem.dart';
-import '../ws_message.dart';
+import 'package:shared/shared.dart';
 
 class AvaliarAgendamentoRequestDto implements WsMessage {
   final String agendamentoId;
   final double avaliacao;
   final String? descricao;
   final String? mensagem;
+  final TipoDenuncia? tipoDenuncia;
 
   AvaliarAgendamentoRequestDto({
     required this.agendamentoId,
     required this.avaliacao,
     this.descricao,
     this.mensagem,
+    this.tipoDenuncia,
   });
 
   @override
@@ -24,6 +24,9 @@ class AvaliarAgendamentoRequestDto implements WsMessage {
       avaliacao: JsonUtils.requireDouble(json, 'avaliacao'),
       descricao: JsonUtils.optionalString(json, 'descricao'),
       mensagem: JsonUtils.optionalString(json, 'mensagem'),
+      tipoDenuncia: TipoDenuncia.fromValor(
+        JsonUtils.optionalString(json, 'tipo_denuncia') ?? '',
+      ),
     );
   }
 
@@ -34,6 +37,7 @@ class AvaliarAgendamentoRequestDto implements WsMessage {
     'avaliacao': avaliacao,
     'descricao': descricao,
     'mensagem': mensagem,
+    'tipo_denuncia': tipoDenuncia?.valor,
   };
 }
 

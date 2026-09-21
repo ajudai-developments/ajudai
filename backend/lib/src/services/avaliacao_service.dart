@@ -94,6 +94,7 @@ class AvaliacaoService {
         avaliacao: dto.avaliacao,
         descricao: dto.descricao,
         mensagem: dto.mensagem,
+        denuncia: dto.tipoDenuncia,
       );
     } on ArgumentError catch (e) {
       throw ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message);

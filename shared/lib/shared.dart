@@ -94,5 +94,5 @@ export 'src/models/enums/status_verificacao.dart';
 export 'src/models/enums/status_agendamento.dart';
 export 'src/models/enums/tipo_conquista.dart';
 export 'src/models/enums/tipo_alteracao_agendamento.dart';
-export 'src/models/enums/tipo_evento_agendamento.dart';
 export 'src/models/enums/eventos_agendamento.dart';
+export 'src/models/enums/tipo_denuncia.dart';

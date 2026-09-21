@@ -1,3 +1,4 @@
+import 'package:shared/shared.dart';
 import 'package:supabase/supabase.dart';
 
 class AvaliacaoRepository {
@@ -10,6 +11,7 @@ class AvaliacaoRepository {
     required double avaliacao,
     String? descricao,
     String? mensagem,
+    TipoDenuncia? denuncia,
   }) async {
     try {
       await _client.from('avaliacoes_agendamento').insert({
@@ -18,6 +20,7 @@ class AvaliacaoRepository {
         'avaliacao': avaliacao,
         'descricao': descricao,
         'mensagem': mensagem,
+        'denuncia': ?denuncia?.valor,
       });
     } on PostgrestException catch (e) {
       if (e.code == '23505') {
