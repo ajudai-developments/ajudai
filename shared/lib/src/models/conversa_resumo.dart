@@ -6,6 +6,7 @@ class ConversaResumo {
   final UsuarioBasico outroUsuario;
   final String? ultimaMensagemTexto;
   final DateTime? ultimaMensagemEm;
+  final bool? ultimaMensagemDeMim;
   final bool emAgendamentoAtivo;
 
   ConversaResumo({
@@ -13,6 +14,7 @@ class ConversaResumo {
     required this.outroUsuario,
     this.ultimaMensagemTexto,
     this.ultimaMensagemEm,
+    this.ultimaMensagemDeMim,
     required this.emAgendamentoAtivo,
   });
 
@@ -31,6 +33,7 @@ class ConversaResumo {
         'ultima_mensagem_texto',
       ),
       ultimaMensagemEm: JsonUtils.optionalDateTime(map, 'ultima_mensagem_em'),
+      ultimaMensagemDeMim: map['ultima_mensagem_de_mim'] as bool?,
       emAgendamentoAtivo: map['em_agendamento_ativo'] as bool,
     );
   }
@@ -40,6 +43,7 @@ class ConversaResumo {
     'outro_usuario': outroUsuario.toJson(),
     'ultima_mensagem_texto': ultimaMensagemTexto,
     'ultima_mensagem_em': ultimaMensagemEm?.toIso8601String(),
+    'ultima_mensagem_de_mim': ultimaMensagemDeMim,
     'em_agendamento_ativo': emAgendamentoAtivo,
   };
 }

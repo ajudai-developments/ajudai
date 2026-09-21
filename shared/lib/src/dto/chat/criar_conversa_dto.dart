@@ -1,13 +1,13 @@
 import 'package:shared/shared.dart';
 
 class CriarConversaRequestDto implements WsMessage {
-  final String idPrestador;
+  final String prestadorId;
 
-  CriarConversaRequestDto({required this.idPrestador});
+  CriarConversaRequestDto({required this.prestadorId});
 
   factory CriarConversaRequestDto.fromJson(Map<String, dynamic> json) {
     return CriarConversaRequestDto(
-      idPrestador: JsonUtils.requireString(json, 'id_prestador'),
+      prestadorId: JsonUtils.requireString(json, 'prestador_id'),
     );
   }
 
@@ -16,18 +16,18 @@ class CriarConversaRequestDto implements WsMessage {
 
   @override
   Map<String, dynamic> toJson() {
-    return {'id_prestador': idPrestador};
+    return {'prestador_id': prestadorId};
   }
 }
 
 class CriarConversaResponseDto implements WsMessage {
-  final String idConversa;
+  final String conversaId;
 
-  CriarConversaResponseDto({required this.idConversa});
+  CriarConversaResponseDto({required this.conversaId});
 
   factory CriarConversaResponseDto.fromJson(Map<String, dynamic> json) {
     return CriarConversaResponseDto(
-      idConversa: JsonUtils.requireString(json, 'id_conversa'),
+      conversaId: JsonUtils.requireString(json, 'conversa_id'),
     );
   }
 
@@ -36,6 +36,6 @@ class CriarConversaResponseDto implements WsMessage {
 
   @override
   Map<String, dynamic> toJson() {
-    return {'id_conversa': idConversa};
+    return {'conversa_id': conversaId};
   }
 }

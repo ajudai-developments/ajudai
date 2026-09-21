@@ -92,8 +92,8 @@ class ChatService {
     try {
       final id = await ChatRepository(
         client,
-      ).criarConversa(idPrestador: dto.idPrestador);
-      return CriarConversaResponseDto(idConversa: id);
+      ).criarConversa(idPrestador: dto.prestadorId);
+      return CriarConversaResponseDto(conversaId: id);
     } catch (erro) {
       throw _mapearErro(erro);
     }
