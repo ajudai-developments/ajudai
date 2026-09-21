@@ -94,73 +94,13 @@ class ServicoRepository {
   Future<ObterServicoOferecidoResponseDto?> obterDetalheCompleto(
     String servicoOferecidoId,
   ) async {
-    final response = await _client
-        .from('servicos_oferecidos')
-        .select('''
-        *,
-        servicos!servicos_oferecidos_servico_id_fkey (
-          *,
-          categorias!servicos_categoria_id_fkey (*)
-        ),
-        usuarios!servicos_oferecidos_usuario_id_fkey (*)
-      ''')
-        .eq('id', servicoOferecidoId)
-        .maybeSingle();
+    final response = await _client.rpc(
+      "obter_detalhe_servico_oferecido",
+      params: {"p_servico_oferecido_id": servicoOferecidoId},
+    );
 
-    if (response == null) return null;
-
-    final servicoOferecido = ServicoOferecido.fromJson(response);
-    final servicoJson = response['servicos'] as Map<String, dynamic>;
-    final categoriaJson = servicoJson['categorias'] as Map<String, dynamic>;
-    final prestadorJson = response['usuarios'] as Map<String, dynamic>;
-
-    final servico = Servico.fromJson(servicoJson);
-    final categoria = Categoria.fromJson(categoriaJson);
-    final prestador = Usuario.fromJson(prestadorJson);
-
-    final selosResponse = await _client
-        .from('conquistas_usuario')
-        .select()
-        .eq('usuario_id', prestador.id);
-    final selos = (selosResponse as List)
-        .map((s) => ConquistaUsuario.fromJson(s as Map<String, dynamic>))
-        .toList();
-
-    final avaliacoesResponse = await _client
-        .from('avaliacoes_usuario')
-        .select('''
-        *,
-        usuarios!avaliacoes_usuario_avaliador_id_fkey (nome)
-      ''')
-        .eq('avaliado_id', prestador.id)
-        .order('criado_em', ascending: false);
-
-    final avaliacoesRaw = avaliacoesResponse as List;
-    final comentarios = avaliacoesRaw.map((r) {
-      final map = r as Map<String, dynamic>;
-      final avaliadorNome =
-          (map['usuarios'] as Map<String, dynamic>)['nome'] as String;
-      return AvaliacaoUsuario.fromJson({
-        ...map,
-        'avaliador_nome': avaliadorNome,
-      });
-    }).toList();
-
-    final quantidadeAvaliacoes = comentarios.length;
-    final mediaAvaliacao = quantidadeAvaliacoes == 0
-        ? null
-        : comentarios.map((c) => c.avaliacao).reduce((a, b) => a + b) /
-              quantidadeAvaliacoes;
-
-    return ObterServicoOferecidoResponseDto(
-      servicoOferecido: servicoOferecido,
-      servico: servico,
-      categoria: categoria,
-      prestador: prestador,
-      selos: selos,
-      mediaAvaliacao: mediaAvaliacao,
-      quantidadeAvaliacoes: quantidadeAvaliacoes,
-      comentarios: comentarios.take(10).toList(),
+    return ObterServicoOferecidoResponseDto.fromJson(
+      response as Map<String, dynamic>,
     );
   }
 
