@@ -62,7 +62,7 @@ class ServicoService {
     return CriarServicoOferecidoResponseDto(servicoOferecido: servicoOferecido);
   }
 
-  Future<ListarMeusServicosOferecidosResponseDto> listarMeus(
+  Future<ListarMeusServicosOferecidosResponseDto> listarMeusServicosOferecidos(
     WsConnection conexao,
   ) async {
     final client = _sessaoService.clientDe(conexao);
@@ -71,6 +71,56 @@ class ServicoService {
       throw ErroDto(
         codigo: ErroCodigo.naoAutenticado,
         mensagem: 'Não autenticado',
+      );
+    }
+
+    final usuario = await UsuarioRepository(client).buscarPorId(userId);
+    if (usuario == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Usuário não encontrado',
+      );
+    }
+    if (usuario.userRole != UserRole.prestador ||
+        usuario.statusPrestador != StatusPrestador.aprovado) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoPermitido,
+        mensagem: 'Você não está autorizado a fazer isso',
+      );
+    }
+
+    final servicosOferecidos = await ServicoRepository(
+      client,
+    ).listarOferecidosPorPrestador(userId);
+
+    return ListarMeusServicosOferecidosResponseDto(
+      servicosOferecidos: servicosOferecidos,
+    );
+  }
+
+  Future<ListarMeusServicosOferecidosResponseDto>
+  listarMeusServicosOferecidosDesativados(WsConnection conexao) async {
+    final client = _sessaoService.clientDe(conexao);
+    final userId = _sessaoService.userIdDe(conexao);
+    if (client == null || userId == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final usuario = await UsuarioRepository(client).buscarPorId(userId);
+    if (usuario == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Usuário não encontrado',
+      );
+    }
+    if (usuario.userRole != UserRole.prestador ||
+        usuario.statusPrestador != StatusPrestador.aprovado) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoPermitido,
+        mensagem: 'Você não está autorizado a fazer isso',
       );
     }
 
@@ -228,7 +278,47 @@ class ServicoService {
     );
 
     return DesativarServicoOferecidoResponseDto(
-      mensagem: "Serviço excluído com sucesso!",
+      mensagem: "Serviço desativado com sucesso!",
+    );
+  }
+
+  Future<AtivarServicoOferecidoResponseDto> ativarServicoOferecido(
+    WsConnection conexao,
+    AtivarServicoOferecidoRequestDto dto,
+  ) async {
+    final client = _sessaoService.clientDe(conexao);
+    final userId = _sessaoService.userIdDe(conexao);
+
+    if (client == null || userId == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final usuario = await UsuarioRepository(client).buscarPorId(userId);
+
+    if (usuario == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.usuarioInexistente,
+        mensagem: "Esse usuário não existe",
+      );
+    }
+
+    if (usuario.userRole != UserRole.prestador) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoPermitido,
+        mensagem: "Você não está autorizado a fazer isso",
+      );
+    }
+
+    await _servicoRepository.ativarServicoOferecido(
+      dto.servicoOferecidoId,
+      usuarioId: userId,
+    );
+
+    return AtivarServicoOferecidoResponseDto(
+      mensagem: "Serviço ativado com sucesso!",
     );
   }
 }

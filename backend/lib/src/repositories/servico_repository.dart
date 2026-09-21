@@ -77,17 +77,29 @@ class ServicoRepository {
     return ServicoOferecido.fromJson(response);
   }
 
-  Future<List<ServicoOferecido>> listarOferecidosPorPrestador(
+  Future<List<ServicoOferecidoResumo>> listarOferecidosPorPrestador(
     String usuarioId,
   ) async {
-    final response = await _client
-        .from('servicos_oferecidos')
-        .select()
-        .eq('usuario_id', usuarioId)
-        .eq('ativo', true);
+    final response = await _client.rpc(
+      'listar_servicos_oferecidos_do_prestador',
+      params: {'p_prestador_id': usuarioId},
+    );
 
     return (response as List)
-        .map((r) => ServicoOferecido.fromJson(r as Map<String, dynamic>))
+        .map((r) => ServicoOferecidoResumo.fromJson(r as Map<String, dynamic>))
+        .toList();
+  }
+
+  Future<List<ServicoOferecidoResumo>> listarServicosDesativadosDoPrestador(
+    String usuarioId,
+  ) async {
+    final response = await _client.rpc(
+      'listar_servicos_oferecidos_do_prestador_desativados',
+      params: {'p_prestador_id': usuarioId},
+    );
+
+    return (response as List)
+        .map((r) => ServicoOferecidoResumo.fromJson(r as Map<String, dynamic>))
         .toList();
   }
 
@@ -166,6 +178,17 @@ class ServicoRepository {
     await _client
         .from('servicos_oferecidos')
         .update({"ativo": false})
+        .eq('id', servicoOferecidoId)
+        .eq('usuario_id', usuarioId);
+  }
+
+  Future<void> ativarServicoOferecido(
+    String servicoOferecidoId, {
+    required String usuarioId,
+  }) async {
+    await _client
+        .from('servicos_oferecidos')
+        .update({"ativo": true})
         .eq('id', servicoOferecidoId)
         .eq('usuario_id', usuarioId);
   }

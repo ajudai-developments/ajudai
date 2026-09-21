@@ -49,7 +49,7 @@ class PrestadorRepository {
     return CriarServicoOferecidoResponseDto.fromJson(json).servicoOferecido;
   }
 
-  Future<List<ServicoOferecido>> listarMeusServicosOferecidos() async {
+  Future<List<ServicoOferecidoResumo>> listarMeusServicosOferecidos() async {
     await WsClient.instance.conectar();
 
     WsClient.instance.enviar(ListarMeusServicosOferecidosRequestDto());

@@ -29,8 +29,15 @@ enum TipoMensagem {
 
   criarServicoOferecido('criar_servico_oferecido'),
   criarServicoOferecidoOk('criar_servico_oferecido_ok'),
+
   listarMeusServicosOferecidos('listar_meus_servicos_oferecidos'),
   listarMeusServicosOferecidosOk('listar_meus_servicos_oferecidos_ok'),
+  listarMeusServicosOferecidosDesativados(
+    'listar_meus_servicos_oferecidos_desativados',
+  ),
+  listarMeusServicosOferecidosDesativadosOk(
+    'listar_meus_servicos_oferecidos_desativados_ok',
+  ),
 
   solicitarPrestador('solicitar_prestador'),
   solicitarPrestadorOk('solicitar_prestador_ok'),
@@ -52,8 +59,11 @@ enum TipoMensagem {
   listarServicoOferecidoPorServicoOk('listar_servico_oferecido_por_servico_ok'),
   editarServicoOferecido('editar_servico_oferecido'),
   editarServicoOferecidoOk('editar_servico_oferecido_ok'),
+
   desativarServicoOferecido('desativar_servico_oferecido'),
   desativarServicoOferecidoOk('desativar_servico_oferecido_ok'),
+  ativarServicoOferecido('ativar_servico_oferecido'),
+  ativarServicoOferecidoOk('ativar_servico_oferecido_ok'),
 
   criarAgendamento('criar_agendamento'),
   criarAgendamentoOk('criar_agendamento_ok'),
@@ -94,6 +104,19 @@ enum TipoMensagem {
 
   obterPerfilPublico('obter_perfil_publico'),
   obterPerfilPublicoOk('obter_perfil_publico_ok'),
+
+  criarConversa('criar_conversa'),
+  criarConversaOk('criar_conversa_ok'),
+  listarConversas('listar_conversas'),
+  listarConversasOk('listar_conversas_ok'),
+
+  listarMensagens('listar_mensagens'),
+  listarMensagensOk('listar_mensagens_ok'),
+
+  enviarMensagem('enviar_mensagem'),
+  enviarMensagemOk('enviar_mensagem_ok'),
+
+  novaMensagem('nova_mensagem'),
 
   erro('erro');
 

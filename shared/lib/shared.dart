@@ -17,6 +17,8 @@ export 'src/models/conquista.dart';
 export 'src/models/conquista_usuario.dart';
 export 'src/models/avaliacao_usuario.dart';
 export 'src/models/avaliacao_servico.dart';
+export 'src/models/mensagem.dart';
+export 'src/models/conversa_resumo.dart';
 
 export 'src/dto/ws_message.dart';
 export 'src/dto/auth/login_request_dto.dart';
@@ -59,9 +61,11 @@ export 'src/dto/servico/obter_servico_oferecido_response_dto.dart';
 export 'src/dto/servico/listar_servico_dto.dart';
 export 'src/dto/servico/editar_servico_oferecido_dto.dart';
 export 'src/dto/servico/desativar_servico_oferecido_dto.dart';
+export 'src/dto/servico/ativar_servico_oferecido_dto.dart';
 
 export 'src/dto/prestador/criar_servico_oferecido_dto.dart';
-export 'src/dto/prestador/meus_servicos_oferecidos_dto.dart';
+export 'src/dto/prestador/listar_meus_servicos_oferecidos_dto.dart';
+export 'src/dto/prestador/listar_meus_servicos_oferecidos_desativados_dto.dart';
 
 export 'src/dto/agendamento/criar_agendamento_request_dto.dart';
 export 'src/dto/agendamento/criar_agendamento_response_dto.dart';
@@ -84,6 +88,11 @@ export 'src/dto/avaliacao/avaliar_usuario_dto.dart';
 export 'src/dto/notificacao/listar_minhas_notificacoes_response_dto.dart';
 export 'src/dto/notificacao/listar_minhas_notificacoes_request_dto.dart';
 
+export 'src/dto/chat/listar_conversas_dto.dart';
+export 'src/dto/chat/listar_mensagens_dto.dart';
+export 'src/dto/chat/enviar_mensagem_dto.dart';
+export 'src/dto/chat/criar_conversa_dto.dart';
+
 export 'src/validators/cpf_validator.dart';
 export 'src/validators/telefone_validator.dart';
 export 'src/validators/agendamento_validator.dart';
@@ -96,3 +105,4 @@ export 'src/models/enums/tipo_conquista.dart';
 export 'src/models/enums/tipo_alteracao_agendamento.dart';
 export 'src/models/enums/eventos_agendamento.dart';
 export 'src/models/enums/tipo_denuncia.dart';
+export 'src/models/enums/tipo_conteudo_mensagem.dart';

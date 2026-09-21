@@ -2,6 +2,7 @@ import 'package:backend/src/handlers/admin_handler.dart';
 import 'package:backend/src/handlers/agendamento_handler.dart';
 import 'package:backend/src/handlers/avaliacao_handler.dart';
 import 'package:backend/src/handlers/categorias_handler.dart';
+import 'package:backend/src/handlers/chat_handler.dart';
 import 'package:backend/src/handlers/endereco_handler.dart';
 import 'package:backend/src/handlers/servico_handler.dart';
 import 'package:backend/src/handlers/usuario_handler.dart';
@@ -20,6 +21,7 @@ class WsRouter {
   final CategoriaHandler _categoriaHandler;
   final NotificacaoHandler _notificacaoHandler;
   final AvaliacaoHandler _avaliacaoHandler;
+  final ChatHandler _chatHandler;
 
   WsRouter(
     this._authHandler,
@@ -31,6 +33,7 @@ class WsRouter {
     this._categoriaHandler,
     this._notificacaoHandler,
     this._avaliacaoHandler,
+    this._chatHandler,
   );
 
   Future<void> rotear(WsConnection conexao, Map<String, dynamic> msg) async {
@@ -132,6 +135,12 @@ class WsRouter {
       case TipoMensagem.listarMeusServicosOferecidos:
         await _servicoHandler.handleListarMeusServicosOferecidos(conexao, msg);
 
+      case TipoMensagem.listarMeusServicosOferecidosDesativados:
+        await _servicoHandler.handleListarMeusServicosOferecidosDesativados(
+          conexao,
+          msg,
+        );
+
       case TipoMensagem.obterServicoOferecido:
         await _servicoHandler.handleObterServicoOferecido(conexao, msg);
 
@@ -166,6 +175,18 @@ class WsRouter {
 
       case TipoMensagem.obterPerfilPublico:
         await _usuarioHandler.obterPerfilPublico(conexao, msg);
+
+      case TipoMensagem.criarConversa:
+        await _chatHandler.handleCriarConversa(conexao, msg);
+
+      case TipoMensagem.listarConversas:
+        await _chatHandler.handleListarConversas(conexao, msg);
+
+      case TipoMensagem.listarMensagens:
+        await _chatHandler.handleListarMensagens(conexao, msg);
+
+      case TipoMensagem.enviarMensagem:
+        await _chatHandler.handleEnviarMensagem(conexao, msg);
 
       default:
         conexao.enviar(

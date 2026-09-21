@@ -57,7 +57,7 @@ class _MeusServicosOferecidosScreenState
 
     try {
       final mensagem = await _prestadorRepository.desativarServicoOferecido(
-        servicoOferecidoId: item.servicoOferecido.id,
+        servicoOferecidoId: item.servicoOferecido.servicoOferecidoId,
       );
       if (!mounted) return;
       ScaffoldMessenger.of(
@@ -104,7 +104,7 @@ class _MeusServicosOferecidosScreenState
                 child: ListTile(
                   onTap: () => Navigator.of(context).pushNamed(
                     AppRoutes.servicoDetalhe,
-                    arguments: item.servicoOferecido.id,
+                    arguments: item.servicoOferecido.servicoOferecidoId,
                   ),
                   title: Text(item.nomeServico, style: AppTextStyles.titulo),
                   subtitle: Text(

@@ -9,7 +9,7 @@ import '../servico/servico_repository.dart';
 /// por coincidência é indexado pelo MESMO id que `ServicoOferecido.id`
 /// (servicoOferecidoId), então dá pra reaproveitar direto.
 class ServicoOferecidoComDetalhes {
-  final ServicoOferecido servicoOferecido;
+  final ServicoOferecidoResumo servicoOferecido;
   final String nomeServico;
   final String nomeCategoria;
 
@@ -30,7 +30,7 @@ class ServicoOferecidoComDetalhes {
 /// caso de agendamentos, onde vários agendamentos podem repetir o
 /// mesmo servicoOferecidoId).
 Future<List<ServicoOferecidoComDetalhes>> carregarServicosOferecidosComDetalhes(
-  List<ServicoOferecido> servicos,
+  List<ServicoOferecidoResumo> servicos,
   ServicoRepository servicoRepository,
 ) async {
   final resultado = <ServicoOferecidoComDetalhes>[];
@@ -38,7 +38,7 @@ Future<List<ServicoOferecidoComDetalhes>> carregarServicosOferecidosComDetalhes(
   for (final servico in servicos) {
     try {
       final detalhe = await servicoRepository.obterServicoOferecido(
-        servicoOferecidoId: servico.id,
+        servicoOferecidoId: servico.servicoOferecidoId,
       );
       resultado.add(
         ServicoOferecidoComDetalhes(

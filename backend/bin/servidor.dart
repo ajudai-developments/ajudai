@@ -3,6 +3,7 @@ import 'package:backend/src/handlers/admin_handler.dart';
 import 'package:backend/src/handlers/agendamento_handler.dart';
 import 'package:backend/src/handlers/avaliacao_handler.dart';
 import 'package:backend/src/handlers/categorias_handler.dart';
+import 'package:backend/src/handlers/chat_handler.dart';
 import 'package:backend/src/handlers/endereco_handler.dart';
 import 'package:backend/src/handlers/servico_handler.dart';
 import 'package:backend/src/handlers/notificacao_handler.dart';
@@ -15,6 +16,7 @@ import 'package:backend/src/services/admin_service.dart';
 import 'package:backend/src/services/agendamento_service.dart';
 import 'package:backend/src/services/avaliacao_service.dart';
 import 'package:backend/src/services/categoria_service.dart';
+import 'package:backend/src/services/chat_service.dart';
 import 'package:backend/src/services/endereco_service.dart';
 import 'package:backend/src/services/eventos_agendamento_listener.dart';
 import 'package:backend/src/services/pagamento_service.dart';
@@ -62,9 +64,11 @@ Future<void> main() async {
     sessaoService,
     pagamentoService,
   );
+  final chatService = ChatService(sessaoService);
   final agendamentoRepositoryParaEventos = AgendamentoRepository(
     SupabaseClientFactory.criarSecret(),
   );
+  final chatHandler = ChatHandler(chatService);
 
   EventosAgendamentoListener(
     client: SupabaseClientFactory.criarSecret(),
@@ -101,6 +105,7 @@ Future<void> main() async {
     categoriaHandler,
     notificacaoHandler,
     avaliacaoHandler,
+    chatHandler,
   );
   final server = WsServer(router, sessaoService);
 

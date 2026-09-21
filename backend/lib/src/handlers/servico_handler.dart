@@ -57,7 +57,9 @@ class ServicoHandler {
     Map<String, dynamic> msg,
   ) async {
     try {
-      final resposta = await _servicoService.listarMeus(conexao);
+      final resposta = await _servicoService.listarMeusServicosOferecidos(
+        conexao,
+      );
       conexao.enviar(resposta);
     } on ErroDto catch (erro) {
       conexao.enviar(erro);
@@ -68,6 +70,28 @@ class ServicoHandler {
         ErroDto(
           codigo: ErroCodigo.erroInterno,
           mensagem: 'Erro ao listar meus serviços oferecidos',
+        ),
+      );
+    }
+  }
+
+  Future<void> handleListarMeusServicosOferecidosDesativados(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final resposta = await _servicoService
+          .listarMeusServicosOferecidosDesativados(conexao);
+      conexao.enviar(resposta);
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } catch (e, stackTrace) {
+      print('Erro ao listar meus serviços oferecidos desativados: $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao listar meus serviços oferecidos desativados',
         ),
       );
     }
@@ -233,7 +257,36 @@ class ServicoHandler {
       conexao.enviar(
         ErroDto(
           codigo: ErroCodigo.erroInterno,
-          mensagem: 'Erro ao excluir o serviço oferecido',
+          mensagem: 'Erro ao desativar o serviço oferecido',
+        ),
+      );
+    }
+  }
+
+  Future<void> handleAtivarServicoOferecido(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final dto = AtivarServicoOferecidoRequestDto.fromJson(msg);
+      final resposta = await _servicoService.ativarServicoOferecido(
+        conexao,
+        dto,
+      );
+      conexao.enviar(resposta);
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } catch (e, stackTrace) {
+      print('Erro ao ativar serviço oferecido: $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao ativar o serviço oferecido',
         ),
       );
     }
