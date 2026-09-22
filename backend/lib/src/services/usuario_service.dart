@@ -1,9 +1,18 @@
+import 'dart:convert';
+
 import 'package:backend/src/repositories/usuario_repository.dart';
 import 'package:backend/src/supabase/supabase_client_factory.dart';
 import 'package:shared/shared.dart';
 import 'package:supabase/supabase.dart';
 import 'sessao_service.dart';
 import '../ws/ws_connection.dart';
+
+const _extensoesAvatarPermitidas = {
+  'png': 'image/png',
+  'jpg': 'image/jpeg',
+  'jpeg': 'image/jpeg',
+  'webp': 'image/webp',
+};
 
 class UsuarioService {
   final SessaoService _sessaoService;
@@ -136,5 +145,57 @@ class UsuarioService {
     ).obterPerfilCompleto();
 
     return PerfilCompletoResponseDto(perfil: perfilCompleto);
+  }
+
+  Future<AtualizarAvatarResponseDto> atualizarAvatar(
+    WsConnection conexao,
+    AtualizarAvatarRequestDto dto,
+  ) async {
+    final client = _sessaoService.clientDe(conexao);
+    final userId = _sessaoService.userIdDe(conexao);
+    final accessToken = _sessaoService.accessTokenDe(conexao);
+
+    if (client == null || userId == null || accessToken == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final extensao = dto.extensao.toLowerCase();
+    final mimeType = _extensoesAvatarPermitidas[extensao];
+    if (mimeType == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.dadosInvalidos,
+        mensagem: 'Formato de imagem não suportado.',
+      );
+    }
+
+    late final List<int> bytes;
+    try {
+      bytes = base64Decode(dto.imagemBase64);
+    } catch (_) {
+      throw ErroDto(
+        codigo: ErroCodigo.dadosInvalidos,
+        mensagem: 'Imagem inválida.',
+      );
+    }
+
+    const limiteBytes = 5 * 1024 * 1024;
+    if (bytes.length > limiteBytes) {
+      throw ErroDto(
+        codigo: ErroCodigo.dadosInvalidos,
+        mensagem: 'Imagem excede o limite de 5MB.',
+      );
+    }
+
+    final url = await UsuarioRepository(client).uploadAvatar(
+      usuarioId: userId,
+      bytes: bytes,
+      extensao: extensao,
+      mimeType: mimeType,
+    );
+
+    return AtualizarAvatarResponseDto(avatarUrl: url);
   }
 }

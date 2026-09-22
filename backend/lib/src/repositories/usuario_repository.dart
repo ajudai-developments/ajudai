@@ -1,3 +1,4 @@
+import 'dart:typed_data';
 import 'package:supabase/supabase.dart';
 import 'package:shared/shared.dart';
 
@@ -73,5 +74,33 @@ class UsuarioRepository {
     final resultado = await _client.rpc('obter_meu_perfil_completo');
     final linha = (resultado as List).first as Map<String, dynamic>;
     return PerfilCompleto.fromJson(linha);
+  }
+
+  Future<String> uploadAvatar({
+    required String usuarioId,
+    required List<int> bytes,
+    required String extensao,
+    required String mimeType,
+  }) async {
+    final path = '$usuarioId/avatar.$extensao';
+    print('Path de upload: "$path"');
+    await _client.storage
+        .from('avatars')
+        .uploadBinary(
+          path,
+          Uint8List.fromList(bytes),
+          fileOptions: FileOptions(upsert: true, contentType: mimeType),
+        );
+
+    final urlBase = _client.storage.from('avatars').getPublicUrl(path);
+    final urlComCacheBust =
+        '$urlBase?v=${DateTime.now().millisecondsSinceEpoch}';
+
+    await _client
+        .from('usuarios')
+        .update({'avatar_url': urlComCacheBust})
+        .eq('id', usuarioId);
+
+    return urlComCacheBust;
   }
 }

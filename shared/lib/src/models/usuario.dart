@@ -1,5 +1,4 @@
-import 'enums/user_role.dart';
-import 'enums/status_prestador.dart';
+import 'package:shared/shared.dart';
 
 class Usuario {
   final String id;
@@ -10,6 +9,7 @@ class Usuario {
   final bool statusUsuario;
   final StatusPrestador statusPrestador;
   final bool verificado;
+  final String? avatarUrl;
   final DateTime criadoEm;
   final DateTime? editadoEm;
 
@@ -22,6 +22,7 @@ class Usuario {
     this.statusUsuario = false,
     this.statusPrestador = StatusPrestador.naoSolicitado,
     this.verificado = false,
+    this.avatarUrl,
     required this.criadoEm,
     this.editadoEm,
   });
@@ -38,6 +39,7 @@ class Usuario {
         json['status_prestador'] as String,
       ),
       verificado: json['verificado'] as bool,
+      avatarUrl: json['avatar_url'] as String?,
       criadoEm: DateTime.parse(json['criado_em'] as String),
       editadoEm: json['editado_em'] != null
           ? DateTime.parse(json['editado_em'] as String)
@@ -54,6 +56,7 @@ class Usuario {
     'status_usuario': statusUsuario,
     'status_prestador': statusPrestador.toDbValue(),
     'verificado': verificado,
+    'avatar_url': avatarUrl,
     'criado_em': criadoEm.toIso8601String(),
     'editado_em': editadoEm?.toIso8601String(),
   };

@@ -4,6 +4,7 @@ enum TipoDenuncia {
   agressaoSexual('agressao_sexual'),
   furto('furto'),
   ameaca('ameaca'),
+  atraso('atraso'),
   ausencia('ausencia'),
   abandono('abandono'),
   naoConcluido('nao_concluido'),

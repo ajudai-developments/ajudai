@@ -21,6 +21,9 @@ export 'src/models/avaliacao_servico.dart';
 export 'src/models/mensagem.dart';
 export 'src/models/conversa_resumo.dart';
 
+export 'src/models/arquivo_upload.dart';
+export 'src/models/arquivo_anexado.dart';
+
 export 'src/dto/ws_message.dart';
 export 'src/dto/auth/login_request_dto.dart';
 export 'src/dto/auth/login_response_dto.dart';
@@ -32,6 +35,7 @@ export 'src/dto/usuario/atualizar_perfil_request_dto.dart';
 export 'src/dto/usuario/atualizar_perfil_response_dto.dart';
 export 'src/dto/usuario/obter_perfil_publico_dto.dart';
 export 'src/dto/usuario/perfil_completo_dto.dart';
+export 'src/dto/usuario/atualizar_avatar_dto.dart';
 export 'src/dto/tipo_mensagem.dart';
 export 'src/dto/json_utils.dart';
 export 'src/dto/endereco/consultar_cep_request.dart';
@@ -92,6 +96,8 @@ export 'src/dto/notificacao/listar_minhas_notificacoes_request_dto.dart';
 export 'src/dto/notificacao/marcar_notificacao_como_lida_dto.dart';
 export 'src/dto/notificacao/marcar_todas_notificacoes_como_lida_dto.dart';
 
+export 'src/dto/denuncia/criar_denuncia_dto.dart';
+
 export 'src/dto/chat/listar_conversas_dto.dart';
 export 'src/dto/chat/listar_mensagens_dto.dart';
 export 'src/dto/chat/enviar_mensagem_dto.dart';
@@ -110,3 +116,4 @@ export 'src/models/enums/tipo_alteracao_agendamento.dart';
 export 'src/models/enums/eventos_agendamento.dart';
 export 'src/models/enums/tipo_denuncia.dart';
 export 'src/models/enums/tipo_conteudo_mensagem.dart';
+export 'src/models/enums/tipo_arquivo.dart';

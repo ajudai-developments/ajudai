@@ -1,10 +1,11 @@
-import 'package:shared/src/dto/json_utils.dart';
+import 'package:shared/shared.dart';
 
 class UsuarioBasico {
   final String id;
   final String nome;
   final bool verificado;
   final bool statusUsuario;
+  final String? avatarUrl;
   final DateTime criadoEm;
 
   UsuarioBasico({
@@ -12,6 +13,7 @@ class UsuarioBasico {
     required this.nome,
     required this.verificado,
     required this.statusUsuario,
+    this.avatarUrl,
     required this.criadoEm,
   });
 
@@ -21,6 +23,7 @@ class UsuarioBasico {
       nome: JsonUtils.requireString(json, 'nome'),
       verificado: json['verificado'] as bool,
       statusUsuario: json['status_usuario'] as bool,
+      avatarUrl: JsonUtils.optionalString(json, 'avatar_url'),
       criadoEm: JsonUtils.requireDateTime(json, 'criado_em'),
     );
   }
@@ -30,6 +33,7 @@ class UsuarioBasico {
     'nome': nome,
     'verificado': verificado,
     'status_usuario': statusUsuario,
+    'avatar_url': avatarUrl,
     'criado_em': criadoEm.toIso8601String(),
   };
 }

@@ -85,4 +85,25 @@ class UsuarioHandler {
       );
     }
   }
+
+  Future<void> handleAtualizarAvatar(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final dto = AtualizarAvatarRequestDto.fromJson(msg);
+      final resposta = await _usuarioService.atualizarAvatar(conexao, dto);
+      conexao.enviar(resposta);
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
+    } catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.erroInterno, mensagem: e.toString()),
+      );
+    }
+  }
 }

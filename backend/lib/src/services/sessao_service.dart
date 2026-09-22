@@ -56,6 +56,8 @@ class SessaoService {
 
   String? userIdDe(WsConnection conexao) => _sessoes[conexao]?.userId;
 
+  String? accessTokenDe(WsConnection conexao) => _sessoes[conexao]?.accessToken;
+
   SupabaseClient? clientDe(WsConnection conexao) =>
       _sessoes[conexao]?.clientAutenticado;
 

@@ -111,6 +111,11 @@ enum TipoMensagem {
   obterPerfilCompleto('obter_perfil_completo'),
   obterPerfilCompletoOk('obter_perfil_completo_ok'),
 
+  atualizarAvatar('atualizar_avatar'),
+  atualizarAvatarOk('atualizar_avatar_ok'),
+  excluirAvatar('excluir_avatar'),
+  excluirAvatarOk('excluir_avatar_ok'),
+
   criarConversa('criar_conversa'),
   criarConversaOk('criar_conversa_ok'),
   listarConversas('listar_conversas'),
@@ -121,6 +126,9 @@ enum TipoMensagem {
 
   enviarMensagem('enviar_mensagem'),
   enviarMensagemOk('enviar_mensagem_ok'),
+
+  criarDenuncia('criar_denuncia'),
+  criarDenunciaOk('criar_denuncia_ok'),
 
   novaMensagem('nova_mensagem'),
 
