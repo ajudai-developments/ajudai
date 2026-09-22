@@ -185,6 +185,9 @@ class WsRouter {
       case TipoMensagem.obterPerfilPublico:
         await _usuarioHandler.obterPerfilPublico(conexao, msg);
 
+      case TipoMensagem.obterPerfilCompleto:
+        await _usuarioHandler.handleObterPerfilCompleto(conexao, msg);
+
       case TipoMensagem.criarConversa:
         await _chatHandler.handleCriarConversa(conexao, msg);
 

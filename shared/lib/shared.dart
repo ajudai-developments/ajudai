@@ -2,6 +2,7 @@ library;
 
 export 'src/models/usuario.dart';
 export 'src/models/usuario_basico.dart';
+export 'src/models/perfil_completo.dart';
 export 'src/models/endereco.dart';
 export 'src/models/categoria.dart';
 export 'src/models/servico.dart';
@@ -30,6 +31,7 @@ export 'src/dto/auth/cadastro_response.dart';
 export 'src/dto/usuario/atualizar_perfil_request_dto.dart';
 export 'src/dto/usuario/atualizar_perfil_response_dto.dart';
 export 'src/dto/usuario/obter_perfil_publico_dto.dart';
+export 'src/dto/usuario/perfil_completo_dto.dart';
 export 'src/dto/tipo_mensagem.dart';
 export 'src/dto/json_utils.dart';
 export 'src/dto/endereco/consultar_cep_request.dart';

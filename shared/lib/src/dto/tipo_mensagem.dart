@@ -98,9 +98,7 @@ enum TipoMensagem {
   marcarNotificacaoComoLida('marcar_notificacao_como_lida'),
   marcarNotificacaoComoLidaOk('marcar_notificacao_como_lida_ok'),
   marcarTodasNotificacoesComoLida('marcar_todas_notificacoes_como_lida'),
-  marcarTodasNotificacoesComoLidaOk(
-    'marcar_todas_notificacoes_como_lida_ok',
-  ),
+  marcarTodasNotificacoesComoLidaOk('marcar_todas_notificacoes_como_lida_ok'),
 
   avaliarAgendamento('avaliar_agendamento'),
   avaliarAgendamentoOk('avaliar_agendamento_ok'),
@@ -110,6 +108,8 @@ enum TipoMensagem {
 
   obterPerfilPublico('obter_perfil_publico'),
   obterPerfilPublicoOk('obter_perfil_publico_ok'),
+  obterPerfilCompleto('obter_perfil_completo'),
+  obterPerfilCompletoOk('obter_perfil_completo_ok'),
 
   criarConversa('criar_conversa'),
   criarConversaOk('criar_conversa_ok'),

@@ -69,4 +69,20 @@ class UsuarioHandler {
       );
     }
   }
+
+  Future<void> handleObterPerfilCompleto(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final resposta = await _usuarioService.obterPerfilCompleto(conexao);
+      conexao.enviar(resposta);
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.erroInterno, mensagem: e.toString()),
+      );
+    }
+  }
 }
