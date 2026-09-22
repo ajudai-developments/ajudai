@@ -119,4 +119,22 @@ class UsuarioService {
 
     return perfilPublico;
   }
+
+  Future<PerfilCompletoResponseDto> obterPerfilCompleto(
+    WsConnection conexao,
+  ) async {
+    final client = _sessaoService.clientDe(conexao);
+    if (client == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final perfilCompleto = await UsuarioRepository(
+      client,
+    ).obterPerfilCompleto();
+
+    return PerfilCompletoResponseDto(perfil: perfilCompleto);
+  }
 }

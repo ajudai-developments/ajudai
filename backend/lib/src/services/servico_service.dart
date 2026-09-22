@@ -11,11 +11,8 @@ class ServicoService {
   final SupabaseClient _clientAnonimo;
   final ServicoRepository _servicoRepository;
 
-  ServicoService(
-    this._sessaoService,
-    this._clientAnonimo,
-    this._servicoRepository,
-  );
+  ServicoService(this._sessaoService, this._servicoRepository)
+    : _clientAnonimo = SupabaseClientFactory.criarAnonimo();
 
   Future<CriarServicoOferecidoResponseDto> criarOferecido(
     WsConnection conexao,
@@ -140,7 +137,7 @@ class ServicoService {
     final client = _sessaoService.clientDe(conexao);
 
     final detalhe = await ServicoRepository(
-      client ?? SupabaseClientFactory.criarPublishable(),
+      client ?? _clientAnonimo,
     ).obterDetalheCompleto(dto.servicoOferecidoId);
     if (detalhe == null) {
       throw ErroDto(

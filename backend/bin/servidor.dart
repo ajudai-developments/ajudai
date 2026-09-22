@@ -85,11 +85,7 @@ Future<void> main() async {
   conquistaListener.iniciar();
 
   final categoriaService = CategoriaService(sessaoService, supabase);
-  final servicoService = ServicoService(
-    sessaoService,
-    supabase,
-    servicoRepository,
-  );
+  final servicoService = ServicoService(sessaoService, servicoRepository);
   final usuarioHandler = UsuarioHandler(usuarioService);
   final authHandler = AuthHandler(authService);
   final enderecoHandler = EnderecoHandler(enderecoService);

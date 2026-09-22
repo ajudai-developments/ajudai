@@ -68,4 +68,10 @@ class UsuarioRepository {
       response as Map<String, dynamic>,
     );
   }
+
+  Future<PerfilCompleto> obterPerfilCompleto() async {
+    final resultado = await _client.rpc('obter_meu_perfil_completo');
+    final linha = (resultado as List).first as Map<String, dynamic>;
+    return PerfilCompleto.fromJson(linha);
+  }
 }
