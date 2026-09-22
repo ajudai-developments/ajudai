@@ -63,7 +63,7 @@ class EnderecoHandler {
     }
   }
 
-  Future<void> handleObterEndereco(WsConnection conexao) async {
+  Future<void> handleObterMeusEndereco(WsConnection conexao) async {
     try {
       final resposta = await _enderecoService.obterMeusEnderecos(conexao);
       conexao.enviar(resposta);
