@@ -95,6 +95,12 @@ enum TipoMensagem {
 
   listarNotificacoes('listar_notificacoes'),
   listarNotificacoesOk('listar_notificacoes_ok'),
+  marcarNotificacaoComoLida('marcar_notificacao_como_lida'),
+  marcarNotificacaoComoLidaOk('marcar_notificacao_como_lida_ok'),
+  marcarTodasNotificacoesComoLida('marcar_todas_notificacoes_como_lida'),
+  marcarTodasNotificacoesComoLidaOk(
+    'marcar_todas_notificacoes_como_lida_ok',
+  ),
 
   avaliarAgendamento('avaliar_agendamento'),
   avaliarAgendamentoOk('avaliar_agendamento_ok'),

@@ -77,18 +77,26 @@ class SessaoService {
     _sessoes.remove(conexao);
   }
 
-  void enviarParaUsuario(String userId, WsMessage mensagem) {
+  Future<void> enviarParaUsuario(String userId, WsMessage mensagem) async {
+    var mensagemParaEnviar = mensagem;
+
     if (mensagem is NotificacaoDto) {
-      _notificacaoRepository
-          .salvar(
-            usuarioId: userId,
-            titulo: mensagem.titulo,
-            mensagem: mensagem.mensagem,
-            dados: mensagem.dados,
-          )
-          .catchError((Object e) {
-            print('Erro ao salvar notificação para $userId: $e');
-          });
+      try {
+        final id = await _notificacaoRepository.salvar(
+          usuarioId: userId,
+          titulo: mensagem.titulo,
+          mensagem: mensagem.mensagem,
+          dados: mensagem.dados,
+        );
+        mensagemParaEnviar = NotificacaoDto(
+          id: id,
+          titulo: mensagem.titulo,
+          mensagem: mensagem.mensagem,
+          dados: mensagem.dados,
+        );
+      } catch (e) {
+        print('Erro ao salvar notificação para $userId: $e');
+      }
     }
 
     final conexoes = _conexoesPorUsuario[userId];
@@ -97,7 +105,7 @@ class SessaoService {
     }
 
     for (final conexao in conexoes) {
-      conexao.enviar(mensagem);
+      conexao.enviar(mensagemParaEnviar);
     }
   }
 

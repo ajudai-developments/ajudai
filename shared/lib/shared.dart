@@ -87,6 +87,8 @@ export 'src/dto/avaliacao/avaliar_usuario_dto.dart';
 
 export 'src/dto/notificacao/listar_minhas_notificacoes_response_dto.dart';
 export 'src/dto/notificacao/listar_minhas_notificacoes_request_dto.dart';
+export 'src/dto/notificacao/marcar_notificacao_como_lida_dto.dart';
+export 'src/dto/notificacao/marcar_todas_notificacoes_como_lida_dto.dart';
 
 export 'src/dto/chat/listar_conversas_dto.dart';
 export 'src/dto/chat/listar_mensagens_dto.dart';

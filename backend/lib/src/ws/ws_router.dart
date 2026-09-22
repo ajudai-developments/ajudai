@@ -129,6 +129,15 @@ class WsRouter {
       case TipoMensagem.listarNotificacoes:
         await _notificacaoHandler.handleListarNotificacoes(conexao, msg);
 
+      case TipoMensagem.marcarNotificacaoComoLida:
+        await _notificacaoHandler.handleMarcarNotificacaoComoLida(conexao, msg);
+
+      case TipoMensagem.marcarTodasNotificacoesComoLida:
+        await _notificacaoHandler.handleMarcarTodasNotificacoesComoLida(
+          conexao,
+          msg,
+        );
+
       case TipoMensagem.criarServicoOferecido:
         await _servicoHandler.handleCriarServicoOferecido(conexao, msg);
 
