@@ -18,6 +18,12 @@ class AppRoutes {
   // usuario (perfil próprio, editável)
   static const String meuPerfil = '/perfil';
   static const String editarPerfil = '/perfil/editar';
+  // "Ver mais" no meu perfil — média de avaliação, conquistas etc.
+  // (obterPerfilCompleto não tem parâmetro, é sempre sobre o usuário logado).
+  static const String meuPerfilCompleto = '/perfil/completo';
+
+  // chat
+  static const String conversas = '/conversas';
 
   // perfil publico (prestador ou cliente, somente leitura)
   static const String perfilPublico = '/perfil/publico';

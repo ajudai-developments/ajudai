@@ -5,15 +5,11 @@ import '../../core/ws/ws_message_stream.dart';
 
 /// Repositório de notificações.
 ///
-/// LIMITAÇÃO DE BACKEND: `NotificacaoDto` só tem `titulo`/`mensagem`/
-/// `dados` — sem `id`, sem `criadoEm`, sem `lida`, mesmo a tabela tendo
-/// essas colunas. Consequências pro frontend:
-/// - não dá pra ordenar a lista por data (a ordem vem do servidor,
-///   presumivelmente mais recente primeiro, mas não é garantido aqui);
-/// - não dá pra marcar uma notificação específica como lida (não tem id
-///   pra referenciar, nem TipoMensagem de "marcar como lida");
-/// - não dá pra mostrar indicador visual de "não lida" (nenhum contador
-///   nem badge é possível hoje).
+/// `NotificacaoDto` agora vem com `id` (opcional só porque a mesma
+/// classe também é usada como PUSH de notificação nova — ver
+/// `escutarNotificacoesPush` — onde o id pode não ter sido persistido
+/// ainda no momento do envio). Toda notificação vinda de
+/// `listarMinhasNotificacoes` tem `id` preenchido, já que veio do banco.
 class NotificacaoRepository {
   Future<List<NotificacaoDto>> listarMinhasNotificacoes() async {
     await WsClient.instance.conectar();
@@ -24,6 +20,28 @@ class NotificacaoRepository {
       TipoMensagem.listarNotificacoesOk,
     );
     return ListarMinhasNotificacoesResponseDto.fromJson(json).notificacoes;
+  }
+
+  Future<void> marcarComoLida(String notificacaoId) async {
+    await WsClient.instance.conectar();
+
+    WsClient.instance.enviar(
+      MarcarNotificacaoComoLidaRequestDto(notificacaoId: notificacaoId),
+    );
+
+    await WsMessageStream.instance.aguardar(
+      TipoMensagem.marcarNotificacaoComoLidaOk,
+    );
+  }
+
+  Future<void> marcarTodasComoLidas() async {
+    await WsClient.instance.conectar();
+
+    WsClient.instance.enviar(const MarcarTodasNotificacoesComoLidaRequestDto());
+
+    await WsMessageStream.instance.aguardar(
+      TipoMensagem.marcarTodasNotificacoesComoLidaOk,
+    );
   }
 
   /// Notificações que chegam a QUALQUER momento via push
