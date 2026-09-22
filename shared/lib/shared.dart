@@ -23,6 +23,7 @@ export 'src/models/conversa_resumo.dart';
 
 export 'src/models/arquivo_upload.dart';
 export 'src/models/arquivo_anexado.dart';
+export 'src/models/denuncia.dart';
 
 export 'src/dto/ws_message.dart';
 export 'src/dto/auth/login_request_dto.dart';
@@ -97,6 +98,7 @@ export 'src/dto/notificacao/marcar_notificacao_como_lida_dto.dart';
 export 'src/dto/notificacao/marcar_todas_notificacoes_como_lida_dto.dart';
 
 export 'src/dto/denuncia/criar_denuncia_dto.dart';
+export 'src/dto/denuncia/listar_minhas_denuncias_dto.dart';
 
 export 'src/dto/chat/listar_conversas_dto.dart';
 export 'src/dto/chat/listar_mensagens_dto.dart';

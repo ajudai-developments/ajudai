@@ -95,4 +95,38 @@ class DenunciaService {
       mensagem: 'Erro ao processar a denúncia.',
     );
   }
+
+  Future<ListarMinhasDenunciasResponseDto> listarMinhasDenuncias(
+    WsConnection conexao,
+  ) async {
+    final client = _sessaoService.clientDe(conexao);
+    final userId = _sessaoService.userIdDe(conexao);
+    if (client == null || userId == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final repositorio = DenunciaRepository(client);
+    final denuncias = await repositorio.listarMinhasDenuncias(userId);
+
+    final comUrls = <DenunciaComUrls>[];
+    for (final denuncia in denuncias) {
+      final urls = <String>[];
+      for (final arquivo in denuncia.arquivos) {
+        final url = await ArquivoUploadService.urlAssinada(
+          client: client,
+          bucket: 'denuncias',
+          prefixo: denuncia.id,
+          arquivo: arquivo,
+        );
+
+        urls.add(url);
+      }
+      comUrls.add(DenunciaComUrls(denuncia: denuncia, urlsArquivos: urls));
+    }
+
+    return ListarMinhasDenunciasResponseDto(denuncias: comUrls);
+  }
 }

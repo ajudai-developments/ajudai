@@ -116,6 +116,9 @@ class WsRouter {
       TipoMensagem.enviarMensagem: h.chat.handleEnviarMensagem,
 
       TipoMensagem.criarDenuncia: h.denuncia.handleCriarDenuncia,
+
+      TipoMensagem.listarMinhasDenuncias:
+          h.denuncia.handleListarMinhasDenuncias,
     };
   }
 

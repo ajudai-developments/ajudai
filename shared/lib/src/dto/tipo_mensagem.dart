@@ -129,6 +129,8 @@ enum TipoMensagem {
 
   criarDenuncia('criar_denuncia'),
   criarDenunciaOk('criar_denuncia_ok'),
+  listarMinhasDenuncias('listar_minhas_denuncias'),
+  listarMinhasDenunciasOk('listar_minhas_denuncias_ok'),
 
   novaMensagem('nova_mensagem'),
 

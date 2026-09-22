@@ -1,3 +1,4 @@
+import 'package:shared/shared.dart';
 import 'package:supabase/supabase.dart';
 
 class DenunciaRepository {
@@ -36,5 +37,15 @@ class DenunciaRepository {
       },
     );
     return resultado as String;
+  }
+
+  Future<List<Denuncia>> listarMinhasDenuncias(String usuarioId) async {
+    final response = await _client.rpc(
+      'listar_minhas_denuncias',
+      params: {'p_usuario_id': usuarioId},
+    );
+
+    final lista = (response as List).cast<Map<String, dynamic>>();
+    return lista.map(Denuncia.fromJson).toList();
   }
 }
