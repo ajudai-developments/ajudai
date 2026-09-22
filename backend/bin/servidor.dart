@@ -17,6 +17,7 @@ import 'package:backend/src/services/agendamento_service.dart';
 import 'package:backend/src/services/avaliacao_service.dart';
 import 'package:backend/src/services/categoria_service.dart';
 import 'package:backend/src/services/chat_service.dart';
+import 'package:backend/src/services/conquista_listencer.dart';
 import 'package:backend/src/services/endereco_service.dart';
 import 'package:backend/src/services/eventos_agendamento_listener.dart';
 import 'package:backend/src/services/pagamento_service.dart';
@@ -70,11 +71,19 @@ Future<void> main() async {
   );
   final chatHandler = ChatHandler(chatService);
 
-  EventosAgendamentoListener(
+  final eventosAgendamentoListener = EventosAgendamentoListener(
     client: SupabaseClientFactory.criarSecret(),
     sessaoService: sessaoService,
     agendamentoRepository: agendamentoRepositoryParaEventos,
-  ).iniciar();
+  );
+  eventosAgendamentoListener.iniciar();
+
+  final conquistaListener = ConquistaListener(
+    client: SupabaseClientFactory.criarSecret(),
+    sessaoService: sessaoService,
+  );
+  conquistaListener.iniciar();
+
   final categoriaService = CategoriaService(sessaoService, supabase);
   final servicoService = ServicoService(
     sessaoService,
