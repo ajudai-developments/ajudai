@@ -43,10 +43,9 @@ class _MeuPerfilScreenState extends State<MeuPerfilScreen> {
   Future<void> _sair() async {
     await AuthRepository().logout();
     if (!mounted) return;
-    Navigator.of(context).pushNamedAndRemoveUntil(
-      AppRoutes.login,
-      (route) => false,
-    );
+    Navigator.of(
+      context,
+    ).pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
   }
 
   @override
@@ -68,10 +67,7 @@ class _MeuPerfilScreenState extends State<MeuPerfilScreen> {
       appBar: AppBar(
         title: const Text('Meu perfil'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.edit),
-            onPressed: _abrirEdicao,
-          ),
+          IconButton(icon: const Icon(Icons.edit), onPressed: _abrirEdicao),
         ],
       ),
       body: SafeArea(
@@ -80,43 +76,64 @@ class _MeuPerfilScreenState extends State<MeuPerfilScreen> {
           children: [
             const CircleAvatar(radius: 40, child: Icon(Icons.person, size: 40)),
             const SizedBox(height: 16),
-            Text(usuario.nome, style: AppTextStyles.titulo, textAlign: TextAlign.center),
+            Text(
+              usuario.nome,
+              style: AppTextStyles.titulo,
+              textAlign: TextAlign.center,
+            ),
             const SizedBox(height: 4),
             if (usuario.verificado)
               const Center(
                 child: Chip(
                   avatar: Icon(Icons.verified, size: 16, color: Colors.white),
-                  label: Text('Verificado', style: TextStyle(color: Colors.white)),
+                  label: Text(
+                    'Verificado',
+                    style: TextStyle(color: Colors.white),
+                  ),
                   backgroundColor: AppColors.success,
                 ),
               ),
+            Center(
+              child: TextButton(
+                onPressed: () => Navigator.of(
+                  context,
+                ).pushNamed(AppRoutes.meuPerfilCompleto),
+                child: const Text('Ver mais'),
+              ),
+            ),
             const SizedBox(height: 24),
             _linha('Telefone', usuario.telefone ?? 'Não informado'),
             const SizedBox(height: 24),
             ..._buildSecaoPrestador(context, usuario),
             const SizedBox(height: 24),
             OutlinedButton(
-              onPressed: () => Navigator.of(context).pushNamed(AppRoutes.meusEnderecos),
+              onPressed: () =>
+                  Navigator.of(context).pushNamed(AppRoutes.meusEnderecos),
               child: const Text('Meus endereços'),
             ),
             const SizedBox(height: 8),
             OutlinedButton(
-              onPressed: () => Navigator.of(context).pushNamed(AppRoutes.meusAgendamentos),
+              onPressed: () =>
+                  Navigator.of(context).pushNamed(AppRoutes.conversas),
+              child: const Text('Conversas'),
+            ),
+            const SizedBox(height: 8),
+            OutlinedButton(
+              onPressed: () =>
+                  Navigator.of(context).pushNamed(AppRoutes.meusAgendamentos),
               child: const Text('Meus agendamentos'),
             ),
             if (usuario.userRole == UserRole.prestador) ...[
               const SizedBox(height: 8),
               OutlinedButton(
-                onPressed: () =>
-                    Navigator.of(context).pushNamed(AppRoutes.agendamentosRecebidos),
+                onPressed: () => Navigator.of(
+                  context,
+                ).pushNamed(AppRoutes.agendamentosRecebidos),
                 child: const Text('Agendamentos recebidos'),
               ),
             ],
             const SizedBox(height: 32),
-            TextButton(
-              onPressed: _sair,
-              child: const Text('Sair da conta'),
-            ),
+            TextButton(onPressed: _sair, child: const Text('Sair da conta')),
           ],
         ),
       ),
@@ -154,11 +171,15 @@ class _MeuPerfilScreenState extends State<MeuPerfilScreen> {
           ),
         ];
       case StatusPrestador.pendente:
-        return [_avisoStatus('Sua solicitação para ser prestador está em análise.')];
+        return [
+          _avisoStatus('Sua solicitação para ser prestador está em análise.'),
+        ];
       case StatusPrestador.aprovado:
         // Caso de borda: aprovado mas userRole ainda não é prestador
         // (não deveria persistir, mas evita não mostrar nada).
-        return [_avisoStatus('Solicitação aprovada! Atualize o app se necessário.')];
+        return [
+          _avisoStatus('Solicitação aprovada! Atualize o app se necessário.'),
+        ];
       case StatusPrestador.suspenso:
         return [_avisoStatus('Sua conta de prestador está suspensa.')];
     }

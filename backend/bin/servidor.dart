@@ -17,7 +17,7 @@ import 'package:backend/src/services/agendamento_service.dart';
 import 'package:backend/src/services/avaliacao_service.dart';
 import 'package:backend/src/services/categoria_service.dart';
 import 'package:backend/src/services/chat_service.dart';
-import 'package:backend/src/services/conquista_listencer.dart';
+import 'package:backend/src/services/conquista_listener.dart';
 import 'package:backend/src/services/endereco_service.dart';
 import 'package:backend/src/services/eventos_agendamento_listener.dart';
 import 'package:backend/src/services/pagamento_service.dart';
