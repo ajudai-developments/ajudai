@@ -75,8 +75,11 @@ flutter:
     - assets/images/logo_padrao_app_branca.png
     - assets/images/logo_padrao_app_vermelho.png
     - assets/images/nome_do_app_branco.png
-    - assets/images/nome_do_app_vermelho.png
     - assets/videos/animacao_ajudai.mp4
+    - assets/images/ajudai_splash_1024_transparente.png
+    - assets/images/ajudai_splash_1024_transparente_margem.png
+    - assets/images/ajudai_splash_1920x1080.png
+    - assets/images/ajudai_logo_1024_transparente.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -107,15 +110,15 @@ flutter:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/images/logo_padrao_app_vermelho.png"
+  image_path: "assets/images/ajudai_splash_1024_transparente.png"
   min_sdk_android: 21
   background_color: "#FFFFFF"
   adaptive_icon_background: "#FFFFFF"
-  adaptive_icon_foreground: "assets/images/logo_padrao_app_vermelho.png"
+  adaptive_icon_foreground: "assets/images/ajudai_splash_1024_transparente.png"
 
 flutter_native_splash:
   color: "#FFFFFF"
-  image: assets/images/logo_padrao_app_vermelho.png
+  image: assets/images/ajudai_splash_1024_transparente_margem.png
   android_12:
     color: "#FFFFFF"
-    image: assets/images/logo_padrao_app_vermelho.png
+    image: assets/images/ajudai_splash_1024_transparente_margem.png

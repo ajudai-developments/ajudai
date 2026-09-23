@@ -40,10 +40,13 @@ class _SplashScreenState extends State<SplashScreen> {
 
     _controller = VideoPlayerController.asset(
       'assets/videos/animacao_ajudai.mp4',
+      videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
     );
+
     _controller.addListener(_verificarFim);
     _controller.setLooping(false);
     _controller.setVolume(0);
+
     _iniciarVideo();
   }
 
@@ -60,10 +63,10 @@ class _SplashScreenState extends State<SplashScreen> {
 
   void _verificarFim() {
     final valor = _controller.value;
+
     if (!valor.isInitialized || _navegou) return;
 
-    // position >= duration marca o fim do vídeo (sem loop configurado).
-    if (valor.position >= valor.duration) {
+    if (valor.isCompleted) {
       _irParaHome();
     }
   }
