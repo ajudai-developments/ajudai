@@ -1,6 +1,6 @@
 import 'package:shared/src/dto/json_utils.dart';
 import 'package:shared/src/models/enums/tipo_conteudo_mensagem.dart';
-import 'package:shared/src/models/arquivo_anexado.dart';
+import 'package:shared/src/models/arquivos/arquivo_anexado.dart';
 
 class Mensagem {
   final String id;

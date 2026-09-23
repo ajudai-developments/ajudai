@@ -1,6 +1,6 @@
 import 'package:shared/src/dto/json_utils.dart';
 import 'package:shared/src/models/enums/tipo_denuncia.dart';
-import 'package:shared/src/models/arquivo_anexado.dart';
+import 'package:shared/src/models/arquivos/arquivo_anexado.dart';
 
 class Denuncia {
   final String id;

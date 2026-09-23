@@ -141,6 +141,11 @@ enum TipoMensagem {
 
   novaMensagem('nova_mensagem'),
 
+  adminListarContestacoes('admin_listar_contestacoes'),
+  adminListarContestacoesOk('admin_listar_contestacoes_ok'),
+  adminResponderContestacao('admin_responder_contestacao'),
+  adminResponderContestacaoOk('admin_responder_contestacao_ok'),
+
   erro('erro');
 
   final String valor;

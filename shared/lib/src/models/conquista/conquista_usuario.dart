@@ -1,5 +1,5 @@
 import 'package:shared/src/dto/json_utils.dart';
-import 'package:shared/src/models/conquista.dart';
+import 'package:shared/src/models/conquista/conquista.dart';
 
 class ConquistaUsuario {
   final String id;

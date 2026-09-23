@@ -1,7 +1,7 @@
 import 'package:shared/src/dto/tipo_mensagem.dart';
 
 import '../ws_message.dart';
-import '../../models/usuario.dart';
+import '../../models/usuario/usuario.dart';
 
 class AtualizarPerfilResponseDto implements WsMessage {
   final Usuario usuario;
@@ -12,9 +12,9 @@ class AtualizarPerfilResponseDto implements WsMessage {
   TipoMensagem get tipo => TipoMensagem.atualizarPerfilOk;
 
   factory AtualizarPerfilResponseDto.fromJson(Map<String, dynamic> json) {
-  return AtualizarPerfilResponseDto(
-    usuario: Usuario.fromJson(json['usuario'] as Map<String, dynamic>),
-  );
+    return AtualizarPerfilResponseDto(
+      usuario: Usuario.fromJson(json['usuario'] as Map<String, dynamic>),
+    );
   }
 
   @override

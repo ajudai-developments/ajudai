@@ -1,6 +1,6 @@
 import 'package:shared/src/dto/json_utils.dart';
 import 'package:shared/src/models/enums/status_contestacao.dart';
-import 'package:shared/src/models/arquivo_anexado.dart';
+import 'package:shared/src/models/arquivos/arquivo_anexado.dart';
 
 class Contestacao {
   final String id;
@@ -10,6 +10,9 @@ class Contestacao {
   final StatusContestacao status;
   final DateTime criadoEm;
   final List<ArquivoAnexado> arquivos;
+  final String? respostaAdmin;
+  final String? respondidoPorAdminId;
+  final DateTime? respondidoEm;
 
   Contestacao({
     required this.id,
@@ -19,6 +22,9 @@ class Contestacao {
     required this.status,
     required this.criadoEm,
     required this.arquivos,
+    this.respostaAdmin,
+    this.respondidoPorAdminId,
+    this.respondidoEm,
   });
 
   factory Contestacao.fromJson(Map<String, dynamic> json) {
@@ -33,6 +39,12 @@ class Contestacao {
       ),
       criadoEm: JsonUtils.requireDateTime(json, 'criado_em'),
       arquivos: arquivos.map(ArquivoAnexado.fromJson).toList(),
+      respostaAdmin: JsonUtils.optionalString(json, 'resposta_admin'),
+      respondidoPorAdminId: JsonUtils.optionalString(
+        json,
+        'respondido_por_admin_id',
+      ),
+      respondidoEm: JsonUtils.optionalDateTime(json, 'respondido_em'),
     );
   }
 
@@ -44,5 +56,8 @@ class Contestacao {
     'status': status.valor,
     'criado_em': criadoEm.toIso8601String(),
     'arquivos': arquivos.map((a) => a.toJson()).toList(),
+    'resposta_admin': respostaAdmin,
+    'respondido_por_admin_id': respondidoPorAdminId,
+    'respondido_em': respondidoEm?.toIso8601String(),
   };
 }

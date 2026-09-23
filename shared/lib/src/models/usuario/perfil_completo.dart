@@ -1,5 +1,5 @@
 import 'package:shared/src/dto/json_utils.dart';
-import 'package:shared/src/models/conquista_usuario.dart';
+import 'package:shared/src/models/conquista/conquista_usuario.dart';
 
 class PerfilCompleto {
   final double? mediaAvaliacao;

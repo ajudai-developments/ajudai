@@ -1,33 +1,34 @@
 library;
 
-export 'src/models/usuario.dart';
-export 'src/models/usuario_basico.dart';
-export 'src/models/perfil_completo.dart';
-export 'src/models/endereco.dart';
-export 'src/models/categoria.dart';
-export 'src/models/servico.dart';
-export 'src/models/servico_oferecido.dart';
-export 'src/models/servico_oferecido_resumo.dart';
-export 'src/models/servico_oferecido_preview.dart';
-export 'src/models/verificacao.dart';
-export 'src/models/verificacao_com_usuario.dart';
-export 'src/models/agendamento.dart';
-export 'src/models/agendamento_detalhado_cliente.dart';
-export 'src/models/agendamento_detalhado_prestador.dart';
+export 'src/models/usuario/usuario.dart';
+export 'src/models/usuario/usuario_basico.dart';
+export 'src/models/usuario/perfil_completo.dart';
+export 'src/models/endereco/endereco.dart';
+export 'src/models/categoria/categoria.dart';
+export 'src/models/servico/servico.dart';
+export 'src/models/servico/servico_oferecido.dart';
+export 'src/models/servico/servico_oferecido_resumo.dart';
+export 'src/models/servico/servico_oferecido_preview.dart';
+export 'src/models/verificacao/verificacao.dart';
+export 'src/models/verificacao/verificacao_com_usuario.dart';
+export 'src/models/agendamento/agendamento.dart';
+export 'src/models/agendamento/agendamento_detalhado_cliente.dart';
+export 'src/models/agendamento/agendamento_detalhado_prestador.dart';
 export 'src/models/horario_ocupado.dart';
-export 'src/models/conquista.dart';
-export 'src/models/conquista_usuario.dart';
-export 'src/models/avaliacao_usuario.dart';
-export 'src/models/avaliacao_servico.dart';
-export 'src/models/mensagem.dart';
-export 'src/models/conversa_resumo.dart';
-export 'src/models/mensagem_com_url.dart';
+export 'src/models/conquista/conquista.dart';
+export 'src/models/conquista/conquista_usuario.dart';
+export 'src/models/avaliacao/avaliacao_usuario.dart';
+export 'src/models/avaliacao/avaliacao_servico.dart';
+export 'src/models/chat/mensagem.dart';
+export 'src/models/chat/conversa_resumo.dart';
+export 'src/models/chat/mensagem_com_url.dart';
 
-export 'src/models/arquivo_upload.dart';
-export 'src/models/arquivo_anexado.dart';
-export 'src/models/denuncia.dart';
+export 'src/models/arquivos/arquivo_upload.dart';
+export 'src/models/arquivos/arquivo_anexado.dart';
+export 'src/models/denuncia/denuncia.dart';
 
-export 'src/models/contestacao.dart';
+export 'src/models/contestacao/contestacao.dart';
+export 'src/models/contestacao/contestacao_com_detalhes.dart';
 
 export 'src/dto/ws_message.dart';
 export 'src/dto/auth/login_request_dto.dart';
@@ -55,12 +56,11 @@ export 'src/dto/notificacao/notificacao_dto.dart';
 
 export 'src/dto/prestador/solicitar_prestador_request_dto.dart';
 export 'src/dto/prestador/solicitar_prestador_response_dto.dart';
-export 'src/dto/prestador/aprovar_prestador_request_dto.dart';
-export 'src/dto/prestador/aprovar_prestador_response_dto.dart';
+export 'src/dto/admin/aprovar_prestador_request_dto.dart';
+export 'src/dto/admin/aprovar_prestador_response_dto.dart';
 export 'src/dto/prestador/rejeitar_prestador_request_dto.dart';
 export 'src/dto/prestador/rejeitar_prestador_response_dto.dart';
-export 'src/dto/prestador/listar_verificacoes_request_dto.dart';
-export 'src/dto/prestador/listar_verificacoes_response_dto.dart';
+export 'src/dto/admin/listar_verificacoes_request_dto.dart';
 
 export 'src/dto/servico/listar_categorias_request_dto.dart';
 export 'src/dto/servico/listar_categorias_response_dto.dart';
@@ -112,6 +112,10 @@ export 'src/dto/chat/listar_conversas_dto.dart';
 export 'src/dto/chat/listar_mensagens_dto.dart';
 export 'src/dto/chat/enviar_mensagem_dto.dart';
 export 'src/dto/chat/criar_conversa_dto.dart';
+
+export 'src/dto/admin/admin_listar_contestacao_dto.dart';
+export 'src/dto/admin/admin_responder_contestacao_dto.dart';
+export 'src/dto/admin/listar_verificacoes_response_dto.dart';
 
 export 'src/validators/cpf_validator.dart';
 export 'src/validators/telefone_validator.dart';

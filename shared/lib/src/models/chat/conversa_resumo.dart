@@ -1,5 +1,5 @@
 import 'package:shared/src/dto/json_utils.dart';
-import 'package:shared/src/models/usuario_basico.dart';
+import 'package:shared/src/models/usuario/usuario_basico.dart';
 
 class ConversaResumo {
   final String conversaId;
