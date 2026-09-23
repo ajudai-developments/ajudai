@@ -37,6 +37,14 @@ class EnviarMensagemResponseDto implements WsMessage {
 
   EnviarMensagemResponseDto({required this.mensagem});
 
+  factory EnviarMensagemResponseDto.fromJson(Map<String, dynamic> json) {
+    return EnviarMensagemResponseDto(
+      mensagem: MensagemComUrl.fromJson(
+        json['mensagem'] as Map<String, dynamic>,
+      ),
+    );
+  }
+
   @override
   TipoMensagem get tipo => TipoMensagem.enviarMensagemOk;
 
@@ -51,6 +59,14 @@ class NovaMensagemDto implements WsMessage {
   final MensagemComUrl mensagem;
 
   NovaMensagemDto({required this.mensagem});
+
+  factory NovaMensagemDto.fromJson(Map<String, dynamic> json) {
+    return NovaMensagemDto(
+      mensagem: MensagemComUrl.fromJson(
+        json['mensagem'] as Map<String, dynamic>,
+      ),
+    );
+  }
 
   @override
   TipoMensagem get tipo => TipoMensagem.novaMensagem;

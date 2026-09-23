@@ -36,6 +36,16 @@ class ListarMensagensResponseDto implements WsMessage {
 
   ListarMensagensResponseDto({required this.mensagens});
 
+  factory ListarMensagensResponseDto.fromJson(Map<String, dynamic> json) {
+    final itens = (json['mensagens'] as List<dynamic>? ?? const [])
+        .cast<Map<String, dynamic>>();
+
+    print("Itens extraídos do json: $itens");
+    return ListarMensagensResponseDto(
+      mensagens: itens.map(MensagemComUrl.fromJson).toList(),
+    );
+  }
+
   @override
   TipoMensagem get tipo => TipoMensagem.listarMensagensOk;
 

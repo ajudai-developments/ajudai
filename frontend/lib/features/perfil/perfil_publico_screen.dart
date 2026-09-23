@@ -11,6 +11,7 @@ import '../../core/widgets/user_avatar.dart';
 import '../../core/ws/ws_message_stream.dart';
 import '../servico/servico_repository.dart';
 import '../agendamento/criar_agendamento_args.dart';
+import '../conversas/conversas_repository.dart';
 import 'widgets/comentarios_list.dart';
 import 'widgets/selos_list.dart';
 
@@ -43,6 +44,7 @@ class PerfilPublicoScreen extends StatefulWidget {
 
 class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
   final _servicoRepository = ServicoRepository();
+  final _conversasRepository = ConversasRepository();
 
   late String _servicoOferecidoId;
   bool _argumentosCarregados = false;
@@ -86,10 +88,38 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
   }
 
   void _abrirServico() {
-    Navigator.of(context).pushNamed(
-      AppRoutes.servicoDetalhe,
-      arguments: _servicoOferecidoId,
-    );
+    Navigator.of(
+      context,
+    ).pushNamed(AppRoutes.servicoDetalhe, arguments: _servicoOferecidoId);
+  }
+
+  Future<void> _conversar() async {
+    final prestador = _dados?.prestador;
+    if (prestador == null) return;
+
+    try {
+      final conversaId = await _conversasRepository.criarConversa(prestador.id);
+      final conversas = await _conversasRepository.listarConversas();
+      final conversa = conversas.firstWhere((item) => item.id == conversaId);
+      if (!mounted) return;
+      await Navigator.of(
+        context,
+      ).pushNamed(AppRoutes.conversa, arguments: conversa);
+    } on WsErroException catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            ErroMapper.paraMensagem(e.codigo, mensagemServidor: e.mensagem),
+          ),
+        ),
+      );
+    } on WsTimeoutException {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Não foi possível iniciar a conversa.')),
+      );
+    }
   }
 
   @override
@@ -117,13 +147,14 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
   List<Widget> _buildConteudo(ObterServicoOferecidoResponseDto dados) {
     return [
       Center(
-        child: UserAvatar(
-          avatarUrl: dados.prestador.avatarUrl,
-          radius: 40,
-        ),
+        child: UserAvatar(avatarUrl: dados.prestador.avatarUrl, radius: 40),
       ),
       const SizedBox(height: 12),
-      Text(dados.prestador.nome, style: AppTextStyles.titulo, textAlign: TextAlign.center),
+      Text(
+        dados.prestador.nome,
+        style: AppTextStyles.titulo,
+        textAlign: TextAlign.center,
+      ),
       if (dados.prestador.verificado) ...[
         const SizedBox(height: 4),
         const Center(
@@ -157,7 +188,9 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
         child: ListTile(
           onTap: _abrirServico,
           title: Text(dados.servico.nome),
-          subtitle: Text('R\$ ${dados.servicoOferecido.valor.toStringAsFixed(2)}'),
+          subtitle: Text(
+            'R\$ ${dados.servicoOferecido.valor.toStringAsFixed(2)}',
+          ),
           trailing: TextButton(
             onPressed: () => Navigator.of(context).pushNamed(
               AppRoutes.criarAgendamento,
@@ -169,6 +202,12 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
             child: const Text('Agendar'),
           ),
         ),
+      ),
+      const SizedBox(height: 12),
+      OutlinedButton.icon(
+        onPressed: _conversar,
+        icon: const Icon(Icons.chat_bubble_outline),
+        label: const Text('Conversar com o prestador'),
       ),
       const SizedBox(height: 24),
       Text('Comentários', style: AppTextStyles.titulo),

@@ -25,8 +25,8 @@ class Mensagem {
     final arquivoJson = map['arquivo'] as Map<String, dynamic>?;
     return Mensagem(
       id: JsonUtils.requireString(map, 'id'),
-      idConversa: JsonUtils.requireString(map, 'conversa_id'),
-      idRemetente: JsonUtils.requireString(map, 'remetente_id'),
+      idConversa: JsonUtils.requireString(map, 'id_conversa'),
+      idRemetente: JsonUtils.requireString(map, 'id_remetente'),
       texto: JsonUtils.optionalString(map, 'texto'),
       tipo:
           TipoConteudoMensagem.fromValor(

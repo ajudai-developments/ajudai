@@ -1,4 +1,3 @@
-import 'package:ajudai/features/servico/editar_servico_screen.dart';
 import 'package:ajudai/features/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
@@ -14,6 +13,8 @@ import 'features/auth/cadastro_screen.dart';
 import 'features/auth/login_screen.dart';
 import 'features/avaliacao/avaliar_agendamento_screen.dart';
 import 'features/avaliacao/avaliar_usuario_screen.dart';
+import 'features/conversas/conversa_screen.dart';
+import 'features/conversas/conversas_screen.dart';
 import 'features/endereco/form_endereco_screen.dart';
 import 'features/endereco/meus_enderecos_screen.dart';
 import 'features/perfil/perfil_publico_screen.dart';
@@ -88,12 +89,21 @@ class _AppRootState extends State<_AppRoot> {
   }
 
   Route<dynamic> _onGenerateRoute(RouteSettings settings) {
+    if (settings.name == AppRoutes.conversa) {
+      final conversa = settings.arguments as ConversaResumo;
+      return MaterialPageRoute(
+        settings: settings,
+        builder: (_) => ConversaScreen(conversa: conversa),
+      );
+    }
+
     final builders = <String, WidgetBuilder>{
       AppRoutes.login: (_) => const LoginScreen(),
       AppRoutes.cadastro: (_) => const CadastroScreen(),
       AppRoutes.home: (_) => const HomeScreen(),
       AppRoutes.splash: (_) => const SplashScreen(),
       AppRoutes.notificacoes: (_) => const NotificacoesScreen(),
+      AppRoutes.conversas: (_) => const ConversasScreen(),
       AppRoutes.meuPerfil: (_) => const MeuPerfilScreen(),
       AppRoutes.editarPerfil: (_) => const EditarPerfilScreen(),
       AppRoutes.meusEnderecos: (_) => const MeusEnderecosScreen(),

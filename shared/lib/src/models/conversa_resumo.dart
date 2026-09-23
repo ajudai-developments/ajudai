@@ -20,13 +20,9 @@ class ConversaResumo {
 
   factory ConversaResumo.fromMap(Map<String, dynamic> map) {
     return ConversaResumo(
-      id: JsonUtils.requireString(map, 'conversa_id'),
-      outroUsuario: UsuarioBasico(
-        id: JsonUtils.requireString(map, 'outro_id'),
-        nome: JsonUtils.requireString(map, 'outro_nome'),
-        verificado: map['outro_verificado'] as bool,
-        statusUsuario: map['outro_status_usuario'] as bool,
-        criadoEm: JsonUtils.requireDateTime(map, 'outro_criado_em'),
+      id: JsonUtils.requireString(map, 'id'),
+      outroUsuario: UsuarioBasico.fromJson(
+        map["outro_usuario"] as Map<String, dynamic>,
       ),
       ultimaMensagemTexto: JsonUtils.optionalString(
         map,

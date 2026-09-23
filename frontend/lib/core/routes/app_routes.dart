@@ -24,6 +24,7 @@ class AppRoutes {
 
   // chat
   static const String conversas = '/conversas';
+  static const String conversa = '/conversas/detalhe';
 
   // perfil publico (prestador ou cliente, somente leitura)
   static const String perfilPublico = '/perfil/publico';
