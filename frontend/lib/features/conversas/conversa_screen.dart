@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:shared/shared.dart';
+import 'package:video_player/video_player.dart';
 
 import '../../core/errors/erro_mapper.dart';
 import '../../core/session/sessao.dart';
@@ -308,16 +309,8 @@ class _BolhaMensagem extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                mensagem.mensagem.texto ?? 'Arquivo enviado',
-                style: TextStyle(
-                  color: minha ? Colors.white : AppColors.textoTitulo,
-                ),
-              ),
-            ),
-            const SizedBox(height: 3),
+            _ConteudoMensagem(mensagem: mensagem, minha: minha),
+            if (mensagem.mensagem.texto != null) const SizedBox(height: 3),
             Text(
               horario,
               style: TextStyle(
@@ -327,6 +320,154 @@ class _BolhaMensagem extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _ConteudoMensagem extends StatelessWidget {
+  final MensagemComUrl mensagem;
+  final bool minha;
+
+  const _ConteudoMensagem({required this.mensagem, required this.minha});
+
+  @override
+  Widget build(BuildContext context) {
+    final texto = mensagem.mensagem.texto;
+    final url = mensagem.urlArquivo;
+    final arquivo = mensagem.mensagem.arquivo;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (url != null &&
+            mensagem.mensagem.tipo == TipoConteudoMensagem.imagem)
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Image.network(
+              url,
+              width: 260,
+              height: 220,
+              fit: BoxFit.cover,
+              loadingBuilder: (context, child, progress) => progress == null
+                  ? child
+                  : const SizedBox(
+                      width: 260,
+                      height: 160,
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+              errorBuilder: (context, error, stackTrace) =>
+                  _FalhaNoAnexo(nome: arquivo?.nomeOriginal),
+            ),
+          )
+        else if (url != null &&
+            mensagem.mensagem.tipo == TipoConteudoMensagem.video)
+          _VideoMensagem(url: url)
+        else if (arquivo != null)
+          _FalhaNoAnexo(nome: arquivo.nomeOriginal)
+        else if (texto == null || texto.isEmpty)
+          Text(
+            'Arquivo enviado',
+            style: TextStyle(
+              color: minha ? Colors.white : AppColors.textoTitulo,
+            ),
+          ),
+        if (texto != null && texto.isNotEmpty) ...[
+          if (url != null || arquivo != null) const SizedBox(height: 8),
+          Text(
+            texto,
+            style: TextStyle(
+              color: minha ? Colors.white : AppColors.textoTitulo,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _FalhaNoAnexo extends StatelessWidget {
+  final String? nome;
+
+  const _FalhaNoAnexo({this.nome});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Icon(Icons.attach_file, color: AppColors.primary),
+        const SizedBox(width: 6),
+        Flexible(child: Text(nome ?? 'Anexo indisponível')),
+      ],
+    );
+  }
+}
+
+class _VideoMensagem extends StatefulWidget {
+  final String url;
+
+  const _VideoMensagem({required this.url});
+
+  @override
+  State<_VideoMensagem> createState() => _VideoMensagemState();
+}
+
+class _VideoMensagemState extends State<_VideoMensagem> {
+  late final VideoPlayerController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.url))
+      ..initialize().then((_) {
+        if (mounted) setState(() {});
+      });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_controller.value.isInitialized) {
+      return const SizedBox(
+        width: 260,
+        height: 160,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          _controller.value.isPlaying
+              ? _controller.pause()
+              : _controller.play();
+        });
+      },
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          SizedBox(
+            width: 260,
+            child: AspectRatio(
+              aspectRatio: _controller.value.aspectRatio,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(10),
+                child: VideoPlayer(_controller),
+              ),
+            ),
+          ),
+          if (!_controller.value.isPlaying)
+            const CircleAvatar(
+              backgroundColor: Color(0xAA000000),
+              child: Icon(Icons.play_arrow, color: Colors.white),
+            ),
+        ],
       ),
     );
   }

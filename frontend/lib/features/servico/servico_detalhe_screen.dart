@@ -1,3 +1,4 @@
+import 'package:ajudai/core/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -72,10 +73,9 @@ class _ServicoDetalheScreenState extends State<ServicoDetalheScreen> {
   }
 
   void _abrirPerfilPrestador() {
-    Navigator.of(context).pushNamed(
-      AppRoutes.perfilPublico,
-      arguments: _servicoOferecidoId,
-    );
+    Navigator.of(
+      context,
+    ).pushNamed(AppRoutes.perfilPublico, arguments: _servicoOferecidoId);
   }
 
   void _agendar() {
@@ -135,7 +135,7 @@ class _ServicoDetalheScreenState extends State<ServicoDetalheScreen> {
         onTap: _abrirPerfilPrestador,
         child: Row(
           children: [
-            const CircleAvatar(child: Icon(Icons.person)),
+            UserAvatar(avatarUrl: dados.prestador.avatarUrl, radius: 24),
             const SizedBox(width: 12),
             Expanded(
               child: Column(
