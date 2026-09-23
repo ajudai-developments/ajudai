@@ -50,7 +50,10 @@ class _LoginScreenState extends State<LoginScreen> {
       Navigator.of(context).pushReplacementNamed(AppRoutes.meuPerfil);
     } on WsErroException catch (e) {
       setState(() {
-        _erroGeral = ErroMapper.paraMensagem(e.codigo, mensagemServidor: e.mensagem);
+        _erroGeral = ErroMapper.paraMensagem(
+          e.codigo,
+          mensagemServidor: e.mensagem,
+        );
       });
     } on WsTimeoutException {
       setState(() {

@@ -7,6 +7,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/error_banner.dart';
 import '../../core/widgets/rating_display.dart';
+import '../../core/widgets/user_avatar.dart';
 import '../../core/ws/ws_message_stream.dart';
 import '../servico/servico_repository.dart';
 import '../agendamento/criar_agendamento_args.dart';
@@ -115,7 +116,12 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
 
   List<Widget> _buildConteudo(ObterServicoOferecidoResponseDto dados) {
     return [
-      const Center(child: CircleAvatar(radius: 40, child: Icon(Icons.person, size: 40))),
+      Center(
+        child: UserAvatar(
+          avatarUrl: dados.prestador.avatarUrl,
+          radius: 40,
+        ),
+      ),
       const SizedBox(height: 12),
       Text(dados.prestador.nome, style: AppTextStyles.titulo, textAlign: TextAlign.center),
       if (dados.prestador.verificado) ...[

@@ -7,17 +7,28 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/app_bottom_nav.dart';
 import '../../core/widgets/app_button.dart';
+import '../../core/widgets/user_avatar.dart';
 import '../auth/auth_repository.dart';
+import '../perfil/widgets/selos_destaque.dart';
+import 'usuario_repository.dart';
 
-/// Perfil do PRÓPRIO usuário logado — dados vêm direto de
+/// Perfil do PRÓPRIO usuário logado — dados básicos vêm direto de
 /// `Sessao.instance.usuario` (populado no login/cadastro), sem chamada
-/// de rede própria.
+/// de rede própria. Os selos (conquistas) são a exceção: vêm de
+/// `UsuarioRepository.obterPerfilCompleto`, que não faz parte do
+/// `Usuario` da sessão, então são buscados à parte (ver
+/// `_carregarSelos`) e exibidos logo abaixo da foto.
 ///
 /// Seções condicionais:
 /// - cliente sem solicitação de prestador -> botão "Quero ser prestador".
 /// - cliente com solicitação pendente/aprovada/suspensa -> aviso de status.
-/// - prestador -> link pra "Meus serviços oferecidos" (sem o botão
-///   acima, que não faz sentido pra quem já é prestador).
+/// - prestador -> link pra "Meus serviços oferecidos" e "Agendamentos
+///   recebidos" (esta última também alcançável pelo ícone Marketplace
+///   da barra de navegação inferior, ver AppBottomNav).
+///
+/// O botão genérico "Meus agendamentos" (visão de cliente) foi retirado
+/// desta tela — já é alcançável a qualquer momento pela aba "Agenda" da
+/// barra de navegação inferior, então repeti-lo aqui era redundante.
 class MeuPerfilScreen extends StatefulWidget {
   const MeuPerfilScreen({super.key});
 
@@ -26,6 +37,29 @@ class MeuPerfilScreen extends StatefulWidget {
 }
 
 class _MeuPerfilScreenState extends State<MeuPerfilScreen> {
+  final _usuarioRepository = UsuarioRepository();
+
+  List<ConquistaUsuario> _selos = [];
+  bool _carregandoSelos = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarSelos();
+  }
+
+  Future<void> _carregarSelos() async {
+    try {
+      final perfil = await _usuarioRepository.obterPerfilCompleto();
+      if (mounted) setState(() => _selos = perfil.conquistas);
+    } catch (_) {
+      // Selos são um extra visual — se a busca falhar, a tela segue
+      // funcionando normalmente, só sem essa seção.
+    } finally {
+      if (mounted) setState(() => _carregandoSelos = false);
+    }
+  }
+
   Future<void> _abrirEdicao() async {
     await Navigator.of(context).pushNamed(AppRoutes.editarPerfil);
     // UsuarioRepository.atualizarPerfil já atualiza a Sessao sozinho;
@@ -74,8 +108,25 @@ class _MeuPerfilScreenState extends State<MeuPerfilScreen> {
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
-            const CircleAvatar(radius: 40, child: Icon(Icons.person, size: 40)),
-            const SizedBox(height: 16),
+            Center(
+              child: UserAvatar(
+                avatarUrl: usuario.avatarUrl,
+                radius: 40,
+              ),
+            ),
+            const SizedBox(height: 12),
+            if (_carregandoSelos)
+              const Center(
+                child: SizedBox(
+                  height: 16,
+                  width: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              )
+            else if (_selos.isNotEmpty) ...[
+              SelosDestaque(selos: _selos),
+              const SizedBox(height: 12),
+            ],
             Text(
               usuario.nome,
               style: AppTextStyles.titulo,
@@ -117,21 +168,6 @@ class _MeuPerfilScreenState extends State<MeuPerfilScreen> {
                   Navigator.of(context).pushNamed(AppRoutes.conversas),
               child: const Text('Conversas'),
             ),
-            const SizedBox(height: 8),
-            OutlinedButton(
-              onPressed: () =>
-                  Navigator.of(context).pushNamed(AppRoutes.meusAgendamentos),
-              child: const Text('Meus agendamentos'),
-            ),
-            if (usuario.userRole == UserRole.prestador) ...[
-              const SizedBox(height: 8),
-              OutlinedButton(
-                onPressed: () => Navigator.of(
-                  context,
-                ).pushNamed(AppRoutes.agendamentosRecebidos),
-                child: const Text('Agendamentos recebidos'),
-              ),
-            ],
             const SizedBox(height: 32),
             TextButton(onPressed: _sair, child: const Text('Sair da conta')),
           ],

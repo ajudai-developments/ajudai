@@ -1,5 +1,6 @@
 import 'package:ajudai/features/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:shared/shared.dart';
 
 import 'core/routes/app_routes.dart';
 import 'core/theme/app_theme.dart';
@@ -20,6 +21,7 @@ import 'features/prestador/meus_servicos_oferecidos_screen.dart';
 import 'features/prestador/solicitar_prestador_screen.dart';
 import 'features/home/home_screen.dart';
 import 'features/notificacao/notificacoes_screen.dart';
+import 'features/notificacao/notificacao_repository.dart';
 import 'features/servico/categorias_screen.dart';
 import 'features/servico/servico_detalhe_screen.dart';
 import 'features/servico/servicos_lista_screen.dart';
@@ -39,12 +41,48 @@ class App extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Ajudaí',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      initialRoute: AppRoutes.splash,
-      onGenerateRoute: _onGenerateRoute,
+    return const _AppRoot();
+  }
+}
+
+class _AppRoot extends StatefulWidget {
+  const _AppRoot();
+
+  @override
+  State<_AppRoot> createState() => _AppRootState();
+}
+
+class _AppRootState extends State<_AppRoot> {
+  final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+  final _navigatorKey = GlobalKey<NavigatorState>();
+  final _notificacaoRepository = NotificacaoRepository();
+
+  Stream<NotificacaoDto>? _notificacoes;
+
+  @override
+  void initState() {
+    super.initState();
+    _notificacoes = _notificacaoRepository.escutarNotificacoesPush();
+    _notificacoes?.listen(_mostrarNotificacao);
+  }
+
+  void _mostrarNotificacao(NotificacaoDto notificacao) {
+    final messenger = _scaffoldMessengerKey.currentState;
+    if (messenger == null) return;
+
+    messenger.hideCurrentSnackBar();
+    messenger.showSnackBar(
+      SnackBar(
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 5),
+        content: Text('${notificacao.titulo}: ${notificacao.mensagem}'),
+        action: SnackBarAction(
+          label: 'Ver',
+          onPressed: () {
+            _navigatorKey.currentState?.pushNamed(AppRoutes.notificacoes);
+          },
+        ),
+      ),
     );
   }
 
@@ -82,10 +120,6 @@ class App extends StatelessWidget {
     final builder = builders[settings.name];
 
     if (builder == null) {
-      // Rota ainda não implementada: mostra um placeholder em vez de
-      // travar a navegação com erro — útil enquanto o app está em
-      // construção. Remover este fallback quando todas as rotas
-      // existirem de verdade.
       return MaterialPageRoute(
         settings: settings,
         builder: (_) => _TelaNaoImplementada(nomeRota: settings.name),
@@ -93,6 +127,19 @@ class App extends StatelessWidget {
     }
 
     return MaterialPageRoute(settings: settings, builder: builder);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Ajudaí',
+      debugShowCheckedModeBanner: false,
+      theme: AppTheme.light,
+      scaffoldMessengerKey: _scaffoldMessengerKey,
+      navigatorKey: _navigatorKey,
+      initialRoute: AppRoutes.splash,
+      onGenerateRoute: _onGenerateRoute,
+    );
   }
 }
 

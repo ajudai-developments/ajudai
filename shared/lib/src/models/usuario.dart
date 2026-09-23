@@ -27,6 +27,34 @@ class Usuario {
     this.editadoEm,
   });
 
+  Usuario copyWith({
+    String? id,
+    String? nome,
+    String? cpf,
+    String? telefone,
+    UserRole? userRole,
+    bool? statusUsuario,
+    StatusPrestador? statusPrestador,
+    bool? verificado,
+    String? avatarUrl,
+    DateTime? criadoEm,
+    DateTime? editadoEm,
+  }) {
+    return Usuario(
+      id: id ?? this.id,
+      nome: nome ?? this.nome,
+      cpf: cpf ?? this.cpf,
+      telefone: telefone ?? this.telefone,
+      userRole: userRole ?? this.userRole,
+      statusUsuario: statusUsuario ?? this.statusUsuario,
+      statusPrestador: statusPrestador ?? this.statusPrestador,
+      verificado: verificado ?? this.verificado,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      criadoEm: criadoEm ?? this.criadoEm,
+      editadoEm: editadoEm ?? this.editadoEm,
+    );
+  }
+
   factory Usuario.fromJson(Map<String, dynamic> json) {
     return Usuario(
       id: json['id'] as String,
