@@ -36,11 +36,16 @@ class ConversasRepository {
 
   Future<MensagemComUrl> enviarMensagem({
     required String conversaId,
-    required String texto,
+    String? texto,
+    ArquivoUpload? arquivo,
   }) async {
     await WsClient.instance.conectar();
     WsClient.instance.enviar(
-      EnviarMensagemRequestDto(idConversa: conversaId, texto: texto),
+      EnviarMensagemRequestDto(
+        idConversa: conversaId,
+        texto: texto,
+        arquivo: arquivo,
+      ),
     );
 
     final json = await WsMessageStream.instance.aguardar(

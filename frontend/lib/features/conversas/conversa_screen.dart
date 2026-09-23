@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:shared/shared.dart';
 
@@ -22,6 +24,7 @@ class ConversaScreen extends StatefulWidget {
 
 class _ConversaScreenState extends State<ConversaScreen> {
   final _repository = ConversasRepository();
+  final _imagePicker = ImagePicker();
   final _textoController = TextEditingController();
   final _scrollController = ScrollController();
   final _mensagens = <MensagemComUrl>[];
@@ -30,6 +33,7 @@ class _ConversaScreenState extends State<ConversaScreen> {
   bool _carregando = true;
   bool _enviando = false;
   String? _erro;
+  _AnexoSelecionado? _anexoSelecionado;
 
   String? get _usuarioId => Sessao.instance.usuario?.id;
 
@@ -96,7 +100,7 @@ class _ConversaScreenState extends State<ConversaScreen> {
 
   Future<void> _enviar() async {
     final texto = _textoController.text.trim();
-    if (texto.isEmpty || _enviando) return;
+    if ((texto.isEmpty && _anexoSelecionado == null) || _enviando) return;
 
     setState(() {
       _enviando = true;
@@ -106,10 +110,12 @@ class _ConversaScreenState extends State<ConversaScreen> {
     try {
       final mensagem = await _repository.enviarMensagem(
         conversaId: widget.conversa.id,
-        texto: texto,
+        texto: texto.isEmpty ? null : texto,
+        arquivo: _anexoSelecionado?.arquivo,
       );
       if (!mounted) return;
       _textoController.clear();
+      setState(() => _anexoSelecionado = null);
       _adicionarMensagemRecebida(mensagem);
     } on WsErroException catch (e) {
       if (mounted) {
@@ -127,6 +133,71 @@ class _ConversaScreenState extends State<ConversaScreen> {
     } finally {
       if (mounted) setState(() => _enviando = false);
     }
+  }
+
+  Future<void> _selecionarAnexo() async {
+    final tipo = await showModalBottomSheet<_TipoAnexo>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Wrap(
+          children: [
+            ListTile(
+              leading: const Icon(Icons.image_outlined),
+              title: const Text('Imagem'),
+              onTap: () => Navigator.of(context).pop(_TipoAnexo.imagem),
+            ),
+            ListTile(
+              leading: const Icon(Icons.videocam_outlined),
+              title: const Text('Vídeo'),
+              onTap: () => Navigator.of(context).pop(_TipoAnexo.video),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (tipo == null || !mounted) return;
+
+    final arquivo = tipo == _TipoAnexo.imagem
+        ? await _imagePicker.pickImage(source: ImageSource.gallery)
+        : await _imagePicker.pickVideo(source: ImageSource.gallery);
+    if (arquivo == null || !mounted) return;
+
+    final bytes = await arquivo.readAsBytes();
+    if (!mounted) return;
+    if (bytes.isEmpty) {
+      setState(() => _erro = 'Não foi possível ler o arquivo selecionado.');
+      return;
+    }
+    if (bytes.length > 30 * 1024 * 1024) {
+      setState(() => _erro = 'O arquivo deve ter no máximo 30 MB.');
+      return;
+    }
+
+    final partes = arquivo.name.split('.');
+    final extensao = partes.length > 1 ? partes.last.toLowerCase() : '';
+    const extensoesImagem = {'png', 'jpg', 'jpeg', 'webp'};
+    const extensoesVideo = {'mp4', 'webm'};
+    final extensaoValida = tipo == _TipoAnexo.imagem
+        ? extensoesImagem.contains(extensao)
+        : extensoesVideo.contains(extensao);
+
+    if (!extensaoValida) {
+      setState(() => _erro = 'Formato de arquivo não suportado.');
+      return;
+    }
+
+    setState(() {
+      _erro = null;
+      _anexoSelecionado = _AnexoSelecionado(
+        arquivo: ArquivoUpload(
+          nomeOriginal: arquivo.name,
+          extensao: extensao,
+          bytesBase64: base64Encode(bytes),
+        ),
+        tipo: tipo,
+      );
+    });
   }
 
   void _rolarParaBaixo() {
@@ -179,12 +250,24 @@ class _ConversaScreenState extends State<ConversaScreen> {
           _Composer(
             controller: _textoController,
             enviando: _enviando,
+            anexo: _anexoSelecionado,
+            onAnexar: _selecionarAnexo,
+            onRemoverAnexo: () => setState(() => _anexoSelecionado = null),
             onEnviar: _enviar,
           ),
         ],
       ),
     );
   }
+}
+
+enum _TipoAnexo { imagem, video }
+
+class _AnexoSelecionado {
+  final ArquivoUpload arquivo;
+  final _TipoAnexo tipo;
+
+  const _AnexoSelecionado({required this.arquivo, required this.tipo});
 }
 
 class _BolhaMensagem extends StatelessWidget {
@@ -252,11 +335,17 @@ class _BolhaMensagem extends StatelessWidget {
 class _Composer extends StatelessWidget {
   final TextEditingController controller;
   final bool enviando;
+  final _AnexoSelecionado? anexo;
+  final VoidCallback onAnexar;
+  final VoidCallback onRemoverAnexo;
   final VoidCallback onEnviar;
 
   const _Composer({
     required this.controller,
     required this.enviando,
+    required this.anexo,
+    required this.onAnexar,
+    required this.onRemoverAnexo,
     required this.onEnviar,
   });
 
@@ -267,39 +356,85 @@ class _Composer extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
         color: Colors.white,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(
-              child: TextField(
-                controller: controller,
-                minLines: 1,
-                maxLines: 4,
-                textInputAction: TextInputAction.newline,
-                decoration: const InputDecoration(
-                  hintText: 'Escreva uma mensagem',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(22)),
-                  ),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 10,
+            if (anexo != null)
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF2F2F2),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      anexo!.tipo == _TipoAnexo.imagem
+                          ? Icons.image_outlined
+                          : Icons.videocam_outlined,
+                      color: AppColors.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        anexo!.arquivo.nomeOriginal,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: enviando ? null : onRemoverAnexo,
+                      icon: const Icon(Icons.close),
+                      tooltip: 'Remover anexo',
+                    ),
+                  ],
+                ),
+              ),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                IconButton(
+                  onPressed: enviando ? null : onAnexar,
+                  icon: const Icon(Icons.attach_file_rounded),
+                  tooltip: 'Anexar imagem ou vídeo',
+                ),
+                Expanded(
+                  child: TextField(
+                    controller: controller,
+                    minLines: 1,
+                    maxLines: 4,
+                    textInputAction: TextInputAction.newline,
+                    decoration: const InputDecoration(
+                      hintText: 'Escreva uma mensagem',
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(22)),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                    ),
+                    onSubmitted: (_) => onEnviar(),
                   ),
                 ),
-                onSubmitted: (_) => onEnviar(),
-              ),
-            ),
-            const SizedBox(width: 8),
-            IconButton.filled(
-              onPressed: enviando ? null : onEnviar,
-              icon: enviando
-                  ? const SizedBox(
-                      width: 18,
-                      height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.send_rounded),
-              tooltip: 'Enviar mensagem',
+                const SizedBox(width: 8),
+                IconButton.filled(
+                  onPressed: enviando ? null : onEnviar,
+                  icon: enviando
+                      ? const SizedBox(
+                          width: 18,
+                          height: 18,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.send_rounded),
+                  tooltip: 'Enviar mensagem',
+                ),
+              ],
             ),
           ],
         ),
