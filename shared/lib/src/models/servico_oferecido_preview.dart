@@ -1,4 +1,4 @@
-import 'package:shared/src/dto/json_utils.dart';
+import 'package:shared/shared.dart';
 
 class ServicoOferecidoPreview {
   final String servicoOferecidoId;
@@ -8,6 +8,7 @@ class ServicoOferecidoPreview {
   final String prestadorId;
   final String prestadorNome;
   final bool prestadorVerificado;
+  final String? prestadorAvatarUrl;
   final double? mediaAvaliacao;
   final int quantidadeAvaliacoes;
   final int quantidadeSelos;
@@ -20,6 +21,7 @@ class ServicoOferecidoPreview {
     required this.prestadorId,
     required this.prestadorNome,
     required this.prestadorVerificado,
+    this.prestadorAvatarUrl,
     this.mediaAvaliacao,
     required this.quantidadeAvaliacoes,
     required this.quantidadeSelos,
@@ -34,6 +36,10 @@ class ServicoOferecidoPreview {
       prestadorId: JsonUtils.requireString(json, 'prestador_id'),
       prestadorNome: JsonUtils.requireString(json, 'prestador_nome'),
       prestadorVerificado: JsonUtils.requireBool(json, 'prestador_verificado'),
+      prestadorAvatarUrl: JsonUtils.optionalString(
+        json,
+        'prestador_avatar_url',
+      ),
       mediaAvaliacao: JsonUtils.optionalDouble(json, 'media_avaliacao'),
       quantidadeAvaliacoes: JsonUtils.requireInt(json, 'quantidade_avaliacoes'),
       quantidadeSelos: JsonUtils.requireInt(json, 'quantidade_selos'),
@@ -48,6 +54,7 @@ class ServicoOferecidoPreview {
     'prestador_id': prestadorId,
     'prestador_nome': prestadorNome,
     'prestador_verificado': prestadorVerificado,
+    'prestador_avatar_url': prestadorAvatarUrl,
     'media_avaliacao': mediaAvaliacao,
     'quantidade_avaliacoes': quantidadeAvaliacoes,
     'quantidade_selos': quantidadeSelos,
