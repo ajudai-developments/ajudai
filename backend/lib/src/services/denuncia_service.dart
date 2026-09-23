@@ -56,16 +56,19 @@ class DenunciaService {
         mimeType: validado.mimeType,
       );
 
-      await ArquivoUploadService.upload(
-        client: client,
-        bucket: 'denuncias',
-        prefixo: denunciaId,
-        arquivoId: arquivoId,
-        extensao: arquivo.extensao.toLowerCase(),
-        validado: validado,
-      );
-
-      salvos++;
+      try {
+        await ArquivoUploadService.upload(
+          client: client,
+          bucket: 'denuncias',
+          prefixo: denunciaId,
+          arquivoId: arquivoId,
+          extensao: arquivo.extensao.toLowerCase(),
+          validado: validado,
+        );
+        salvos++;
+      } catch (e) {
+        await client.from('denuncia_arquivos').delete().eq('id', arquivoId);
+      }
     }
 
     return CriarDenunciaResponseDto(

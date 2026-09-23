@@ -119,6 +119,11 @@ class WsRouter {
 
       TipoMensagem.listarMinhasDenuncias:
           h.denuncia.handleListarMinhasDenuncias,
+
+      TipoMensagem.criarContestacao: h.contestacao.handleCriarContestacao,
+
+      TipoMensagem.listarMinhasContestacoes:
+          h.contestacao.handleListarMinhasContestacoes,
     };
   }
 

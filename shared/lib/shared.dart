@@ -25,6 +25,8 @@ export 'src/models/arquivo_upload.dart';
 export 'src/models/arquivo_anexado.dart';
 export 'src/models/denuncia.dart';
 
+export 'src/models/contestacao.dart';
+
 export 'src/dto/ws_message.dart';
 export 'src/dto/auth/login_request_dto.dart';
 export 'src/dto/auth/login_response_dto.dart';
@@ -100,6 +102,9 @@ export 'src/dto/notificacao/marcar_todas_notificacoes_como_lida_dto.dart';
 export 'src/dto/denuncia/criar_denuncia_dto.dart';
 export 'src/dto/denuncia/listar_minhas_denuncias_dto.dart';
 
+export 'src/dto/contestacao/criar_contestacao_dto.dart';
+export 'src/dto/contestacao/listar_minhas_contestacoes_dto.dart';
+
 export 'src/dto/chat/listar_conversas_dto.dart';
 export 'src/dto/chat/listar_mensagens_dto.dart';
 export 'src/dto/chat/enviar_mensagem_dto.dart';
@@ -119,3 +124,5 @@ export 'src/models/enums/eventos_agendamento.dart';
 export 'src/models/enums/tipo_denuncia.dart';
 export 'src/models/enums/tipo_conteudo_mensagem.dart';
 export 'src/models/enums/tipo_arquivo.dart';
+export 'src/models/enums/status_contestacao.dart';
+export 'src/models/enums/status_solicitacao_preco.dart';

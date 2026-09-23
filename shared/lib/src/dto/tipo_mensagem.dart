@@ -132,6 +132,11 @@ enum TipoMensagem {
   listarMinhasDenuncias('listar_minhas_denuncias'),
   listarMinhasDenunciasOk('listar_minhas_denuncias_ok'),
 
+  criarContestacao('criar_contestacao'),
+  criarContestacaoOk('criar_contestacao_ok'),
+  listarMinhasContestacoes('listar_minhas_contestacoes'),
+  listarMinhasContestacoesOk('listar_minhas_contestacoes_ok'),
+
   novaMensagem('nova_mensagem'),
 
   erro('erro');

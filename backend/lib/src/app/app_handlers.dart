@@ -4,6 +4,7 @@ import 'package:backend/src/handlers/auth_handler.dart';
 import 'package:backend/src/handlers/avaliacao_handler.dart';
 import 'package:backend/src/handlers/categorias_handler.dart';
 import 'package:backend/src/handlers/chat_handler.dart';
+import 'package:backend/src/handlers/contestacao_handler.dart';
 import 'package:backend/src/handlers/denuncia_handler.dart';
 import 'package:backend/src/handlers/endereco_handler.dart';
 import 'package:backend/src/handlers/notificacao_handler.dart';
@@ -22,6 +23,7 @@ class AppHandlers {
   final AvaliacaoHandler avaliacao;
   final ChatHandler chat;
   final DenunciaHandler denuncia;
+  final ContestacaoHandler contestacao;
 
   const AppHandlers({
     required this.auth,
@@ -35,5 +37,6 @@ class AppHandlers {
     required this.avaliacao,
     required this.chat,
     required this.denuncia,
+    required this.contestacao,
   });
 }

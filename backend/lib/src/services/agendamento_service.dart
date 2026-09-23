@@ -364,6 +364,16 @@ class AgendamentoService {
       );
     }
 
+    if (agendamento.horaFim.isBefore(
+      DateTime.now().toUtc().subtract(Duration(minutes: 5)),
+    )) {
+      throw ErroDto(
+        codigo: ErroCodigo.dadosInvalidos,
+        mensagem:
+            'Você só pode concluir o atendimento até 5 minutos após o horário agendado',
+      );
+    }
+
     final atualizado = await repo.atualizarStatus(
       id: agendamento.id,
       status: StatusAgendamento.aguardandoConfirmacao,

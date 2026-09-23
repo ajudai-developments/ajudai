@@ -6,6 +6,7 @@ import 'package:backend/src/handlers/auth_handler.dart';
 import 'package:backend/src/handlers/avaliacao_handler.dart';
 import 'package:backend/src/handlers/categorias_handler.dart';
 import 'package:backend/src/handlers/chat_handler.dart';
+import 'package:backend/src/handlers/contestacao_handler.dart';
 import 'package:backend/src/handlers/denuncia_handler.dart';
 import 'package:backend/src/handlers/endereco_handler.dart';
 import 'package:backend/src/handlers/notificacao_handler.dart';
@@ -23,6 +24,7 @@ import 'package:backend/src/services/avaliacao_service.dart';
 import 'package:backend/src/services/categoria_service.dart';
 import 'package:backend/src/services/chat_service.dart';
 import 'package:backend/src/services/conquista_listener.dart';
+import 'package:backend/src/services/contestacao_service.dart';
 import 'package:backend/src/services/denuncia_service.dart';
 import 'package:backend/src/services/endereco_service.dart';
 import 'package:backend/src/services/eventos_agendamento_listener.dart';
@@ -80,6 +82,7 @@ class Dependencies {
 
     final chatService = ChatService(sessaoService);
     final denunciaService = DenunciaService(sessaoService);
+    final contestacaoService = ContestacaoService(sessaoService);
 
     final categoriaService = CategoriaService(sessaoService, supabase);
 
@@ -104,6 +107,7 @@ class Dependencies {
       avaliacao: AvaliacaoHandler(avaliacaoService),
       chat: ChatHandler(chatService),
       denuncia: DenunciaHandler(denunciaService),
+      contestacao: ContestacaoHandler(contestacaoService),
     );
 
     router = WsRouter(handlers);
