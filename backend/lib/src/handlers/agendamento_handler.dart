@@ -364,4 +364,54 @@ class AgendamentoHandler {
       );
     }
   }
+
+  Future<void> handleListarHorariosOcupadosPrestador(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final dto = ListarHorarioOcupadoPrestadorRequestDto.fromJson(msg);
+      final resposta = await _agendamentoService
+          .listarHorariosOcupadosPrestador(conexao, dto);
+      conexao.enviar(resposta);
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } on PostgrestException catch (e, stackTrace) {
+      if (e.code == "P0002") {
+        conexao.enviar(
+          ErroDto(codigo: ErroCodigo.naoEncontrado, mensagem: e.message),
+        );
+        return;
+      } else if (e.code == "22P02") {
+        conexao.enviar(
+          ErroDto(
+            codigo: ErroCodigo.dadosInvalidos,
+            mensagem: 'Prestador não encontrado',
+          ),
+        );
+        return;
+      }
+      print('Erro ao listar horários ocupados: $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao listar horários ocupados',
+        ),
+      );
+    } catch (e, stackTrace) {
+      print('Erro ao listar horários ocupados: $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao listar horários ocupados',
+        ),
+      );
+    }
+  }
 }

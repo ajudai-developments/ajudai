@@ -197,4 +197,17 @@ class AgendamentoRepository {
 
     return AgendamentoDetalhadoPrestador.fromJson(lista.first);
   }
+
+  Future<List<HorarioOcupado>> listarHorariosOcupadosPrestador({
+    required String prestadorId,
+  }) async {
+    final response = await _client.rpc(
+      'listar_horarios_ocupados_prestador',
+      params: {'p_prestador_id': prestadorId},
+    );
+
+    final lista = (response as List).cast<Map<String, dynamic>>();
+
+    return lista.map((json) => HorarioOcupado.fromJson(json)).toList();
+  }
 }

@@ -643,4 +643,27 @@ class AgendamentoService {
 
     return ListarAgendamentosPrestadorResponseDto(agendamentos: agendamentos);
   }
+
+  Future<ListarHorarioOcupadoPrestadorResponseDto>
+  listarHorariosOcupadosPrestador(
+    WsConnection conexao,
+    ListarHorarioOcupadoPrestadorRequestDto dto,
+  ) async {
+    final client = _sessaoService.clientDe(conexao);
+    final userId = _sessaoService.userIdDe(conexao);
+    if (client == null || userId == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final horariosOcupados = await AgendamentoRepository(
+      client,
+    ).listarHorariosOcupadosPrestador(prestadorId: dto.prestadorId);
+
+    return ListarHorarioOcupadoPrestadorResponseDto(
+      horariosOcupados: horariosOcupados,
+    );
+  }
 }
