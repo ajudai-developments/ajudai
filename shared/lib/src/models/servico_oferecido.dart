@@ -1,3 +1,5 @@
+import 'package:shared/shared.dart';
+
 class ServicoOferecido {
   final String id;
   final String servicoId;
@@ -15,11 +17,11 @@ class ServicoOferecido {
 
   factory ServicoOferecido.fromJson(Map<String, dynamic> json) =>
       ServicoOferecido(
-        id: json['id'] as String,
-        servicoId: json['servico_id'] as String,
-        usuarioId: json['usuario_id'] as String,
-        descricao: json['descricao'] as String,
-        valor: (json['valor'] as num).toDouble(),
+        id: JsonUtils.requireString(json, 'id'),
+        servicoId: JsonUtils.requireString(json, 'servico_id'),
+        usuarioId: JsonUtils.requireString(json, 'usuario_id'),
+        descricao: JsonUtils.requireString(json, 'descricao'),
+        valor: JsonUtils.requireDouble(json, 'valor'),
       );
 
   Map<String, dynamic> toJson() => {

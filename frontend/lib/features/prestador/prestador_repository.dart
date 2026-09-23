@@ -5,11 +5,6 @@ import '../../core/ws/ws_client.dart';
 import '../../core/ws/ws_message_stream.dart';
 
 /// Repositório de prestador.
-///
-/// LIMITAÇÃO DE BACKEND: ainda não existe DTO de EDITAR um serviço
-/// oferecido (só criar, listar e desativar). Uma vez criado, os únicos
-/// campos que dá pra mudar são via desativação (não há "reativar"
-/// tampouco).
 class PrestadorRepository {
   /// Solicita virar prestador. Atualiza a Sessao com o usuário retornado
   /// (o `statusPrestador` deve vir como `pendente`), mesmo padrão de
@@ -60,6 +55,29 @@ class PrestadorRepository {
     return ListarMeusServicosOferecidosResponseDto.fromJson(
       json,
     ).servicosOferecidos;
+  }
+
+  Future<ServicoOferecido> editarServicoOferecido({
+    required String servicoOferecidoId,
+    String? descricao,
+    double? valor,
+  }) async {
+    await WsClient.instance.conectar();
+
+    WsClient.instance.enviar(
+      EditarServicoOferecidoRequestDto(
+        servicoOferecidoId: servicoOferecidoId,
+        descricao: descricao,
+        valor: valor,
+      ),
+    );
+
+    final json = await WsMessageStream.instance.aguardar(
+      TipoMensagem.editarServicoOferecidoOk,
+    );
+
+    final servico = EditarServicoOferecidoResponseDto.fromJson(json).servico;
+    return servico;
   }
 
   /// Desativa (soft delete) um serviço oferecido — a coluna `ativo` na

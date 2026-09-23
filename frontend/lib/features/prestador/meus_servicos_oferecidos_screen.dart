@@ -7,6 +7,7 @@ import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/async_list_view.dart';
 import '../../core/ws/ws_message_stream.dart';
 import '../servico/servico_repository.dart';
+import '../servico/editar_servico_screen.dart';
 import 'prestador_repository.dart';
 import 'servico_oferecido_com_detalhes.dart';
 
@@ -37,7 +38,7 @@ class _MeusServicosOferecidosScreenState
         title: const Text('Desativar serviço'),
         content: Text(
           'Desativar "${item.nomeServico}"? Ele deixa de aparecer para '
-          'novos clientes. Não é possível reativar depois.',
+          'novos clientes. É possível reativar depois.',
         ),
         actions: [
           TextButton(
@@ -102,10 +103,17 @@ class _MeusServicosOferecidosScreenState
             for (final item in itens)
               Card(
                 child: ListTile(
-                  onTap: () => Navigator.of(context).pushNamed(
-                    AppRoutes.servicoDetalhe,
-                    arguments: item.servicoOferecido.servicoOferecidoId,
-                  ),
+                  onTap: () async {
+                    final resultado = await Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            EditarServicoScreen(servico: item.servicoOferecido),
+                      ),
+                    );
+                    if (resultado == true) {
+                      _listKey.currentState?.recarregar();
+                    }
+                  },
                   title: Text(item.nomeServico, style: AppTextStyles.titulo),
                   subtitle: Text(
                     '${item.nomeCategoria}\n${item.servicoOferecido.descricao}',
@@ -120,6 +128,7 @@ class _MeusServicosOferecidosScreenState
                         'R\$ ${item.servicoOferecido.valor.toStringAsFixed(2)}',
                         style: AppTextStyles.corpo,
                       ),
+
                       IconButton(
                         icon: const Icon(
                           Icons.delete_outline,

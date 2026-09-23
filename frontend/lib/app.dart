@@ -1,3 +1,4 @@
+import 'package:ajudai/features/servico/editar_servico_screen.dart';
 import 'package:ajudai/features/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
@@ -112,8 +113,8 @@ class _AppRootState extends State<_AppRoot> {
       AppRoutes.solicitarPrestador: (_) => const SolicitarPrestadorScreen(),
       AppRoutes.meusServicosOferecidos: (_) =>
           const MeusServicosOferecidosScreen(),
+
       AppRoutes.formServicoOferecido: (_) => const FormServicoOferecidoScreen(),
-      // TODO: rotas de notificacao/admin — entram aqui conforme as
       // telas forem feitas.
     };
 

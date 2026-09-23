@@ -40,7 +40,7 @@ class EditarServicoOferecidoResponseDto implements WsMessage {
     Map<String, dynamic> json,
   ) {
     return EditarServicoOferecidoResponseDto(
-      servico: ServicoOferecido.fromJson(json),
+      servico: ServicoOferecido.fromJson(json["servico"]),
     );
   }
 
