@@ -82,6 +82,8 @@ enum TipoMensagem {
   confirmarConclusaoAgendamentoOk('confirmar_conclusao_agendamento_ok'),
   cancelarAgendamento('cancelar_agendamento'),
   cancelarAgendamentoOk('cancelar_agendamento_ok'),
+  listarHorariosOcupadosPrestador('listar_horarios_ocupados_prestador'),
+  listarHorariosOcupadosPrestadorOk('listar_horarios_ocupados_prestador_ok'),
 
   obterAgendamentoCliente('obter_agendamento_cliente'),
   obterAgendamentoClienteOk('obter_agendamento_cliente_ok'),

@@ -2,14 +2,21 @@ import 'package:shared/shared.dart';
 
 class EnviarMensagemRequestDto implements WsMessage {
   final String idConversa;
-  final String texto;
+  final String? texto;
+  final ArquivoUpload? arquivo;
 
-  EnviarMensagemRequestDto({required this.idConversa, required this.texto});
+  EnviarMensagemRequestDto({
+    required this.idConversa,
+    this.texto,
+    this.arquivo,
+  });
 
   factory EnviarMensagemRequestDto.fromJson(Map<String, dynamic> json) {
+    final arquivoJson = json['arquivo'] as Map<String, dynamic>?;
     return EnviarMensagemRequestDto(
       idConversa: JsonUtils.requireString(json, 'id_conversa'),
-      texto: JsonUtils.requireString(json, 'texto'),
+      texto: JsonUtils.optionalString(json, 'texto'),
+      arquivo: arquivoJson != null ? ArquivoUpload.fromJson(arquivoJson) : null,
     );
   }
 
@@ -21,11 +28,12 @@ class EnviarMensagemRequestDto implements WsMessage {
     'tipo': tipo.valor,
     'id_conversa': idConversa,
     'texto': texto,
+    'arquivo': arquivo?.toJson(),
   };
 }
 
 class EnviarMensagemResponseDto implements WsMessage {
-  final Mensagem mensagem;
+  final MensagemComUrl mensagem;
 
   EnviarMensagemResponseDto({required this.mensagem});
 
@@ -40,7 +48,7 @@ class EnviarMensagemResponseDto implements WsMessage {
 }
 
 class NovaMensagemDto implements WsMessage {
-  final Mensagem mensagem;
+  final MensagemComUrl mensagem;
 
   NovaMensagemDto({required this.mensagem});
 

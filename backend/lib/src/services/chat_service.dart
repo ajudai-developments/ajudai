@@ -1,3 +1,4 @@
+import 'package:backend/src/services/arquivo_upload_service.dart';
 import 'package:shared/shared.dart';
 import 'package:supabase/supabase.dart';
 import '../repositories/chat_repository.dart';
@@ -113,65 +114,140 @@ class ChatService {
     }
   }
 
-  Future<ListarMensagensResponseDto> listarMensagens(
-    WsConnection conexao,
-    ListarMensagensRequestDto dto,
-  ) async {
-    final client = _clientOuFalha(conexao);
-    final userId = _userIdOuFalha(conexao);
-    final repositorio = ChatRepository(client);
-
-    final participantes = await repositorio.buscarParticipantes(dto.idConversa);
-    if (participantes == null ||
-        (participantes['usuario_a_id'] != userId &&
-            participantes['usuario_b_id'] != userId)) {
-      throw ErroDto(
-        codigo: ErroCodigo.naoPermitido,
-        mensagem: 'Você não participa dessa conversa.',
-      );
-    }
-
-    final linhas = await repositorio.listarMensagens(
-      dto.idConversa,
-      antesDe: dto.antesDe,
-      limite: dto.limite,
-    );
-    return ListarMensagensResponseDto(
-      mensagens: linhas.map(Mensagem.fromMap).toList(),
-    );
-  }
-
   Future<EnviarMensagemResponseDto> enviarMensagem(
     WsConnection conexao,
     EnviarMensagemRequestDto dto,
   ) async {
     final client = _clientOuFalha(conexao);
     final userId = _userIdOuFalha(conexao);
+    final repositorio = ChatRepository(client);
+
+    ArquivoValidado? validado;
+    if (dto.arquivo != null) {
+      validado = ArquivoUploadService.validar(dto.arquivo!);
+      if (validado == null) {
+        throw ErroDto(
+          codigo: ErroCodigo.dadosInvalidos,
+          mensagem: 'Arquivo inválido.',
+        );
+      }
+    }
+
+    final tipoMensagem = validado?.tipo.valor ?? 'texto';
 
     Map<String, dynamic> linha;
     try {
-      linha = await ChatRepository(
-        client,
-      ).enviarMensagem(idConversa: dto.idConversa, texto: dto.texto);
+      linha = await repositorio.enviarMensagem(
+        idConversa: dto.idConversa,
+        texto: dto.texto,
+        tipo: tipoMensagem,
+      );
     } catch (erro) {
       throw _mapearErro(erro);
     }
 
-    final mensagem = Mensagem.fromMap(linha);
+    var mensagem = Mensagem.fromMap(linha);
+    String? urlArquivo;
 
-    final participantes = await ChatRepository(
-      client,
-    ).buscarParticipantes(dto.idConversa);
+    if (dto.arquivo != null && validado != null) {
+      final arquivoId = await repositorio.registrarArquivoMensagem(
+        mensagemId: mensagem.id,
+        nomeOriginal: dto.arquivo!.nomeOriginal,
+        tipoArquivo: validado.tipo.valor,
+        mimeType: validado.mimeType,
+      );
+
+      try {
+        await ArquivoUploadService.upload(
+          client: client,
+          bucket: 'conversas',
+          prefixo: mensagem.id,
+          arquivoId: arquivoId,
+          extensao: dto.arquivo!.extensao.toLowerCase(),
+          validado: validado,
+        );
+
+        final arquivoAnexado = ArquivoAnexado(
+          id: arquivoId,
+          nomeOriginal: dto.arquivo!.nomeOriginal,
+          tipo: validado.tipo,
+          mimeType: validado.mimeType,
+          criadoEm: DateTime.now().toUtc(),
+        );
+
+        urlArquivo = await ArquivoUploadService.urlAssinada(
+          client: client,
+          bucket: 'conversas',
+          prefixo: mensagem.id,
+          arquivo: arquivoAnexado,
+        );
+
+        mensagem = Mensagem(
+          id: mensagem.id,
+          idConversa: mensagem.idConversa,
+          idRemetente: mensagem.idRemetente,
+          texto: mensagem.texto,
+          tipo: mensagem.tipo,
+          enviadoEm: mensagem.enviadoEm,
+          arquivo: arquivoAnexado,
+        );
+      } catch (e) {
+        await client.from('mensagem_arquivos').delete().eq('id', arquivoId);
+      }
+    }
+
+    final mensagemComUrl = MensagemComUrl(
+      mensagem: mensagem,
+      urlArquivo: urlArquivo,
+    );
+
+    final participantes = await repositorio.buscarParticipantes(dto.idConversa);
     if (participantes != null) {
       final idA = participantes['usuario_a_id'] as String;
       final idB = participantes['usuario_b_id'] as String;
       final idOutro = idA == userId ? idB : idA;
       _sessaoService.enviarParaUsuario(
         idOutro,
-        NovaMensagemDto(mensagem: mensagem),
+        NovaMensagemDto(mensagem: mensagemComUrl),
       );
     }
 
-    return EnviarMensagemResponseDto(mensagem: mensagem);
+    return EnviarMensagemResponseDto(mensagem: mensagemComUrl);
+  }
+
+  Future<ListarMensagensResponseDto> listarMensagens(
+    WsConnection conexao,
+    ListarMensagensRequestDto dto,
+  ) async {
+    final client = _clientOuFalha(conexao);
+    final repositorio = ChatRepository(client);
+
+    List<Map<String, dynamic>> linhas;
+    try {
+      linhas = await repositorio.listarMensagens(
+        dto.idConversa,
+        antesDe: dto.antesDe,
+        limite: dto.limite,
+      );
+    } catch (erro) {
+      throw _mapearErro(erro);
+    }
+
+    final comUrls = <MensagemComUrl>[];
+    for (final linha in linhas) {
+      final mensagem = Mensagem.fromMap(linha);
+      String? url;
+      if (mensagem.arquivo != null) {
+        url = await ArquivoUploadService.urlAssinada(
+          client: client,
+          bucket: 'conversas',
+          prefixo: mensagem.id,
+          arquivo: mensagem.arquivo!,
+        );
+      }
+      comUrls.add(MensagemComUrl(mensagem: mensagem, urlArquivo: url));
+    }
+
+    return ListarMensagensResponseDto(mensagens: comUrls);
   }
 }

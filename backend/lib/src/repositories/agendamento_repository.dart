@@ -2,7 +2,12 @@ import 'package:backend/src/models/endereco_resolvido.dart';
 import 'package:shared/shared.dart';
 import 'package:supabase/supabase.dart';
 
-const _statusQueOcupamAgenda = ['pendente', 'aceito', 'em_andamento'];
+const _statusQueOcupamAgenda = [
+  'pendente',
+  'aceito',
+  'em_andamento',
+  'aguardando_confirmacao',
+];
 
 class AgendamentoRepository {
   final SupabaseClient _client;

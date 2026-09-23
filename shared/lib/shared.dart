@@ -14,12 +14,14 @@ export 'src/models/verificacao_com_usuario.dart';
 export 'src/models/agendamento.dart';
 export 'src/models/agendamento_detalhado_cliente.dart';
 export 'src/models/agendamento_detalhado_prestador.dart';
+export 'src/models/horario_ocupado.dart';
 export 'src/models/conquista.dart';
 export 'src/models/conquista_usuario.dart';
 export 'src/models/avaliacao_usuario.dart';
 export 'src/models/avaliacao_servico.dart';
 export 'src/models/mensagem.dart';
 export 'src/models/conversa_resumo.dart';
+export 'src/models/mensagem_com_url.dart';
 
 export 'src/models/arquivo_upload.dart';
 export 'src/models/arquivo_anexado.dart';

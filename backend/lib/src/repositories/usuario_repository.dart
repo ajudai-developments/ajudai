@@ -83,7 +83,6 @@ class UsuarioRepository {
     required String mimeType,
   }) async {
     final path = '$usuarioId/avatar.$extensao';
-    print('Path de upload: "$path"');
     await _client.storage
         .from('avatars')
         .uploadBinary(

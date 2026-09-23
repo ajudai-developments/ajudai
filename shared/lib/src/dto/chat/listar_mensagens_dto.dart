@@ -32,7 +32,7 @@ class ListarMensagensRequestDto implements WsMessage {
 }
 
 class ListarMensagensResponseDto implements WsMessage {
-  final List<Mensagem> mensagens;
+  final List<MensagemComUrl> mensagens;
 
   ListarMensagensResponseDto({required this.mensagens});
 

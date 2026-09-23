@@ -1,5 +1,6 @@
 import 'package:shared/src/dto/json_utils.dart';
 import 'package:shared/src/models/enums/tipo_conteudo_mensagem.dart';
+import 'package:shared/src/models/arquivo_anexado.dart';
 
 class Mensagem {
   final String id;
@@ -8,6 +9,7 @@ class Mensagem {
   final String? texto;
   final TipoConteudoMensagem tipo;
   final DateTime enviadoEm;
+  final ArquivoAnexado? arquivo;
 
   Mensagem({
     required this.id,
@@ -16,9 +18,11 @@ class Mensagem {
     required this.texto,
     required this.tipo,
     required this.enviadoEm,
+    this.arquivo,
   });
 
   factory Mensagem.fromMap(Map<String, dynamic> map) {
+    final arquivoJson = map['arquivo'] as Map<String, dynamic>?;
     return Mensagem(
       id: JsonUtils.requireString(map, 'id'),
       idConversa: JsonUtils.requireString(map, 'conversa_id'),
@@ -30,10 +34,14 @@ class Mensagem {
           ) ??
           TipoConteudoMensagem.texto,
       enviadoEm: JsonUtils.requireDateTime(map, 'enviado_em'),
+      arquivo: arquivoJson != null
+          ? ArquivoAnexado.fromJson(arquivoJson)
+          : null,
     );
   }
 
   factory Mensagem.fromJson(Map<String, dynamic> json) {
+    final arquivoJson = json['arquivo'] as Map<String, dynamic>?;
     return Mensagem(
       id: JsonUtils.requireString(json, 'id'),
       idConversa: JsonUtils.requireString(json, 'id_conversa'),
@@ -45,6 +53,9 @@ class Mensagem {
           ) ??
           TipoConteudoMensagem.texto,
       enviadoEm: JsonUtils.requireDateTime(json, 'enviado_em'),
+      arquivo: arquivoJson != null
+          ? ArquivoAnexado.fromJson(arquivoJson)
+          : null,
     );
   }
 
@@ -55,5 +66,6 @@ class Mensagem {
     'texto': texto,
     'tipo': tipo.valor,
     'enviado_em': enviadoEm.toIso8601String(),
+    'arquivo': arquivo?.toJson(),
   };
 }

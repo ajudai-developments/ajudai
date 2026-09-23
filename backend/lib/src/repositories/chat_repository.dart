@@ -19,13 +19,32 @@ class ChatRepository {
 
   Future<Map<String, dynamic>> enviarMensagem({
     required String idConversa,
-    required String texto,
+    String? texto,
+    required String tipo,
   }) async {
     final resultado = await _client.rpc(
       'enviar_mensagem',
-      params: {'p_conversa_id': idConversa, 'p_texto': texto},
+      params: {'p_conversa_id': idConversa, 'p_texto': texto, 'p_tipo': tipo},
     );
     return resultado as Map<String, dynamic>;
+  }
+
+  Future<String> registrarArquivoMensagem({
+    required String mensagemId,
+    required String nomeOriginal,
+    required String tipoArquivo,
+    required String mimeType,
+  }) async {
+    final resultado = await _client.rpc(
+      'registrar_mensagem_arquivo',
+      params: {
+        'p_mensagem_id': mensagemId,
+        'p_nome_original': nomeOriginal,
+        'p_tipo': tipoArquivo,
+        'p_mime_type': mimeType,
+      },
+    );
+    return resultado as String;
   }
 
   Future<Map<String, dynamic>?> buscarParticipantes(String conversaId) async {
@@ -41,13 +60,14 @@ class ChatRepository {
     DateTime? antesDe,
     int limite = 50,
   }) async {
-    var query = _client
-        .from('mensagens')
-        .select()
-        .eq('conversa_id', conversaId);
-    if (antesDe != null) {
-      query = query.lt('enviado_em', antesDe.toIso8601String());
-    }
-    return await query.order('enviado_em', ascending: false).limit(limite);
+    final resultado = await _client.rpc(
+      'listar_mensagens_conversa',
+      params: {
+        'p_conversa_id': conversaId,
+        'p_antes_de': antesDe?.toIso8601String(),
+        'p_limite': limite,
+      },
+    );
+    return (resultado as List).cast<Map<String, dynamic>>();
   }
 }
