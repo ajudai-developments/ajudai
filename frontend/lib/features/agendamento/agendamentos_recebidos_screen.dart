@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../../core/routes/app_routes.dart';
+import '../../core/session/sessao.dart';
 import '../../core/theme/app_colors.dart';
+import '../../core/widgets/app_bottom_nav.dart';
 import '../../core/widgets/async_list_view.dart';
 import '../servico/servico_repository.dart';
 import 'agendamento_com_detalhes.dart';
@@ -13,6 +15,11 @@ import 'widgets/agendamento_card.dart';
 ///
 /// Usa `listarAgendamentosPrestador`, que já vem com `clienteNome`
 /// pronto — sem chamada extra pra isso.
+///
+/// Agora também é alcançável direto pelo ícone "Marketplace" da barra
+/// de navegação inferior (ver AppBottomNav) — por isso ganhou a própria
+/// bottomNavigationBar, igual às outras telas de topo. Continua também
+/// acessível pelo botão "Agendamentos recebidos" em meu_perfil_screen.
 class AgendamentosRecebidosScreen extends StatelessWidget {
   const AgendamentosRecebidosScreen({super.key});
 
@@ -47,6 +54,9 @@ class AgendamentosRecebidosScreen extends StatelessWidget {
           ],
         ),
       ),
+      bottomNavigationBar: Sessao.instance.ehPrestador
+          ? const AppBottomNav(currentIndex: 3)
+          : null,
     );
   }
 }
