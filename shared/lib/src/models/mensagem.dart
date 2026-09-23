@@ -4,8 +4,8 @@ import 'package:shared/src/models/arquivo_anexado.dart';
 
 class Mensagem {
   final String id;
-  final String idConversa;
-  final String idRemetente;
+  final String conversaId;
+  final String remetenteId;
   final String? texto;
   final TipoConteudoMensagem tipo;
   final DateTime enviadoEm;
@@ -13,8 +13,8 @@ class Mensagem {
 
   Mensagem({
     required this.id,
-    required this.idConversa,
-    required this.idRemetente,
+    required this.conversaId,
+    required this.remetenteId,
     required this.texto,
     required this.tipo,
     required this.enviadoEm,
@@ -22,11 +22,12 @@ class Mensagem {
   });
 
   factory Mensagem.fromMap(Map<String, dynamic> map) {
+    print("Map recebido: $map");
     final arquivoJson = map['arquivo'] as Map<String, dynamic>?;
     return Mensagem(
       id: JsonUtils.requireString(map, 'id'),
-      idConversa: JsonUtils.requireString(map, 'id_conversa'),
-      idRemetente: JsonUtils.requireString(map, 'id_remetente'),
+      conversaId: JsonUtils.requireString(map, 'conversa_id'),
+      remetenteId: JsonUtils.requireString(map, 'remetente_id'),
       texto: JsonUtils.optionalString(map, 'texto'),
       tipo:
           TipoConteudoMensagem.fromValor(
@@ -41,11 +42,12 @@ class Mensagem {
   }
 
   factory Mensagem.fromJson(Map<String, dynamic> json) {
+    print("JSON recebido: $json");
     final arquivoJson = json['arquivo'] as Map<String, dynamic>?;
     return Mensagem(
       id: JsonUtils.requireString(json, 'id'),
-      idConversa: JsonUtils.requireString(json, 'id_conversa'),
-      idRemetente: JsonUtils.requireString(json, 'id_remetente'),
+      conversaId: JsonUtils.requireString(json, 'conversa_id'),
+      remetenteId: JsonUtils.requireString(json, 'remetente_id'),
       texto: JsonUtils.optionalString(json, 'texto'),
       tipo:
           TipoConteudoMensagem.fromValor(
@@ -61,8 +63,8 @@ class Mensagem {
 
   Map<String, dynamic> toJson() => {
     'id': id,
-    'id_conversa': idConversa,
-    'id_remetente': idRemetente,
+    'conversa_id': conversaId,
+    'remetente_id': remetenteId,
     'texto': texto,
     'tipo': tipo.valor,
     'enviado_em': enviadoEm.toIso8601String(),

@@ -14,13 +14,23 @@
             "name": "frontend",
             "cwd": "frontend",
             "request": "launch",
-            "type": "dart"
+            "type": "dart",
+            "program": "lib/main.dart"
+        },
+        {
+            "name": "frontend (Android)",
+            "cwd": "frontend",
+            "request": "launch",
+            "type": "dart",
+            "program": "lib/main.dart",
+            "deviceId": "ZF524SWJJP"
         },
         {
             "name": "frontend (profile mode)",
             "cwd": "frontend",
             "request": "launch",
             "type": "dart",
+            "program": "lib/main.dart",
             "flutterMode": "profile"
         },
         {
@@ -28,6 +38,7 @@
             "cwd": "frontend",
             "request": "launch",
             "type": "dart",
+            "program": "lib/main.dart",
             "flutterMode": "release"
         },
         {

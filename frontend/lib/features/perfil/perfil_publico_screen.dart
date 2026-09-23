@@ -100,7 +100,9 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
     try {
       final conversaId = await _conversasRepository.criarConversa(prestador.id);
       final conversas = await _conversasRepository.listarConversas();
-      final conversa = conversas.firstWhere((item) => item.id == conversaId);
+      final conversa = conversas.firstWhere(
+        (item) => item.conversaId == conversaId,
+      );
       if (!mounted) return;
       await Navigator.of(
         context,

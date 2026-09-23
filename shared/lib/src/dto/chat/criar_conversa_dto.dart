@@ -16,7 +16,7 @@ class CriarConversaRequestDto implements WsMessage {
 
   @override
   Map<String, dynamic> toJson() {
-    return {'prestador_id': prestadorId};
+    return {'tipo': tipo.valor, 'prestador_id': prestadorId};
   }
 }
 
@@ -36,6 +36,6 @@ class CriarConversaResponseDto implements WsMessage {
 
   @override
   Map<String, dynamic> toJson() {
-    return {'conversa_id': conversaId};
+    return {'tipo': tipo.valor, 'conversa_id': conversaId};
   }
 }

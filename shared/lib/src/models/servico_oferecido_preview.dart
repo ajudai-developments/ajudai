@@ -1,7 +1,5 @@
 import 'package:shared/src/dto/json_utils.dart';
 
-/// Card resumido de um serviço oferecido, para telas de listagem/busca.
-/// A visão detalhada (perfil completo) fica em ObterServicoOferecidoResponseDto.
 class ServicoOferecidoPreview {
   final String servicoOferecidoId;
   final String servicoNome;

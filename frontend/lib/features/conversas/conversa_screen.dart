@@ -57,7 +57,9 @@ class _ConversaScreenState extends State<ConversaScreen> {
 
   Future<void> _carregarMensagens() async {
     try {
-      final mensagens = await _repository.listarMensagens(widget.conversa.id);
+      final mensagens = await _repository.listarMensagens(
+        widget.conversa.conversaId,
+      );
       if (!mounted) {
         return;
       }
@@ -66,7 +68,7 @@ class _ConversaScreenState extends State<ConversaScreen> {
           ..clear()
           ..addAll(
             mensagens.where(
-              (item) => item.mensagem.idConversa == widget.conversa.id,
+              (item) => item.mensagem.conversaId == widget.conversa.conversaId,
             ),
           );
         _mensagens.sort(
@@ -91,7 +93,10 @@ class _ConversaScreenState extends State<ConversaScreen> {
   }
 
   void _adicionarMensagemRecebida(MensagemComUrl mensagem) {
-    if (!mounted || mensagem.mensagem.idConversa != widget.conversa.id) return;
+    if (!mounted ||
+        mensagem.mensagem.conversaId != widget.conversa.conversaId) {
+      return;
+    }
     if (_mensagens.any((item) => item.mensagem.id == mensagem.mensagem.id)) {
       return;
     }
@@ -110,7 +115,7 @@ class _ConversaScreenState extends State<ConversaScreen> {
 
     try {
       final mensagem = await _repository.enviarMensagem(
-        conversaId: widget.conversa.id,
+        conversaId: widget.conversa.conversaId,
         texto: texto.isEmpty ? null : texto,
         arquivo: _anexoSelecionado?.arquivo,
       );
@@ -218,16 +223,7 @@ class _ConversaScreenState extends State<ConversaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7F7),
-      appBar: AppBar(
-        title: Text(widget.conversa.outroUsuario.nome),
-        actions: [
-          if (widget.conversa.emAgendamentoAtivo)
-            const Padding(
-              padding: EdgeInsets.only(right: 16),
-              child: Icon(Icons.handshake_outlined),
-            ),
-        ],
-      ),
+      appBar: AppBar(title: Text(widget.conversa.outroUsuario.nome)),
       body: Column(
         children: [
           ErrorBanner(mensagem: _erro),
@@ -243,7 +239,7 @@ class _ConversaScreenState extends State<ConversaScreen> {
                     itemBuilder: (context, index) => _BolhaMensagem(
                       mensagem: _mensagens[index],
                       minha:
-                          _mensagens[index].mensagem.idRemetente == _usuarioId,
+                          _mensagens[index].mensagem.remetenteId == _usuarioId,
                       horario: _horario(_mensagens[index].mensagem.enviadoEm),
                     ),
                   ),

@@ -11,6 +11,7 @@ class ConversasRepository {
     final json = await WsMessageStream.instance.aguardar(
       TipoMensagem.criarConversaOk,
     );
+
     return CriarConversaResponseDto.fromJson(json).conversaId;
   }
 

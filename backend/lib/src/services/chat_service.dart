@@ -106,6 +106,7 @@ class ChatService {
     final client = _clientOuFalha(conexao);
     try {
       final linhas = await ChatRepository(client).listarConversasComDetalhes();
+
       return ListarConversasResponseDto(
         conversas: linhas.map(ConversaResumo.fromMap).toList(),
       );
@@ -184,8 +185,8 @@ class ChatService {
 
         mensagem = Mensagem(
           id: mensagem.id,
-          idConversa: mensagem.idConversa,
-          idRemetente: mensagem.idRemetente,
+          conversaId: mensagem.conversaId,
+          remetenteId: mensagem.remetenteId,
           texto: mensagem.texto,
           tipo: mensagem.tipo,
           enviadoEm: mensagem.enviadoEm,
