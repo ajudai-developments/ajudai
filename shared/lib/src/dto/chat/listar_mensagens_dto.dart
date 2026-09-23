@@ -40,7 +40,6 @@ class ListarMensagensResponseDto implements WsMessage {
     final itens = (json['mensagens'] as List<dynamic>? ?? const [])
         .cast<Map<String, dynamic>>();
 
-    print("Itens extraídos do json: $itens");
     return ListarMensagensResponseDto(
       mensagens: itens.map(MensagemComUrl.fromJson).toList(),
     );

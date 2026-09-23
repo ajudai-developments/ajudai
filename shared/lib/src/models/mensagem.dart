@@ -48,6 +48,7 @@ class Mensagem {
       id: JsonUtils.requireString(json, 'id'),
       conversaId: JsonUtils.requireString(json, 'conversa_id'),
       remetenteId: JsonUtils.requireString(json, 'remetente_id'),
+
       texto: JsonUtils.optionalString(json, 'texto'),
       tipo:
           TipoConteudoMensagem.fromValor(
@@ -65,6 +66,7 @@ class Mensagem {
     'id': id,
     'conversa_id': conversaId,
     'remetente_id': remetenteId,
+
     'texto': texto,
     'tipo': tipo.valor,
     'enviado_em': enviadoEm.toIso8601String(),
