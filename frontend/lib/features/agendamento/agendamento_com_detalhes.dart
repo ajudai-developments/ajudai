@@ -14,12 +14,18 @@ import '../servico/servico_repository.dart';
 class AgendamentoComDetalhes {
   final Agendamento agendamento;
   final String nomeContraparte;
+  final String avatarContraparte;
+  final bool contraparteVerificada;
   final String nomeServico;
+  final bool comoCliente;
 
   AgendamentoComDetalhes({
     required this.agendamento,
     required this.nomeContraparte,
+    required this.avatarContraparte,
+    required this.contraparteVerificada,
     required this.nomeServico,
+    required this.comoCliente,
   });
 }
 
@@ -32,6 +38,9 @@ Future<List<AgendamentoComDetalhes>> carregarComDetalhesCliente(
     itens: agendamentos,
     agendamentoDe: (item) => item.agendamento,
     nomeContraparteDe: (item) => item.prestadorNome,
+    avatarContraparteDe: (item) => item.prestadorAvatarUrl,
+    contraparteVerificadaDe: (item) => item.prestadorVerificado,
+    comoClienteDe: (_) => true,
     servicoRepository: servicoRepository,
   );
 }
@@ -45,6 +54,9 @@ Future<List<AgendamentoComDetalhes>> carregarComDetalhesPrestador(
     itens: agendamentos,
     agendamentoDe: (item) => item.agendamento,
     nomeContraparteDe: (item) => item.clienteNome,
+    avatarContraparteDe: (item) => item.clienteAvatarUrl,
+    contraparteVerificadaDe: (item) => item.clienteVerificado,
+    comoClienteDe: (_) => false,
     servicoRepository: servicoRepository,
   );
 }
@@ -62,6 +74,9 @@ Future<List<AgendamentoComDetalhes>> _resolverNomeServico<T>({
   required List<T> itens,
   required Agendamento Function(T) agendamentoDe,
   required String Function(T) nomeContraparteDe,
+  required String Function(T) avatarContraparteDe,
+  required bool Function(T) contraparteVerificadaDe,
+  required bool Function(T) comoClienteDe,
   required ServicoRepository servicoRepository,
 }) async {
   final cache = <String, String>{};
@@ -88,7 +103,10 @@ Future<List<AgendamentoComDetalhes>> _resolverNomeServico<T>({
       AgendamentoComDetalhes(
         agendamento: agendamento,
         nomeContraparte: nomeContraparteDe(item),
+        avatarContraparte: avatarContraparteDe(item),
+        contraparteVerificada: contraparteVerificadaDe(item),
         nomeServico: nomeServico,
+        comoCliente: comoClienteDe(item),
       ),
     );
   }

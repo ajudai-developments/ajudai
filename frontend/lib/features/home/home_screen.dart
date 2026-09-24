@@ -9,7 +9,7 @@ import '../../core/widgets/app_bottom_nav.dart';
 import '../../core/widgets/categoria_card.dart';
 import '../../core/ws/ws_message_stream.dart';
 import '../servico/servico_repository.dart';
-import 'widgets/mapa_placeholder.dart';
+import 'widgets/agendamento_atual_section.dart';
 
 /// Quantidade de categorias mostradas na grade da Home antes de precisar
 /// tocar em "Ver mais" (que leva pra categorias_screen, com a lista
@@ -21,8 +21,7 @@ const _maxCategoriasNaHome = 6;
 ///
 /// Estrutura da tela, de cima pra baixo:
 /// 1. Busca — NÃO implementar ainda (sem filtro no backend).
-/// 2. Mapa de serviços próximos — placeholder por enquanto (ver
-///    mapa_placeholder.dart), sem geolocalização real.
+/// 2. Agendamento atual — visualização resumida do pedido em andamento.
 /// 3. Categorias de serviço — grade com as primeiras
 ///    [_maxCategoriasNaHome], "Ver mais" abre categorias_screen com a
 ///    lista completa.
@@ -107,7 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 16),
 
-              const MapaPlaceholder(),
+              const AgendamentoAtualSection(),
               const SizedBox(height: 24),
 
               Row(

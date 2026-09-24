@@ -5,12 +5,14 @@ class AgendamentoDetalhadoPrestador {
   final String clienteNome;
   final String clienteAvatarUrl;
   final bool clienteVerificado;
+  final bool comoCliente;
 
   AgendamentoDetalhadoPrestador({
     required this.agendamento,
     required this.clienteNome,
     required this.clienteAvatarUrl,
     required this.clienteVerificado,
+    this.comoCliente = false,
   });
 
   factory AgendamentoDetalhadoPrestador.fromJson(Map<String, dynamic> json) {
@@ -27,5 +29,6 @@ class AgendamentoDetalhadoPrestador {
     'cliente_nome': clienteNome,
     'cliente_avatar_url': clienteAvatarUrl,
     'cliente_verificado': clienteVerificado,
+    'como_cliente': comoCliente,
   };
 }

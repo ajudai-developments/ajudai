@@ -9,10 +9,14 @@ class PrestadorRepository {
   /// Solicita virar prestador. Atualiza a Sessao com o usuário retornado
   /// (o `statusPrestador` deve vir como `pendente`), mesmo padrão de
   /// AuthRepository/UsuarioRepository.
-  Future<SolicitarPrestadorResponseDto> solicitarPrestador() async {
+  Future<SolicitarPrestadorResponseDto> solicitarPrestador({
+    required ArquivoUpload documento,
+  }) async {
     await WsClient.instance.conectar();
 
-    WsClient.instance.enviar(SolicitarPrestadorRequestDto());
+    WsClient.instance.enviar(
+      SolicitarPrestadorRequestDto(arquivos: [documento]),
+    );
 
     final json = await WsMessageStream.instance.aguardar(
       TipoMensagem.solicitarPrestadorOk,

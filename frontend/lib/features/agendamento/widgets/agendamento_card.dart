@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/widgets/user_avatar.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../agendamento_com_detalhes.dart';
 import 'status_badge.dart';
@@ -31,13 +32,19 @@ class AgendamentoCard extends StatelessWidget {
 
     return Card(
       child: ListTile(
+        leading: UserAvatar(avatarUrl: item.avatarContraparte, radius: 22),
         onTap: onTap,
         title: Text(item.nomeServico, style: AppTextStyles.titulo),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('com ${item.nomeContraparte}', style: AppTextStyles.corpo),
-            Text(_formatarData(agendamento.horaInicio), style: AppTextStyles.legenda),
+            if (item.contraparteVerificada)
+              Text('Verificado', style: AppTextStyles.legenda),
+            Text(
+              _formatarData(agendamento.horaInicio),
+              style: AppTextStyles.legenda,
+            ),
             Text(
               '${agendamento.enderecoLogradouro}, ${agendamento.enderecoNumero}',
               style: AppTextStyles.legenda,
@@ -49,7 +56,10 @@ class AgendamentoCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text('R\$ ${agendamento.valor.toStringAsFixed(2)}', style: AppTextStyles.corpo),
+            Text(
+              'R\$ ${agendamento.valor.toStringAsFixed(2)}',
+              style: AppTextStyles.corpo,
+            ),
             const SizedBox(height: 4),
             StatusBadge(status: agendamento.status),
           ],
