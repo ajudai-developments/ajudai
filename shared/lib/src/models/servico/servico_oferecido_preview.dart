@@ -10,8 +10,8 @@ class ServicoOferecidoPreview {
   final bool prestadorVerificado;
   final String? prestadorAvatarUrl;
   final double? mediaAvaliacao;
-  final int quantidadeAvaliacoes;
-  final int quantidadeSelos;
+  final int? quantidadeAvaliacoes;
+  final int? quantidadeSelos;
 
   ServicoOferecidoPreview({
     required this.servicoOferecidoId,
@@ -41,8 +41,11 @@ class ServicoOferecidoPreview {
         'prestador_avatar_url',
       ),
       mediaAvaliacao: JsonUtils.optionalDouble(json, 'media_avaliacao'),
-      quantidadeAvaliacoes: JsonUtils.requireInt(json, 'quantidade_avaliacoes'),
-      quantidadeSelos: JsonUtils.requireInt(json, 'quantidade_selos'),
+      quantidadeAvaliacoes: JsonUtils.optionalInt(
+        json,
+        'quantidade_avaliacoes',
+      ),
+      quantidadeSelos: JsonUtils.optionalInt(json, 'quantidade_selos'),
     );
   }
 

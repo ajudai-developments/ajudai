@@ -6,9 +6,11 @@ class ObterServicoOferecidoResponseDto implements WsMessage {
   final Categoria categoria;
   final UsuarioBasico prestador;
   final List<ConquistaUsuario> selos;
+
+  /// Média e quantidade das avaliações DESTE serviço oferecido.
   final double? mediaAvaliacao;
   final int quantidadeAvaliacoes;
-  final List<AvaliacaoUsuario> comentarios;
+  final List<AvaliacaoServico> comentariosServico;
 
   ObterServicoOferecidoResponseDto({
     required this.servicoOferecido,
@@ -18,7 +20,7 @@ class ObterServicoOferecidoResponseDto implements WsMessage {
     required this.selos,
     this.mediaAvaliacao,
     required this.quantidadeAvaliacoes,
-    required this.comentarios,
+    required this.comentariosServico,
   });
 
   @override
@@ -26,7 +28,10 @@ class ObterServicoOferecidoResponseDto implements WsMessage {
 
   factory ObterServicoOferecidoResponseDto.fromJson(Map<String, dynamic> json) {
     final selos = JsonUtils.requireListaDeMapas(json, 'selos');
-    final comentarios = JsonUtils.requireListaDeMapas(json, 'comentarios');
+    final comentarios = JsonUtils.requireListaDeMapas(
+      json,
+      'comentarios_servico',
+    );
 
     return ObterServicoOferecidoResponseDto(
       servicoOferecido: ServicoOferecido.fromJson(
@@ -40,7 +45,7 @@ class ObterServicoOferecidoResponseDto implements WsMessage {
       selos: selos.map(ConquistaUsuario.fromJson).toList(),
       mediaAvaliacao: JsonUtils.optionalDouble(json, 'media_avaliacao'),
       quantidadeAvaliacoes: JsonUtils.requireInt(json, 'quantidade_avaliacoes'),
-      comentarios: comentarios.map(AvaliacaoUsuario.fromJson).toList(),
+      comentariosServico: comentarios.map(AvaliacaoServico.fromJson).toList(),
     );
   }
 
@@ -54,6 +59,6 @@ class ObterServicoOferecidoResponseDto implements WsMessage {
     'selos': selos.map((s) => s.toJson()).toList(),
     'media_avaliacao': mediaAvaliacao,
     'quantidade_avaliacoes': quantidadeAvaliacoes,
-    'comentarios': comentarios.map((c) => c.toJson()).toList(),
+    'comentarios_servico': comentariosServico.map((c) => c.toJson()).toList(),
   };
 }

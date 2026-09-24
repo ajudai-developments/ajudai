@@ -166,7 +166,7 @@ class _ServicoDetalheScreenState extends State<ServicoDetalheScreen> {
       const SizedBox(height: 16),
       Text('Comentários', style: AppTextStyles.titulo),
       const SizedBox(height: 8),
-      ComentariosList(comentarios: dados.comentarios),
+      ComentariosList(comentarios: dados.comentariosServico),
       const SizedBox(height: 80), // espaço pro botão fixo de agendar
     ];
   }
