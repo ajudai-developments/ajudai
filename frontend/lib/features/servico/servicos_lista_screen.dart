@@ -19,9 +19,10 @@ class ServicosListaScreen extends StatelessWidget {
   const ServicosListaScreen({super.key});
 
   void _abrirDetalhe(BuildContext context, ServicoOferecidoPreview servico) {
-    Navigator.of(
-      context,
-    ).pushNamed(AppRoutes.servicoDetalhe, arguments: servico);
+    Navigator.of(context).pushNamed(
+      AppRoutes.servicoDetalhe,
+      arguments: servico.servicoOferecidoId,
+    );
   }
 
   void _abrirAgendamento(
