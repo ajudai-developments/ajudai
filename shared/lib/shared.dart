@@ -91,8 +91,6 @@ export 'src/dto/agendamento/confirmar_conclusao_agendamento_dto.dart';
 export 'src/dto/agendamento/iniciar_agendamento_dto.dart';
 export 'src/dto/agendamento/listar_agendamentos_cliente_dto.dart';
 export 'src/dto/agendamento/listar_agendamentos_prestador_dto.dart';
-export 'src/dto/agendamento/obter_agendamento_cliente_dto.dart';
-export 'src/dto/agendamento/obter_agendamento_prestador_dto.dart';
 export 'src/dto/agendamento/responder_agendamento_dto.dart';
 export 'src/dto/agendamento/listar_horario_ocupado_prestador_dto.dart';
 

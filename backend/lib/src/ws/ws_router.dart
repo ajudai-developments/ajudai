@@ -61,12 +61,6 @@ class WsRouter {
 
       TipoMensagem.cancelarAgendamento: h.agendamento.handleCancelarAgendamento,
 
-      TipoMensagem.obterAgendamentoCliente:
-          h.agendamento.handleObterAgendamentoCliente,
-
-      TipoMensagem.obterAgendamentoPrestador:
-          h.agendamento.handleObterAgendamentoPrestador,
-
       TipoMensagem.listarAgendamentosCliente:
           h.agendamento.handleListarAgendamentosCliente,
 

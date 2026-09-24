@@ -525,67 +525,6 @@ class AgendamentoService {
     return CancelarAgendamentoResponseDto(agendamento: atualizado);
   }
 
-  Future<ObterAgendamentoClienteResponseDto> obterAgendamentoCliente(
-    WsConnection conexao,
-    ObterAgendamentoRequestClienteDto dto,
-  ) async {
-    final client = _sessaoService.clientDe(conexao);
-    final userId = _sessaoService.userIdDe(conexao);
-    if (client == null || userId == null) {
-      throw ErroDto(
-        codigo: ErroCodigo.naoAutenticado,
-        mensagem: 'Não autenticado',
-      );
-    }
-    final repo = AgendamentoRepository(client);
-    final agendamentoDetalhado = await repo.buscarAgendamentoDetalhadoCliente(
-      dto.agendamentoId,
-      userId,
-    );
-    if (agendamentoDetalhado.agendamento.usuarioId != userId) {
-      throw ErroDto(
-        codigo: ErroCodigo.naoPermitido,
-        mensagem: 'Você não está autorizado a fazer isso',
-      );
-    }
-
-    return ObterAgendamentoClienteResponseDto(
-      agendamento: agendamentoDetalhado,
-    );
-  }
-
-  Future<ObterAgendamentoPrestadorResponseDto> obterAgendamentoPrestador(
-    WsConnection conexao,
-    ObterAgendamentoRequestPrestadorDto dto,
-  ) async {
-    final client = _sessaoService.clientDe(conexao);
-    final userId = _sessaoService.userIdDe(conexao);
-    if (client == null || userId == null) {
-      throw ErroDto(
-        codigo: ErroCodigo.naoAutenticado,
-        mensagem: 'Não autenticado',
-      );
-    }
-    print("userId logado: $userId");
-    print("agendamentoId recebido: '${dto.agendamentoId}'");
-
-    final repo = AgendamentoRepository(client);
-    final agendamentoDetalhado = await repo.buscarAgendamentoDetalhadoPrestador(
-      dto.agendamentoId,
-      userId,
-    );
-    if (agendamentoDetalhado.agendamento.prestadorId != userId) {
-      throw ErroDto(
-        codigo: ErroCodigo.naoPermitido,
-        mensagem: 'Você não está autorizado a fazer isso',
-      );
-    }
-
-    return ObterAgendamentoPrestadorResponseDto(
-      agendamento: agendamentoDetalhado,
-    );
-  }
-
   Future<ListarAgendamentosClienteResponseDto> listarAgendamentosCliente(
     WsConnection conexao,
     ListarAgendamentosClienteRequestDto dto,
