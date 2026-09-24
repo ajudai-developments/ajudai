@@ -7,7 +7,6 @@ import '../../core/widgets/app_bottom_nav.dart';
 import '../../core/widgets/async_list_view.dart';
 import '../servico/servico_repository.dart';
 import 'agendamento_com_detalhes.dart';
-import 'agendamento_detalhe_args.dart';
 import 'agendamento_repository.dart';
 import 'widgets/agendamento_card.dart';
 
@@ -16,10 +15,9 @@ import 'widgets/agendamento_card.dart';
 /// Usa `listarAgendamentosPrestador`, que já vem com `clienteNome`
 /// pronto — sem chamada extra pra isso.
 ///
-/// Agora também é alcançável direto pelo ícone "Marketplace" da barra
-/// de navegação inferior (ver AppBottomNav) — por isso ganhou a própria
-/// bottomNavigationBar, igual às outras telas de topo. Continua também
-/// acessível pelo botão "Agendamentos recebidos" em meu_perfil_screen.
+/// Também é alcançável direto pelo ícone "Marketplace" da barra de
+/// navegação inferior (ver AppBottomNav) e pelo botão "Agendamentos
+/// recebidos" em meu_perfil_screen.
 class AgendamentosRecebidosScreen extends StatelessWidget {
   const AgendamentosRecebidosScreen({super.key});
 
@@ -43,13 +41,9 @@ class AgendamentosRecebidosScreen extends StatelessWidget {
             for (final item in itens)
               AgendamentoCard(
                 item: item,
-                onTap: () => Navigator.of(context).pushNamed(
-                  AppRoutes.agendamentoDetalhe,
-                  arguments: AgendamentoDetalheArgs(
-                    agendamentoId: item.agendamento.id,
-                    comoCliente: false,
-                  ),
-                ),
+                onTap: () => Navigator.of(
+                  context,
+                ).pushNamed(AppRoutes.agendamentoDetalhe, arguments: item),
               ),
           ],
         ),

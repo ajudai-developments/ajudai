@@ -157,38 +157,6 @@ class AgendamentoRepository {
     return CancelarAgendamentoResponseDto.fromJson(json).agendamento;
   }
 
-  /// Detalhe de UM agendamento, visto pelo CLIENTE (quem pediu).
-  Future<AgendamentoDetalhadoCliente> obterAgendamentoCliente(
-    String agendamentoId,
-  ) async {
-    await WsClient.instance.conectar();
-
-    WsClient.instance.enviar(
-      ObterAgendamentoRequestClienteDto(agendamentoId: agendamentoId),
-    );
-
-    final json = await WsMessageStream.instance.aguardar(
-      TipoMensagem.obterAgendamentoClienteOk,
-    );
-    return ObterAgendamentoClienteResponseDto.fromJson(json).agendamento;
-  }
-
-  /// Detalhe de UM agendamento, visto pelo PRESTADOR (quem recebeu o pedido).
-  Future<AgendamentoDetalhadoPrestador> obterAgendamentoPrestador(
-    String agendamentoId,
-  ) async {
-    await WsClient.instance.conectar();
-
-    WsClient.instance.enviar(
-      ObterAgendamentoRequestPrestadorDto(agendamentoId: agendamentoId),
-    );
-
-    final json = await WsMessageStream.instance.aguardar(
-      TipoMensagem.obterAgendamentoPrestadorOk,
-    );
-    return ObterAgendamentoPrestadorResponseDto.fromJson(json).agendamento;
-  }
-
   /// Agendamentos que EU pedi (como cliente). Já vem com `prestadorNome`.
   Future<List<AgendamentoDetalhadoCliente>> listarAgendamentosCliente() async {
     await WsClient.instance.conectar();

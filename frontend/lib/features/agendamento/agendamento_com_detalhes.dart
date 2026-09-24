@@ -2,52 +2,85 @@ import 'package:shared/shared.dart';
 
 import '../servico/servico_repository.dart';
 
-/// Um agendamento (visto pelo cliente OU pelo prestador) acompanhado do
-/// nome do serviço.
-///
-/// `AgendamentoDetalhadoCliente`/`AgendamentoDetalhadoPrestador` já vêm
-/// com o nome da CONTRAPARTE (prestadorNome/clienteNome) direto do
-/// backend — não precisa mais resolver isso à parte (antes disso
-/// existir, o prestador via "Cliente" como placeholder genérico; não é
-/// mais o caso). O que nenhum dos dois carrega é o nome do SERVIÇO —
-/// isso continua vindo via `obterServicoOferecido`.
+enum PapelAgendamento { cliente, prestador }
+
 class AgendamentoComDetalhes {
   final Agendamento agendamento;
+  final PapelAgendamento papel;
   final String nomeContraparte;
+  final String? contraparteAvatarUrl;
+  final bool contraparteVerificada;
   final String nomeServico;
 
-  AgendamentoComDetalhes({
+  const AgendamentoComDetalhes({
     required this.agendamento,
+    required this.papel,
     required this.nomeContraparte,
+    required this.contraparteAvatarUrl,
+    required this.contraparteVerificada,
     required this.nomeServico,
   });
-}
+
+  bool get comoCliente => papel == PapelAgendamento.cliente;
+  bool get comoPrestador => papel == PapelAgendamento.prestador;
+
+  factory AgendamentoComDetalhes.doCliente(
+    AgendamentoDetalhadoCliente d,
+    String nomeServico,
+  ) => AgendamentoComDetalhes(
+    agendamento: d.agendamento,
+    papel: PapelAgendamento.cliente,
+    nomeContraparte: d.prestadorNome,
+    contraparteAvatarUrl: d.prestadorAvatarUrl,
+    contraparteVerificada: d.prestadorVerificado,
+    nomeServico: nomeServico,
+  );
+
+  factory AgendamentoComDetalhes.doPrestador(
+    AgendamentoDetalhadoPrestador d,
+    String nomeServico,
+  ) => AgendamentoComDetalhes(
+    agendamento: d.agendamento,
+    papel: PapelAgendamento.prestador,
+    nomeContraparte: d.clienteNome,
+    contraparteAvatarUrl: d.clienteAvatarUrl,
+    contraparteVerificada: d.clienteVerificado,
+    nomeServico: nomeServico,
+  );
+
+  /// Depois de uma ação (aceitar, cancelar...) só o Agendamento muda.
+  AgendamentoComDetalhes copyWith({Agendamento? agendamento}) =>
+      AgendamentoComDetalhes(
+        agendamento: agendamento ?? this.agendamento,
+        papel: papel,
+        nomeContraparte: nomeContraparte,
+        contraparteAvatarUrl: contraparteAvatarUrl,
+        contraparteVerificada: contraparteVerificada,
+        nomeServico: nomeServico,
+      );
+} // <-- a classe fecha AQUI
 
 /// Resolve o nome do serviço pra uma lista de agendamentos do CLIENTE.
 Future<List<AgendamentoComDetalhes>> carregarComDetalhesCliente(
-  List<AgendamentoDetalhadoCliente> agendamentos,
-  ServicoRepository servicoRepository,
-) {
-  return _resolverNomeServico(
-    itens: agendamentos,
-    agendamentoDe: (item) => item.agendamento,
-    nomeContraparteDe: (item) => item.prestadorNome,
-    servicoRepository: servicoRepository,
-  );
-}
+  List<AgendamentoDetalhadoCliente> itens,
+  ServicoRepository repo,
+) => _resolverNomeServico(
+  itens: itens,
+  servicoOferecidoIdDe: (i) => i.agendamento.servicoOferecidoId,
+  montar: AgendamentoComDetalhes.doCliente,
+  servicoRepository: repo,
+);
 
 /// Resolve o nome do serviço pra uma lista de agendamentos do PRESTADOR.
 Future<List<AgendamentoComDetalhes>> carregarComDetalhesPrestador(
-  List<AgendamentoDetalhadoPrestador> agendamentos,
-  ServicoRepository servicoRepository,
-) {
-  return _resolverNomeServico(
-    itens: agendamentos,
-    agendamentoDe: (item) => item.agendamento,
-    nomeContraparteDe: (item) => item.clienteNome,
-    servicoRepository: servicoRepository,
-  );
-}
+  List<AgendamentoDetalhadoPrestador> itens,
+  ServicoRepository repo,
+) => _resolverNomeServico(
+  itens: itens,
+  servicoOferecidoIdDe: (i) => i.agendamento.servicoOferecidoId,
+  montar: AgendamentoComDetalhes.doPrestador,
+  servicoRepository: repo,
+);
 
 /// IMPORTANTE: as chamadas a `obterServicoOferecido` são feitas EM
 /// SEQUÊNCIA (await dentro do for), nunca em paralelo — o protocolo
@@ -60,38 +93,28 @@ Future<List<AgendamentoComDetalhes>> carregarComDetalhesPrestador(
 /// servicoOferecidoId.
 Future<List<AgendamentoComDetalhes>> _resolverNomeServico<T>({
   required List<T> itens,
-  required Agendamento Function(T) agendamentoDe,
-  required String Function(T) nomeContraparteDe,
+  required String Function(T) servicoOferecidoIdDe,
+  required AgendamentoComDetalhes Function(T, String nomeServico) montar,
   required ServicoRepository servicoRepository,
 }) async {
   final cache = <String, String>{};
   final resultado = <AgendamentoComDetalhes>[];
 
   for (final item in itens) {
-    final agendamento = agendamentoDe(item);
-    final id = agendamento.servicoOferecidoId;
-
-    var nomeServico = cache[id];
-    if (nomeServico == null) {
+    final id = servicoOferecidoIdDe(item);
+    var nome = cache[id];
+    if (nome == null) {
       try {
         final detalhe = await servicoRepository.obterServicoOferecido(
           servicoOferecidoId: id,
         );
-        nomeServico = detalhe.servico.nome;
-        cache[id] = nomeServico;
+        nome = detalhe.servico.nome;
+        cache[id] = nome;
       } catch (_) {
-        nomeServico = 'Serviço indisponível';
+        nome = 'Serviço indisponível';
       }
     }
-
-    resultado.add(
-      AgendamentoComDetalhes(
-        agendamento: agendamento,
-        nomeContraparte: nomeContraparteDe(item),
-        nomeServico: nomeServico,
-      ),
-    );
+    resultado.add(montar(item, nome));
   }
-
   return resultado;
 }

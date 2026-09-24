@@ -6,7 +6,6 @@ import '../../core/widgets/app_bottom_nav.dart';
 import '../../core/widgets/async_list_view.dart';
 import '../servico/servico_repository.dart';
 import 'agendamento_com_detalhes.dart';
-import 'agendamento_detalhe_args.dart';
 import 'agendamento_repository.dart';
 import 'widgets/agendamento_card.dart';
 
@@ -33,13 +32,9 @@ class MeusAgendamentosScreen extends StatelessWidget {
             for (final item in itens)
               AgendamentoCard(
                 item: item,
-                onTap: () => Navigator.of(context).pushNamed(
-                  AppRoutes.agendamentoDetalhe,
-                  arguments: AgendamentoDetalheArgs(
-                    agendamentoId: item.agendamento.id,
-                    comoCliente: true,
-                  ),
-                ),
+                onTap: () => Navigator.of(
+                  context,
+                ).pushNamed(AppRoutes.agendamentoDetalhe, arguments: item),
               ),
           ],
         ),
