@@ -50,6 +50,8 @@ class ArquivoAnexado {
         return 'wav';
       case 'audio/ogg':
         return 'ogg';
+      case 'audio/mp4':
+        return 'm4a';
       case 'video/mp4':
         return 'mp4';
       case 'video/webm':

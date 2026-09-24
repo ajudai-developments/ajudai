@@ -22,7 +22,6 @@ class Mensagem {
   });
 
   factory Mensagem.fromMap(Map<String, dynamic> map) {
-    print("Map recebido: $map");
     final arquivoJson = map['arquivo'] as Map<String, dynamic>?;
     return Mensagem(
       id: JsonUtils.requireString(map, 'id'),
@@ -42,7 +41,6 @@ class Mensagem {
   }
 
   factory Mensagem.fromJson(Map<String, dynamic> json) {
-    print("JSON recebido: $json");
     final arquivoJson = json['arquivo'] as Map<String, dynamic>?;
     return Mensagem(
       id: JsonUtils.requireString(json, 'id'),
@@ -66,7 +64,6 @@ class Mensagem {
     'id': id,
     'conversa_id': conversaId,
     'remetente_id': remetenteId,
-
     'texto': texto,
     'tipo': tipo.valor,
     'enviado_em': enviadoEm.toIso8601String(),

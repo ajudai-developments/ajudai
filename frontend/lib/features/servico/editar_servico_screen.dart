@@ -25,7 +25,7 @@ class _EditarServicoScreenState extends State<EditarServicoScreen> {
   late final TextEditingController _descricaoController;
   late final TextEditingController _valorController;
 
-  bool _disponivel = true;
+  final bool _disponivel = true;
   bool _salvando = false;
   String? _erro;
 

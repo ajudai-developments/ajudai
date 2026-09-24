@@ -18,6 +18,7 @@ const _extensoesPermitidas = {
   'mp3': _InfoExtensao(TipoArquivo.audio, 'audio/mpeg'),
   'wav': _InfoExtensao(TipoArquivo.audio, 'audio/wav'),
   'ogg': _InfoExtensao(TipoArquivo.audio, 'audio/ogg'),
+  'm4a': _InfoExtensao(TipoArquivo.audio, 'audio/mp4'),
   'mp4': _InfoExtensao(TipoArquivo.video, 'video/mp4'),
   'webm': _InfoExtensao(TipoArquivo.video, 'video/webm'),
 };

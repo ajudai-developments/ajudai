@@ -1,5 +1,3 @@
-import 'package:shared/shared.dart';
-
 /// Repositório da Home.
 ///
 /// Categorias de serviço NÃO ficam aqui — usar ServicoRepository
