@@ -13,6 +13,12 @@ class ContestacaoRepository {
       'criar_contestacao',
       params: {'p_agendamento_id': agendamentoId, 'p_descricao': descricao},
     );
+
+    await _client
+        .from('agendamentos')
+        .update({'status': 'contestado'})
+        .eq('id', agendamentoId);
+
     return resultado as String;
   }
 
@@ -34,13 +40,15 @@ class ContestacaoRepository {
     return resultado as String;
   }
 
-  Future<List<Contestacao>> listarMinhasContestacoes(String usuarioId) async {
+  Future<List<ContestacaoComDetalhes>> listarMinhasContestacoes(
+    String usuarioId,
+  ) async {
     final response = await _client.rpc(
       'listar_minhas_contestacoes',
       params: {'p_usuario_id': usuarioId},
     );
 
     final lista = (response as List).cast<Map<String, dynamic>>();
-    return lista.map(Contestacao.fromJson).toList();
+    return lista.map(ContestacaoComDetalhes.fromJson).toList();
   }
 }

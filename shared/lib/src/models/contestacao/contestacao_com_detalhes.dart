@@ -8,6 +8,8 @@ class ContestacaoComDetalhes {
   final String agendamentoId;
   final String contestadorId;
   final String contestadorNome;
+  final String contestadoId;
+  final String contestadoNome;
   final String descricao;
   final StatusContestacao status;
   final DateTime criadoEm;
@@ -25,6 +27,8 @@ class ContestacaoComDetalhes {
     required this.agendamentoId,
     required this.contestadorId,
     required this.contestadorNome,
+    required this.contestadoId,
+    required this.contestadoNome,
     required this.descricao,
     required this.status,
     required this.criadoEm,
@@ -45,6 +49,8 @@ class ContestacaoComDetalhes {
       agendamentoId: JsonUtils.requireString(json, 'agendamento_id'),
       contestadorId: JsonUtils.requireString(json, 'contestador_id'),
       contestadorNome: JsonUtils.requireString(json, 'contestador_nome'),
+      contestadoId: JsonUtils.requireString(json, 'contestado_id'),
+      contestadoNome: JsonUtils.requireString(json, 'contestado_nome'),
       descricao: JsonUtils.requireString(json, 'descricao'),
       status: StatusContestacao.fromValor(
         JsonUtils.requireString(json, 'status'),
@@ -71,6 +77,8 @@ class ContestacaoComDetalhes {
     'agendamento_id': agendamentoId,
     'contestador_id': contestadorId,
     'contestador_nome': contestadorNome,
+    'contestado_id': contestadoId,
+    'contestado_nome': contestadoNome,
     'descricao': descricao,
     'status': status.valor,
     'criado_em': criadoEm.toIso8601String(),

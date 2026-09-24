@@ -17,7 +17,7 @@ class ListarMinhasContestacoesRequestDto implements WsMessage {
 }
 
 class ContestacaoComUrls {
-  final Contestacao contestacao;
+  final ContestacaoComDetalhes contestacao;
   final List<String> urlsArquivos;
 
   ContestacaoComUrls({required this.contestacao, required this.urlsArquivos});

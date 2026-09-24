@@ -145,6 +145,10 @@ enum TipoMensagem {
   adminListarContestacoesOk('admin_listar_contestacoes_ok'),
   adminResponderContestacao('admin_responder_contestacao'),
   adminResponderContestacaoOk('admin_responder_contestacao_ok'),
+  adminListarDenuncias('admin_listar_denuncias'),
+  adminListarDenunciasOk('admin_listar_denuncias_ok'),
+  adminResponderDenuncia('admin_responder_denuncia'),
+  adminResponderDenunciaOk('admin_responder_denuncia_ok'),
 
   erro('erro');
 

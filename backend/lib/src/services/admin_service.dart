@@ -158,4 +158,189 @@ class AdminService {
       RejeitarPrestadorResponseDto(motivo: 'Sua solicitação foi rejeitada.'),
     );
   }
+
+  Future<AdminListarContestacoesResponseDto> listarContestacoes(
+    WsConnection conexao,
+    AdminListarContestacoesRequestDto dto,
+  ) async {
+    final client = _sessaoService.clientDe(conexao);
+    final userId = _sessaoService.userIdDe(conexao);
+    if (client == null || userId == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final usuario = await UsuarioRepository(client).buscarPorId(userId);
+    if (usuario == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Usuário não encontrado',
+      );
+    }
+
+    if (usuario.userRole != UserRole.admin) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoPermitido,
+        mensagem: 'Você não está autorizado a fazer isso',
+      );
+    }
+
+    final adminRepository = AdminRepository(
+      SupabaseClientFactory.criarSecret(),
+    );
+    final contestacoes = await adminRepository.listarContestacoes(dto.status);
+
+    return AdminListarContestacoesResponseDto(contestacoes: contestacoes);
+  }
+
+  Future<AdminResponderContestacaoResponseDto> responderContestacao(
+    WsConnection conexao,
+    AdminResponderContestacaoRequestDto dto,
+  ) async {
+    final client = _sessaoService.clientDe(conexao);
+    final adminId = _sessaoService.userIdDe(conexao);
+    if (client == null || adminId == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final usuario = await UsuarioRepository(client).buscarPorId(adminId);
+    if (usuario == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Usuário não encontrado',
+      );
+    }
+
+    if (usuario.userRole != UserRole.admin) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoPermitido,
+        mensagem: 'Você não está autorizado a fazer isso',
+      );
+    }
+
+    final adminRepository = AdminRepository(
+      SupabaseClientFactory.criarSecret(),
+    );
+
+    final contestacao = await adminRepository.responderContestacao(
+      contestacaoId: dto.contestacaoId,
+      adminId: adminId,
+      status: dto.status,
+      resposta: dto.resposta,
+      statusAgendamentoFinal: dto.statusAgendamentoFinal,
+    );
+
+    final aprovada = dto.status == StatusContestacao.resolvida;
+
+    await _sessaoService.enviarParaUsuario(
+      contestacao.contestadorId,
+      NotificacaoDto(
+        titulo: aprovada ? 'Contestação resolvida' : 'Contestação rejeitada',
+        mensagem: dto.resposta,
+        dados: {
+          'contestacao_id': contestacao.id,
+          'agendamento_id': contestacao.agendamentoId,
+          'status': contestacao.status.valor,
+        },
+      ),
+    );
+
+    return AdminResponderContestacaoResponseDto(contestacao: contestacao);
+  }
+
+  Future<AdminListarDenunciasResponseDto> listarDenuncias(
+    WsConnection conexao,
+    AdminListarDenunciasRequestDto dto,
+  ) async {
+    final client = _sessaoService.clientDe(conexao);
+    final userId = _sessaoService.userIdDe(conexao);
+    if (client == null || userId == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final usuario = await UsuarioRepository(client).buscarPorId(userId);
+    if (usuario == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Usuário não encontrado',
+      );
+    }
+
+    if (usuario.userRole != UserRole.admin) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoPermitido,
+        mensagem: 'Você não está autorizado a fazer isso',
+      );
+    }
+
+    final adminRepository = AdminRepository(
+      SupabaseClientFactory.criarSecret(),
+    );
+    final denuncias = await adminRepository.listarDenuncias(dto.status);
+
+    return AdminListarDenunciasResponseDto(denuncias: denuncias);
+  }
+
+  Future<AdminResponderDenunciaResponseDto> responderDenuncia(
+    WsConnection conexao,
+    AdminResponderDenunciaRequestDto dto,
+  ) async {
+    final client = _sessaoService.clientDe(conexao);
+    final adminId = _sessaoService.userIdDe(conexao);
+    if (client == null || adminId == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final usuario = await UsuarioRepository(client).buscarPorId(adminId);
+    if (usuario == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Usuário não encontrado',
+      );
+    }
+
+    if (usuario.userRole != UserRole.admin) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoPermitido,
+        mensagem: 'Você não está autorizado a fazer isso',
+      );
+    }
+
+    final adminRepository = AdminRepository(
+      SupabaseClientFactory.criarSecret(),
+    );
+
+    final denuncia = await adminRepository.responderDenuncia(
+      denunciaId: dto.denunciaId,
+      adminId: adminId,
+      status: dto.status,
+      resposta: dto.resposta,
+      removerPrestador: dto.removerPrestador,
+      banirUsuario: dto.banirUsuario,
+    );
+
+    final aprovada = dto.status == StatusDenuncia.resolvida;
+
+    await _sessaoService.enviarParaUsuario(
+      denuncia.denunciadorId,
+      NotificacaoDto(
+        titulo: aprovada ? 'Denúncia analisada' : 'Denúncia rejeitada',
+        mensagem: dto.resposta,
+        dados: {'denuncia_id': denuncia.id, 'status': denuncia.status.valor},
+      ),
+    );
+
+    return AdminResponderDenunciaResponseDto(denuncia: denuncia);
+  }
 }

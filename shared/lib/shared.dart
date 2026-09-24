@@ -26,6 +26,7 @@ export 'src/models/chat/mensagem_com_url.dart';
 export 'src/models/arquivos/arquivo_upload.dart';
 export 'src/models/arquivos/arquivo_anexado.dart';
 export 'src/models/denuncia/denuncia.dart';
+export 'src/models/denuncia/denuncia_com_detalhes.dart';
 
 export 'src/models/contestacao/contestacao.dart';
 export 'src/models/contestacao/contestacao_com_detalhes.dart';
@@ -116,6 +117,8 @@ export 'src/dto/chat/criar_conversa_dto.dart';
 export 'src/dto/admin/admin_listar_contestacao_dto.dart';
 export 'src/dto/admin/admin_responder_contestacao_dto.dart';
 export 'src/dto/admin/listar_verificacoes_response_dto.dart';
+export 'src/dto/admin/admin_listar_denuncias_dto.dart';
+export 'src/dto/admin/admin_responder_denuncia_dto.dart';
 
 export 'src/validators/cpf_validator.dart';
 export 'src/validators/telefone_validator.dart';
@@ -133,3 +136,4 @@ export 'src/models/enums/tipo_conteudo_mensagem.dart';
 export 'src/models/enums/tipo_arquivo.dart';
 export 'src/models/enums/status_contestacao.dart';
 export 'src/models/enums/status_solicitacao_preco.dart';
+export 'src/models/enums/status_denuncia.dart';

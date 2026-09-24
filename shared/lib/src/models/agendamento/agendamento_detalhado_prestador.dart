@@ -4,13 +4,13 @@ class AgendamentoDetalhadoPrestador {
   final Agendamento agendamento;
   final String clienteNome;
   final String clienteAvatarUrl;
-  final bool clienteStatusUsuario;
+  final bool clienteVerificado;
 
   AgendamentoDetalhadoPrestador({
     required this.agendamento,
     required this.clienteNome,
     required this.clienteAvatarUrl,
-    required this.clienteStatusUsuario,
+    required this.clienteVerificado,
   });
 
   factory AgendamentoDetalhadoPrestador.fromJson(Map<String, dynamic> json) {
@@ -18,7 +18,7 @@ class AgendamentoDetalhadoPrestador {
       agendamento: Agendamento.fromJson(json),
       clienteNome: JsonUtils.requireString(json, 'cliente_nome'),
       clienteAvatarUrl: JsonUtils.requireString(json, 'cliente_avatar_url'),
-      clienteStatusUsuario: json['cliente_status_usuario'] as bool,
+      clienteVerificado: json['cliente_verificado'] as bool,
     );
   }
 
@@ -26,6 +26,6 @@ class AgendamentoDetalhadoPrestador {
     ...agendamento.toJson(),
     'cliente_nome': clienteNome,
     'cliente_avatar_url': clienteAvatarUrl,
-    'cliente_status_usuario': clienteStatusUsuario,
+    'cliente_verificado': clienteVerificado,
   };
 }

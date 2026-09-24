@@ -144,4 +144,144 @@ class AdminHandler {
       } catch (_) {}
     }
   }
+
+  Future<void> handleAdminListarContestacoes(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final dto = AdminListarContestacoesRequestDto.fromJson(msg);
+      final resposta = await _adminService.listarContestacoes(conexao, dto);
+      conexao.enviar(resposta);
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } on PostgrestException catch (e, stackTrace) {
+      print('Erro ao listar contestações (admin): $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao listar contestações',
+        ),
+      );
+    } catch (e, stackTrace) {
+      print('Erro ao listar contestações (admin): $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao listar contestações',
+        ),
+      );
+    }
+  }
+
+  Future<void> handleAdminResponderContestacao(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final dto = AdminResponderContestacaoRequestDto.fromJson(msg);
+      final resposta = await _adminService.responderContestacao(conexao, dto);
+      conexao.enviar(resposta);
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } on PostgrestException catch (e, stackTrace) {
+      print('Erro ao responder contestação (admin): $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao responder contestação',
+        ),
+      );
+    } catch (e, stackTrace) {
+      print('Erro ao responder contestação (admin): $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao responder contestação',
+        ),
+      );
+    }
+  }
+
+  Future<void> handleAdminListarDenuncias(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final dto = AdminListarDenunciasRequestDto.fromJson(msg);
+      final resposta = await _adminService.listarDenuncias(conexao, dto);
+      conexao.enviar(resposta);
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } on PostgrestException catch (e, stackTrace) {
+      print('Erro ao listar denúncias (admin): $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao listar denúncias',
+        ),
+      );
+    } catch (e, stackTrace) {
+      print('Erro ao listar denúncias (admin): $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao listar denúncias',
+        ),
+      );
+    }
+  }
+
+  Future<void> handleAdminResponderDenuncia(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final dto = AdminResponderDenunciaRequestDto.fromJson(msg);
+      final resposta = await _adminService.responderDenuncia(conexao, dto);
+      conexao.enviar(resposta);
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } on PostgrestException catch (e, stackTrace) {
+      print('Erro ao responder denúncia (admin): $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao responder denúncia',
+        ),
+      );
+    } catch (e, stackTrace) {
+      print('Erro ao responder denúncia (admin): $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao responder denúncia',
+        ),
+      );
+    }
+  }
 }
