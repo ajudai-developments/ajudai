@@ -77,20 +77,29 @@ class AvaliacaoService {
     AvaliarAgendamentoRequestDto dto,
   ) async {
     final userId = _sessaoService.userIdDe(conexao);
-    if (userId == null) {
+    final client = _sessaoService.clientDe(conexao);
+
+    if (userId == null || client == null) {
       throw ErroDto(
         codigo: ErroCodigo.naoAutenticado,
         mensagem: 'Não autenticado',
       );
     }
 
-    await _validarEObter(conexao, dto.agendamentoId, userId);
+    final agendamento = await _validarEObter(
+      conexao,
+      dto.agendamentoId,
+      userId,
+    );
+    final avaliadoId = userId == agendamento.usuarioId
+        ? agendamento.prestadorId
+        : agendamento.usuarioId;
 
-    final client = _sessaoService.clientDe(conexao)!;
     try {
       await AvaliacaoRepository(client).criarAvaliacaoAgendamento(
         agendamentoId: dto.agendamentoId,
         avaliadorId: userId,
+        avaliadoId: avaliadoId,
         avaliacao: dto.avaliacao,
         descricao: dto.descricao,
         mensagem: dto.mensagem,

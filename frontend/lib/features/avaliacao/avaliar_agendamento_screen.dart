@@ -27,7 +27,8 @@ class AvaliarAgendamentoScreen extends StatefulWidget {
   const AvaliarAgendamentoScreen({super.key});
 
   @override
-  State<AvaliarAgendamentoScreen> createState() => _AvaliarAgendamentoScreenState();
+  State<AvaliarAgendamentoScreen> createState() =>
+      _AvaliarAgendamentoScreenState();
 }
 
 class _AvaliarAgendamentoScreenState extends State<AvaliarAgendamentoScreen> {
@@ -35,6 +36,7 @@ class _AvaliarAgendamentoScreenState extends State<AvaliarAgendamentoScreen> {
   final _mensagemController = TextEditingController();
 
   late String _agendamentoId;
+  late String _avaliadoId;
   bool _argumentosCarregados = false;
 
   int _nota = 0;
@@ -71,6 +73,7 @@ class _AvaliarAgendamentoScreenState extends State<AvaliarAgendamentoScreen> {
     try {
       await _avaliacaoRepository.avaliarAgendamento(
         agendamentoId: _agendamentoId,
+        avaliadoId: _avaliadoId,
         avaliacao: _nota.toDouble(),
         mensagem: mensagem.isEmpty ? null : mensagem,
       );
@@ -111,7 +114,10 @@ class _AvaliarAgendamentoScreenState extends State<AvaliarAgendamentoScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 16),
-              RatingInput(valor: _nota, onChanged: (v) => setState(() => _nota = v)),
+              RatingInput(
+                valor: _nota,
+                onChanged: (v) => setState(() => _nota = v),
+              ),
               const SizedBox(height: 24),
               TextField(
                 controller: _mensagemController,
@@ -123,7 +129,11 @@ class _AvaliarAgendamentoScreenState extends State<AvaliarAgendamentoScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              AppButton(label: 'Continuar', loading: _enviando, onPressed: _continuar),
+              AppButton(
+                label: 'Continuar',
+                loading: _enviando,
+                onPressed: _continuar,
+              ),
             ],
           ),
         ),

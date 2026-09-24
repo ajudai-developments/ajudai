@@ -8,6 +8,7 @@ class AvaliacaoRepository {
   Future<void> criarAvaliacaoAgendamento({
     required String agendamentoId,
     required String avaliadorId,
+    required String avaliadoId,
     required double avaliacao,
     String? descricao,
     String? mensagem,
@@ -17,6 +18,7 @@ class AvaliacaoRepository {
       await _client.from('avaliacoes_agendamento').insert({
         'agendamento_id': agendamentoId,
         'avaliador_id': avaliadorId,
+        'avaliado_id': avaliadoId,
         'avaliacao': avaliacao,
         'descricao': descricao,
         'mensagem': mensagem,
