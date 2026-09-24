@@ -6,23 +6,16 @@ class AdminRepository {
 
   AdminRepository(this._client);
 
-  Future<List<VerificacaoComUsuario>> obterVerificacoes(
+  Future<List<VerificacaoComDetalhes>> obterVerificacoes(
     StatusVerificacao status,
   ) async {
-    final response = await _client
-        .from('verificacoes')
-        .select('''
-          *, 
-          usuarios!verificacoes_usuario_id_fkey (
-            nome,
-            cpf,
-            telefone
-          )
-        ''')
-        .eq('status', status.name);
+    final response = await _client.rpc(
+      'admin_listar_verificacoes',
+      params: {'p_status': status.name},
+    );
 
     return (response as List)
-        .map((r) => VerificacaoComUsuario.fromJson(r as Map<String, dynamic>))
+        .map((r) => VerificacaoComDetalhes.fromJson(r as Map<String, dynamic>))
         .toList();
   }
 

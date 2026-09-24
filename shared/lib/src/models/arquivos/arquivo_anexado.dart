@@ -42,6 +42,8 @@ class ArquivoAnexado {
         return 'jpg';
       case 'image/webp':
         return 'webp';
+      case 'application/pdf':
+        return 'pdf';
       case 'audio/mpeg':
         return 'mp3';
       case 'audio/wav':

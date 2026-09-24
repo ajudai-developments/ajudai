@@ -14,6 +14,7 @@ const _extensoesPermitidas = {
   'jpg': _InfoExtensao(TipoArquivo.imagem, 'image/jpeg'),
   'jpeg': _InfoExtensao(TipoArquivo.imagem, 'image/jpeg'),
   'webp': _InfoExtensao(TipoArquivo.imagem, 'image/webp'),
+  'pdf': _InfoExtensao(TipoArquivo.documento, 'application/pdf'),
   'mp3': _InfoExtensao(TipoArquivo.audio, 'audio/mpeg'),
   'wav': _InfoExtensao(TipoArquivo.audio, 'audio/wav'),
   'ogg': _InfoExtensao(TipoArquivo.audio, 'audio/ogg'),

@@ -1,7 +1,8 @@
 enum TipoArquivo {
   imagem('imagem'),
   audio('audio'),
-  video('video');
+  video('video'),
+  documento('documento');
 
   final String valor;
   const TipoArquivo(this.valor);

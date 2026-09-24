@@ -102,4 +102,22 @@ class UsuarioRepository {
 
     return urlComCacheBust;
   }
+
+  Future<String> registrarArquivoVerificacao({
+    required String verificacaoId,
+    required String nomeOriginal,
+    required String tipoArquivo,
+    required String mimeType,
+  }) async {
+    final resultado = await _client.rpc(
+      'registrar_verificacao_arquivo',
+      params: {
+        'p_verificacao_id': verificacaoId,
+        'p_nome_original': nomeOriginal,
+        'p_tipo': tipoArquivo,
+        'p_mime_type': mimeType,
+      },
+    );
+    return resultado as String;
+  }
 }

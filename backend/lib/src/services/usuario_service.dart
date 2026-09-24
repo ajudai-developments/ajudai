@@ -1,11 +1,15 @@
 import 'dart:convert';
 
 import 'package:backend/src/repositories/usuario_repository.dart';
+import 'package:backend/src/services/arquivo_upload_service.dart';
 import 'package:backend/src/supabase/supabase_client_factory.dart';
 import 'package:shared/shared.dart';
 import 'package:supabase/supabase.dart';
 import 'sessao_service.dart';
 import '../ws/ws_connection.dart';
+
+const _limiteArquivosPorVerificacao = 5;
+const _limiteBytesVerificacao = 10 * 1024 * 1024;
 
 const _extensoesAvatarPermitidas = {
   'png': 'image/png',
@@ -72,6 +76,37 @@ class UsuarioService {
       );
     }
 
+    if (dto.arquivos.isEmpty) {
+      throw ErroDto(
+        codigo: ErroCodigo.dadosInvalidos,
+        mensagem: 'Envie ao menos um documento para solicitar ser prestador.',
+      );
+    }
+
+    if (dto.arquivos.length > _limiteArquivosPorVerificacao) {
+      throw ErroDto(
+        codigo: ErroCodigo.dadosInvalidos,
+        mensagem:
+            'Máximo de $_limiteArquivosPorVerificacao arquivos por solicitação.',
+      );
+    }
+
+    final validados = <MapEntry<ArquivoUpload, ArquivoValidado>>[];
+    for (final arquivo in dto.arquivos) {
+      final validado = ArquivoUploadService.validar(
+        arquivo,
+        limiteBytes: _limiteBytesVerificacao,
+      );
+      if (validado == null) {
+        throw ErroDto(
+          codigo: ErroCodigo.dadosInvalidos,
+          mensagem:
+              'Arquivo "${arquivo.nomeOriginal}" inválido ou excede 10MB.',
+        );
+      }
+      validados.add(MapEntry(arquivo, validado));
+    }
+
     final usuarioRepository = UsuarioRepository(client);
     final usuario = await usuarioRepository.buscarPorId(userId);
     if (usuario == null) {
@@ -101,9 +136,38 @@ class UsuarioService {
     }
 
     final verificacao = await usuarioRepository.solicitarSerPrestador(userId);
+
+    var salvos = 0;
+    for (final entry in validados) {
+      final arquivo = entry.key;
+      final validado = entry.value;
+
+      final arquivoId = await usuarioRepository.registrarArquivoVerificacao(
+        verificacaoId: verificacao.id,
+        nomeOriginal: arquivo.nomeOriginal,
+        tipoArquivo: validado.tipo.valor,
+        mimeType: validado.mimeType,
+      );
+
+      try {
+        await ArquivoUploadService.upload(
+          client: client,
+          bucket: 'verificacoes',
+          prefixo: verificacao.id,
+          arquivoId: arquivoId,
+          extensao: arquivo.extensao.toLowerCase(),
+          validado: validado,
+        );
+        salvos++;
+      } catch (_) {
+        await client.from('verificacao_arquivos').delete().eq('id', arquivoId);
+      }
+    }
+
     return SolicitarPrestadorResponseDto(
       usuario: usuario,
       verificacao: verificacao,
+      quantidadeArquivosSalvos: salvos,
     );
   }
 

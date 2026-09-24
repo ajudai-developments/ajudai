@@ -1,7 +1,7 @@
 import 'package:shared/shared.dart';
 
 class ListarVerificacoesResponseDto implements WsMessage {
-  final List<VerificacaoComUsuario> verificacoes;
+  final List<VerificacaoComUrls> verificacoes;
 
   ListarVerificacoesResponseDto({required this.verificacoes});
 
@@ -11,7 +11,7 @@ class ListarVerificacoesResponseDto implements WsMessage {
   factory ListarVerificacoesResponseDto.fromJson(Map<String, dynamic> json) {
     final lista = JsonUtils.requireListaDeMapas(json, 'verificacoes');
     return ListarVerificacoesResponseDto(
-      verificacoes: lista.map(VerificacaoComUsuario.fromJson).toList(),
+      verificacoes: lista.map(VerificacaoComUrls.fromJson).toList(),
     );
   }
 

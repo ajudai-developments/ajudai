@@ -1,5 +1,6 @@
 import 'package:backend/src/repositories/admin_repository.dart';
 import 'package:backend/src/repositories/usuario_repository.dart';
+import 'package:backend/src/services/arquivo_upload_service.dart';
 import 'package:backend/src/supabase/supabase_client_factory.dart';
 import 'package:shared/shared.dart';
 import 'sessao_service.dart';
@@ -38,12 +39,29 @@ class AdminService {
         mensagem: 'Você não está autorizado a fazer isso',
       );
     }
-    final adminRepository = AdminRepository(
-      SupabaseClientFactory.criarSecret(),
-    );
-    final response = await adminRepository.obterVerificacoes(dto.status);
 
-    return ListarVerificacoesResponseDto(verificacoes: response);
+    final clientSecret = SupabaseClientFactory.criarSecret();
+    final adminRepository = AdminRepository(clientSecret);
+    final verificacoes = await adminRepository.obterVerificacoes(dto.status);
+
+    final comUrls = <VerificacaoComUrls>[];
+    for (final verificacao in verificacoes) {
+      final urls = <String>[];
+      for (final arquivo in verificacao.arquivos) {
+        final url = await ArquivoUploadService.urlAssinada(
+          client: clientSecret,
+          bucket: 'verificacoes',
+          prefixo: verificacao.id,
+          arquivo: arquivo,
+        );
+        urls.add(url);
+      }
+      comUrls.add(
+        VerificacaoComUrls(verificacao: verificacao, urlsArquivos: urls),
+      );
+    }
+
+    return ListarVerificacoesResponseDto(verificacoes: comUrls);
   }
 
   Future<AprovarPrestadorResponseDto> aprovarPrestador(

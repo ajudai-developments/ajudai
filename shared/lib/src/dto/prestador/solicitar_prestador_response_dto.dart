@@ -3,10 +3,12 @@ import 'package:shared/shared.dart';
 class SolicitarPrestadorResponseDto implements WsMessage {
   final Usuario usuario;
   final Verificacao verificacao;
+  final int quantidadeArquivosSalvos;
 
   SolicitarPrestadorResponseDto({
     required this.usuario,
     required this.verificacao,
+    required this.quantidadeArquivosSalvos,
   });
 
   @override
@@ -18,6 +20,10 @@ class SolicitarPrestadorResponseDto implements WsMessage {
       verificacao: Verificacao.fromJson(
         json['verificacao'] as Map<String, dynamic>,
       ),
+      quantidadeArquivosSalvos: JsonUtils.requireInt(
+        json,
+        'quantidade_arquivos_salvos',
+      ),
     );
   }
 
@@ -26,5 +32,6 @@ class SolicitarPrestadorResponseDto implements WsMessage {
     'tipo': tipo.valor,
     'usuario': usuario.toJson(),
     'verificacao': verificacao.toJson(),
+    'quantidade_arquivos_salvos': quantidadeArquivosSalvos,
   };
 }
