@@ -21,31 +21,35 @@ class BolhaMensagem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ehAudio = mensagem.mensagem.tipo == TipoConteudoMensagem.audio;
+    final ehMidiaVisual =
+        mensagem.mensagem.tipo == TipoConteudoMensagem.imagem ||
+        mensagem.mensagem.tipo == TipoConteudoMensagem.video;
+    final temLegenda =
+        mensagem.mensagem.texto != null && mensagem.mensagem.texto!.isNotEmpty;
+    // mídia visual sem legenda: o horário fica sobreposto na própria mídia
+    final semPaddingExtra = ehAudio || (ehMidiaVisual && !temLegenda);
 
     return Align(
       alignment: minha ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
-        constraints: const BoxConstraints(maxWidth: 320),
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: EdgeInsets.fromLTRB(
-          ehAudio ? 8 : 14,
-          ehAudio ? 8 : 10,
-          ehAudio ? 8 : 12,
-          ehAudio ? 6 : 7,
-        ),
+        constraints: const BoxConstraints(maxWidth: 300),
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: semPaddingExtra
+            ? const EdgeInsets.all(4)
+            : const EdgeInsets.fromLTRB(14, 10, 12, 8),
         decoration: BoxDecoration(
           color: minha ? AppColors.primary : Colors.white,
           borderRadius: BorderRadius.only(
-            topLeft: const Radius.circular(16),
-            topRight: const Radius.circular(16),
-            bottomLeft: Radius.circular(minha ? 16 : 4),
-            bottomRight: Radius.circular(minha ? 4 : 16),
+            topLeft: const Radius.circular(18),
+            topRight: const Radius.circular(18),
+            bottomLeft: Radius.circular(minha ? 18 : 4),
+            bottomRight: Radius.circular(minha ? 4 : 18),
           ),
-          boxShadow: const [
+          boxShadow: [
             BoxShadow(
-              color: Color(0x12000000),
-              blurRadius: 4,
-              offset: Offset(0, 1),
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -56,15 +60,17 @@ class BolhaMensagem extends StatelessWidget {
               mensagem: mensagem,
               minha: minha,
               avatarUrl: avatarUrl,
+              horario: horario,
             ),
-            if (!ehAudio && mensagem.mensagem.texto != null)
-              const SizedBox(height: 3),
-            if (!ehAudio)
-              Text(
-                horario,
-                style: TextStyle(
-                  fontSize: 11,
-                  color: minha ? Colors.white70 : AppColors.textoSecundario,
+            if (!semPaddingExtra)
+              Padding(
+                padding: const EdgeInsets.only(top: 3),
+                child: Text(
+                  horario,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: minha ? Colors.white70 : AppColors.textoSecundario,
+                  ),
                 ),
               ),
           ],

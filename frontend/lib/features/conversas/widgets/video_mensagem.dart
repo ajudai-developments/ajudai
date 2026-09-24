@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
+import 'tamanho_midia.dart';
+import 'visualizador_video_url_screen.dart';
+
 class VideoMensagem extends StatefulWidget {
   final String url;
 
@@ -11,6 +14,9 @@ class VideoMensagem extends StatefulWidget {
 }
 
 class _VideoMensagemState extends State<VideoMensagem> {
+  static const _larguraMaxima = 250.0;
+  static const _alturaMaxima = 300.0;
+
   late final VideoPlayerController _controller;
 
   @override
@@ -28,43 +34,87 @@ class _VideoMensagemState extends State<VideoMensagem> {
     super.dispose();
   }
 
+  void _abrirTelaCheia() {
+    _controller.pause();
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => VisualizadorVideoUrlScreen(url: widget.url),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (!_controller.value.isInitialized) {
       return const SizedBox(
-        width: 260,
-        height: 160,
+        width: _larguraMaxima,
+        height: 190,
         child: Center(child: CircularProgressIndicator()),
       );
     }
 
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _controller.value.isPlaying
-              ? _controller.pause()
-              : _controller.play();
-        });
-      },
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          SizedBox(
-            width: 260,
-            child: AspectRatio(
-              aspectRatio: _controller.value.aspectRatio,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: VideoPlayer(_controller),
+    final tamanho = tamanhoMidiaChat(
+      aspectRatio: _controller.value.aspectRatio,
+      maxWidth: _larguraMaxima,
+      maxHeight: _alturaMaxima,
+    );
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
+      child: SizedBox(
+        width: tamanho.width,
+        height: tamanho.height,
+        child: Stack(
+          fit: StackFit.expand,
+          alignment: Alignment.center,
+          children: [
+            GestureDetector(
+              onTap: () {
+                setState(() {
+                  _controller.value.isPlaying
+                      ? _controller.pause()
+                      : _controller.play();
+                });
+              },
+              child: FittedBox(
+                fit: BoxFit.cover,
+                child: SizedBox(
+                  width: _controller.value.size.width,
+                  height: _controller.value.size.height,
+                  child: VideoPlayer(_controller),
+                ),
               ),
             ),
-          ),
-          if (!_controller.value.isPlaying)
-            const CircleAvatar(
-              backgroundColor: Color(0xAA000000),
-              child: Icon(Icons.play_arrow, color: Colors.white),
+            if (!_controller.value.isPlaying)
+              const IgnorePointer(
+                child: Icon(
+                  Icons.play_circle_fill,
+                  color: Colors.white,
+                  size: 46,
+                ),
+              ),
+            Positioned(
+              top: 6,
+              right: 6,
+              child: Material(
+                color: Colors.black45,
+                shape: const CircleBorder(),
+                child: InkWell(
+                  customBorder: const CircleBorder(),
+                  onTap: _abrirTelaCheia,
+                  child: const Padding(
+                    padding: EdgeInsets.all(6),
+                    child: Icon(
+                      Icons.fullscreen,
+                      size: 18,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
             ),
-        ],
+          ],
+        ),
       ),
     );
   }
