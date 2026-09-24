@@ -19,13 +19,15 @@ class ServicosListaScreen extends StatelessWidget {
   const ServicosListaScreen({super.key});
 
   void _abrirDetalhe(BuildContext context, ServicoOferecidoPreview servico) {
-    Navigator.of(context).pushNamed(
-      AppRoutes.servicoDetalhe,
-      arguments: servico.servicoOferecidoId,
-    );
+    Navigator.of(
+      context,
+    ).pushNamed(AppRoutes.servicoDetalhe, arguments: servico);
   }
 
-  void _abrirAgendamento(BuildContext context, ServicoOferecidoPreview servico) {
+  void _abrirAgendamento(
+    BuildContext context,
+    ServicoOferecidoPreview servico,
+  ) {
     Navigator.of(context).pushNamed(
       AppRoutes.criarAgendamento,
       arguments: CriarAgendamentoArgs(
@@ -44,8 +46,9 @@ class ServicosListaScreen extends StatelessWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(title: Text(categoria.nome)),
       body: AsyncListView<ServicoOferecidoPreview>(
-        carregar: () =>
-            servicoRepository.listarServicosOferecidos(categoriaId: categoria.id),
+        carregar: () => servicoRepository.listarServicosOferecidos(
+          categoriaId: categoria.id,
+        ),
         mensagemVazio: 'Nenhum serviço disponível nessa categoria ainda.',
         builder: (context, servicos) => Column(
           children: [

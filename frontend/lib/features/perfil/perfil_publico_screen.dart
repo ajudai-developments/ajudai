@@ -186,10 +186,9 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
       for (final servico in dados.servicosOferecidos) ...[
         Card(
           child: ListTile(
-            onTap: () => Navigator.of(context).pushNamed(
-              AppRoutes.servicoDetalhe,
-              arguments: servico.servicoOferecidoId,
-            ),
+            onTap: () => Navigator.of(
+              context,
+            ).pushNamed(AppRoutes.servicoDetalhe, arguments: servico),
             title: Text(servico.servicoNome),
             subtitle: Text(
               '${servico.categoriaNome} • R\$ ${servico.valor.toStringAsFixed(2)}',

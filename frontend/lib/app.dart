@@ -4,7 +4,6 @@ import 'package:shared/shared.dart';
 
 import 'core/routes/app_routes.dart';
 import 'core/theme/app_theme.dart';
-import 'features/agendamento/agendamento_detalhe_screen.dart';
 import 'features/agendamento/agendamentos_recebidos_screen.dart';
 import 'features/agendamento/confirmar_pagamento_screen.dart';
 import 'features/agendamento/criar_agendamento_screen.dart';
@@ -117,7 +116,6 @@ class _AppRootState extends State<_AppRoot> {
       AppRoutes.meusAgendamentos: (_) => const MeusAgendamentosScreen(),
       AppRoutes.agendamentosRecebidos: (_) =>
           const AgendamentosRecebidosScreen(),
-      AppRoutes.agendamentoDetalhe: (_) => const AgendamentoDetalheScreen(),
       AppRoutes.avaliarAgendamento: (_) => const AvaliarAgendamentoScreen(),
       AppRoutes.avaliarUsuario: (_) => const AvaliarUsuarioScreen(),
       AppRoutes.solicitarPrestador: (_) => const SolicitarPrestadorScreen(),

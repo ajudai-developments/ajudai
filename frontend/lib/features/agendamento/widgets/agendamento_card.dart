@@ -37,7 +37,10 @@ class AgendamentoCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text('com ${item.nomeContraparte}', style: AppTextStyles.corpo),
-            Text(_formatarData(agendamento.horaInicio), style: AppTextStyles.legenda),
+            Text(
+              _formatarData(agendamento.horaInicio),
+              style: AppTextStyles.legenda,
+            ),
             Text(
               '${agendamento.enderecoLogradouro}, ${agendamento.enderecoNumero}',
               style: AppTextStyles.legenda,
@@ -49,7 +52,10 @@ class AgendamentoCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text('R\$ ${agendamento.valor.toStringAsFixed(2)}', style: AppTextStyles.corpo),
+            Text(
+              'R\$ ${agendamento.valor.toStringAsFixed(2)}',
+              style: AppTextStyles.corpo,
+            ),
             const SizedBox(height: 4),
             StatusBadge(status: agendamento.status),
           ],

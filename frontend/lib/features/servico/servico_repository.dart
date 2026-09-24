@@ -62,6 +62,7 @@ class ServicoRepository {
     final json = await WsMessageStream.instance.aguardar(
       TipoMensagem.listarServicoOferecidoPorCategoriaOk,
     );
+
     return ListarServicosOferecidosPorCategoriaResponseDto.fromJson(
       json,
     ).servicos;
