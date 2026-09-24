@@ -75,7 +75,7 @@ class _ServicoDetalheScreenState extends State<ServicoDetalheScreen> {
   void _abrirPerfilPrestador() {
     Navigator.of(
       context,
-    ).pushNamed(AppRoutes.perfilPublico, arguments: _servicoOferecidoId);
+    ).pushNamed(AppRoutes.perfilPublico, arguments: _dados!.prestador.id);
   }
 
   void _agendar() {

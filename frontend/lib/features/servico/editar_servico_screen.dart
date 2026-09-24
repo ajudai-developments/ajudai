@@ -69,10 +69,6 @@ class _EditarServicoScreenState extends State<EditarServicoScreen> {
       _erro = null;
     });
 
-    print("Id do serviço oferecido: ${widget.servico.servicoOferecidoId}");
-    print("Nova descrição: $descricao");
-    print("Novo valor: $valor");
-
     try {
       await _prestadorRepository.editarServicoOferecido(
         servicoOferecidoId: widget.servico.servicoOferecidoId,
@@ -136,21 +132,7 @@ class _EditarServicoScreenState extends State<EditarServicoScreen> {
                   decimal: true,
                 ),
               ),
-              const SizedBox(height: 12),
-              SwitchListTile(
-                contentPadding: EdgeInsets.zero,
-                title: const Text('Serviço disponível'),
-                subtitle: Text(
-                  _disponivel
-                      ? 'Clientes podem encontrar e solicitar este serviço.'
-                      : 'O serviço ficará oculto para novos clientes.',
-                ),
-                value: _disponivel,
-                activeThumbColor: AppColors.primary,
-                onChanged: _salvando
-                    ? null
-                    : (value) => setState(() => _disponivel = value),
-              ),
+
               const SizedBox(height: 20),
               AppButton(
                 label: 'Salvar alterações',
