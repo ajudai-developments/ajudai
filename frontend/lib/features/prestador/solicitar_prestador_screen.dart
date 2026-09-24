@@ -1,6 +1,8 @@
-import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'dart:convert';
 
+import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:shared/shared.dart';
 
 import '../../core/errors/erro_mapper.dart';
 import '../../core/theme/app_colors.dart';
@@ -12,52 +14,30 @@ import 'prestador_repository.dart';
 
 /// Tela de solicitação para virar prestador.
 ///
-/// Além do pedido em si (SolicitarPrestadorRequestDto não tem nenhum
-/// campo), exige 3 consentimentos explícitos e a permissão de
-/// localização do dispositivo — em preparação para o rastreamento de
-/// atividade durante o serviço (feature futura, ainda sem backend).
-///
-/// IMPORTANTE — isso é só a permissão do SISTEMA OPERACIONAL, não tem
-/// nenhuma ligação com o backend ainda: `SolicitarPrestadorRequestDto`
-/// não tem campo de localização, então hoje a gente só GARANTE que a
-/// permissão já está concedida antes de deixar a pessoa virar
-/// prestador — não enviamos nem armazenamos nenhuma coordenada. Quando
-/// o rastreamento de verdade for implementado (durante um agendamento
-/// em andamento), vai ser preciso: (1) o pacote `geolocator` pra ler a
-/// posição em si (`permission_handler` só cuida da permissão), e (2)
-/// muito provavelmente `Permission.locationAlways` em vez de
-/// `locationWhenInUse` — que é um pedido de permissão SEPARADO e mais
-/// invasivo (o app te rastreia mesmo em segundo plano), com telas de
-/// consentimento adicionais exigidas pelas lojas (Google Play/App
-/// Store) e configuração extra de plataforma. Pedimos só
-/// `locationWhenInUse` aqui por enquanto.
-///
-/// Setup de plataforma necessário (fora do código Dart) pra isso
-/// funcionar, e que eu não posso fazer por aqui:
-/// - Android: `<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />`
-///   em `android/app/src/main/AndroidManifest.xml`.
-/// - iOS: chave `NSLocationWhenInUseUsageDescription` em `ios/Runner/Info.plist`
-///   com o texto que aparece pro usuário explicando o motivo do pedido.
-/// - `pubspec.yaml`: adicionar `permission_handler: ^12.0.1`.
 class SolicitarPrestadorScreen extends StatefulWidget {
   const SolicitarPrestadorScreen({super.key});
 
   @override
-  State<SolicitarPrestadorScreen> createState() => _SolicitarPrestadorScreenState();
+  State<SolicitarPrestadorScreen> createState() =>
+      _SolicitarPrestadorScreenState();
 }
 
 class _SolicitarPrestadorScreenState extends State<SolicitarPrestadorScreen> {
   final _prestadorRepository = PrestadorRepository();
+  final _imagePicker = ImagePicker();
 
-  bool _aceitaRastreamento = false;
   bool _aceitaResponsabilidade = false;
   bool _aceitaPoliticaSuspensao = false;
+  ArquivoUpload? _documentoSelecionado;
 
+  bool _selecionandoDocumento = false;
   bool _enviando = false;
   String? _erro;
 
   bool get _podeConfirmar =>
-      _aceitaRastreamento && _aceitaResponsabilidade && _aceitaPoliticaSuspensao;
+      _documentoSelecionado != null &&
+      _aceitaResponsabilidade &&
+      _aceitaPoliticaSuspensao;
 
   Future<void> _solicitar() async {
     setState(() {
@@ -66,14 +46,21 @@ class _SolicitarPrestadorScreenState extends State<SolicitarPrestadorScreen> {
     });
 
     try {
-      final permissaoOk = await _garantirPermissaoLocalizacao();
-      if (!permissaoOk) return;
+      final documento = _documentoSelecionado;
+      if (documento == null) {
+        setState(() {
+          _erro = 'Envie a foto do documento para continuar.';
+        });
+        return;
+      }
 
-      await _prestadorRepository.solicitarPrestador();
+      await _prestadorRepository.solicitarPrestador(documento: documento);
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Solicitação enviada! Vamos analisar em breve.')),
+        const SnackBar(
+          content: Text('Solicitação enviada! Vamos analisar em breve.'),
+        ),
       );
       Navigator.of(context).pop();
     } on WsErroException catch (e) {
@@ -89,37 +76,72 @@ class _SolicitarPrestadorScreenState extends State<SolicitarPrestadorScreen> {
     }
   }
 
-  /// Retorna true se a permissão está concedida (pedindo se necessário).
-  /// Mostra a mensagem de erro apropriada e retorna false caso contrário.
-  Future<bool> _garantirPermissaoLocalizacao() async {
-    var status = await Permission.locationWhenInUse.status;
+  Future<void> _selecionarDocumento() async {
+    setState(() {
+      _selecionandoDocumento = true;
+      _erro = null;
+    });
 
-    if (status.isGranted) return true;
+    try {
+      final origem = await showModalBottomSheet<ImageSource>(
+        context: context,
+        builder: (context) => SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_camera_outlined),
+                title: const Text('Tirar foto'),
+                onTap: () => Navigator.of(context).pop(ImageSource.camera),
+              ),
+              ListTile(
+                leading: const Icon(Icons.photo_library_outlined),
+                title: const Text('Escolher da galeria'),
+                onTap: () => Navigator.of(context).pop(ImageSource.gallery),
+              ),
+            ],
+          ),
+        ),
+      );
 
-    if (status.isPermanentlyDenied) {
+      if (origem == null || !mounted) return;
+
+      final arquivo = await _imagePicker.pickImage(
+        source: origem,
+        imageQuality: 85,
+      );
+
+      if (arquivo == null || !mounted) return;
+
+      final bytes = await arquivo.readAsBytes();
+      if (!mounted) return;
+
+      if (bytes.isEmpty) {
+        setState(() {
+          _erro = 'Não foi possível ler a imagem selecionada.';
+        });
+        return;
+      }
+
+      if (bytes.length > 10 * 1024 * 1024) {
+        setState(() {
+          _erro = 'O documento deve ter no máximo 10 MB.';
+        });
+        return;
+      }
+
+      final partes = arquivo.name.split('.');
+      final extensao = partes.length > 1 ? partes.last.toLowerCase() : 'jpg';
+
       setState(() {
-        _erro = 'Você negou permanentemente o acesso à localização. '
-            'Abra as configurações do app pra permitir.';
+        _documentoSelecionado = ArquivoUpload(
+          nomeOriginal: arquivo.name,
+          extensao: extensao.isEmpty ? 'jpg' : extensao,
+          bytesBase64: base64Encode(bytes),
+        );
       });
-      return false;
+    } finally {
+      if (mounted) setState(() => _selecionandoDocumento = false);
     }
-
-    status = await Permission.locationWhenInUse.request();
-
-    if (status.isGranted) return true;
-
-    if (status.isPermanentlyDenied) {
-      setState(() {
-        _erro = 'Você negou permanentemente o acesso à localização. '
-            'Abra as configurações do app pra permitir.';
-      });
-    } else {
-      setState(() {
-        _erro = 'É necessário permitir o acesso à localização para se '
-            'tornar prestador.';
-      });
-    }
-    return false;
   }
 
   @override
@@ -148,30 +170,46 @@ class _SolicitarPrestadorScreenState extends State<SolicitarPrestadorScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 24),
-              if (_erro != null &&
-                  _erro!.contains('configurações do app')) ...[
-                OutlinedButton(
-                  onPressed: openAppSettings,
-                  child: const Text('Abrir configurações'),
+              OutlinedButton.icon(
+                onPressed: _enviando || _selecionandoDocumento
+                    ? null
+                    : _selecionarDocumento,
+                icon: _selecionandoDocumento
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Icon(Icons.upload_file_outlined),
+                label: Text(
+                  _documentoSelecionado == null
+                      ? 'Enviar documento para análise'
+                      : 'Trocar documento',
                 ),
-                const SizedBox(height: 16),
-              ],
-              _consentimento(
-                valor: _aceitaRastreamento,
-                onChanged: (v) => setState(() => _aceitaRastreamento = v ?? false),
-                texto: 'Entendo que minha localização será utilizada para o '
-                    'rastreamento da atividade durante o serviço.',
               ),
+              if (_documentoSelecionado != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  'Documento selecionado: ${_documentoSelecionado!.nomeOriginal}',
+                  style: AppTextStyles.legenda,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+              const SizedBox(height: 16),
               _consentimento(
                 valor: _aceitaResponsabilidade,
-                onChanged: (v) => setState(() => _aceitaResponsabilidade = v ?? false),
-                texto: 'Entendo que sou responsabilizado por quaisquer danos '
+                onChanged: (v) =>
+                    setState(() => _aceitaResponsabilidade = v ?? false),
+                texto:
+                    'Entendo que sou responsabilizado por quaisquer danos '
                     'causados às propriedades dos clientes.',
               ),
               _consentimento(
                 valor: _aceitaPoliticaSuspensao,
-                onChanged: (v) => setState(() => _aceitaPoliticaSuspensao = v ?? false),
-                texto: 'Entendo que, no caso de violação das diretrizes do '
+                onChanged: (v) =>
+                    setState(() => _aceitaPoliticaSuspensao = v ?? false),
+                texto:
+                    'Entendo que, no caso de violação das diretrizes do '
                     'aplicativo, fico sujeito a ter o cargo de prestador '
                     'suspenso ou, no pior dos casos, ser banido da '
                     'plataforma Ajudaí.',
@@ -180,7 +218,9 @@ class _SolicitarPrestadorScreenState extends State<SolicitarPrestadorScreen> {
               AppButton(
                 label: 'Confirmar solicitação',
                 loading: _enviando,
-                onPressed: _podeConfirmar ? _solicitar : null,
+                onPressed: _podeConfirmar && !_selecionandoDocumento
+                    ? _solicitar
+                    : null,
               ),
             ],
           ),
