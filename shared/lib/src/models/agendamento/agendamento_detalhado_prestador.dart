@@ -3,7 +3,7 @@ import 'package:shared/shared.dart';
 class AgendamentoDetalhadoPrestador {
   final Agendamento agendamento;
   final String clienteNome;
-  final String clienteAvatarUrl;
+  final String? clienteAvatarUrl;
   final bool clienteVerificado;
 
   AgendamentoDetalhadoPrestador({
@@ -17,7 +17,7 @@ class AgendamentoDetalhadoPrestador {
     return AgendamentoDetalhadoPrestador(
       agendamento: Agendamento.fromJson(json),
       clienteNome: JsonUtils.requireString(json, 'cliente_nome'),
-      clienteAvatarUrl: JsonUtils.requireString(json, 'cliente_avatar_url'),
+      clienteAvatarUrl: JsonUtils.optionalString(json, 'cliente_avatar_url'),
       clienteVerificado: json['cliente_verificado'] as bool,
     );
   }
