@@ -157,8 +157,6 @@ class AgendamentoRepository {
     return CancelarAgendamentoResponseDto.fromJson(json).agendamento;
   }
 
-  /// Detalhe de UM agendamento, visto pelo CLIENTE (quem pediu).
-
   /// Agendamentos que EU pedi (como cliente). Já vem com `prestadorNome`.
   Future<List<AgendamentoDetalhadoCliente>> listarAgendamentosCliente() async {
     await WsClient.instance.conectar();
