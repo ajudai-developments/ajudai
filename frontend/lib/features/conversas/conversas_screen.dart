@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:ajudai/core/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:shared/shared.dart';
@@ -77,14 +78,10 @@ class _ConversasScreenState extends State<ConversasScreen> {
                     horizontal: 16,
                     vertical: 6,
                   ),
-                  leading: CircleAvatar(
-                    backgroundColor: AppColors.primary.withValues(alpha: 0.12),
-                    child: Text(
-                      conversa.outroUsuario.nome.isEmpty
-                          ? '?'
-                          : conversa.outroUsuario.nome[0].toUpperCase(),
-                      style: const TextStyle(color: AppColors.primary),
-                    ),
+                  leading: UserAvatar(
+                    avatarUrl: conversa.outroUsuario.avatarUrl,
+                    radius: 22,
+                    fallbackIcon: Icons.person,
                   ),
                   title: Text(
                     conversa.outroUsuario.nome,

@@ -9,32 +9,15 @@ import '../../core/widgets/error_banner.dart';
 import '../../core/widgets/rating_display.dart';
 import '../../core/widgets/user_avatar.dart';
 import '../../core/ws/ws_message_stream.dart';
-import '../servico/servico_repository.dart';
-import '../agendamento/criar_agendamento_args.dart';
 import '../conversas/conversas_repository.dart';
+import '../usuario/usuario_repository.dart';
 import 'widgets/comentarios_list.dart';
 import 'widgets/selos_list.dart';
 
-/// Perfil público de um prestador — visualização somente leitura.
+/// Perfil público de um usuário — visualização somente leitura.
 ///
-/// LIMITAÇÃO DE BACKEND (documentada, não é um bug daqui): não existe
-/// endpoint pra "obter perfil de um usuário" de forma genérica — só
-/// `obterServicoOferecido`, que devolve o perfil do prestador NO
-/// CONTEXTO de UM serviço oferecido específico (média de avaliação,
-/// selos e comentários são os do prestador; mas a lista de "serviços
-/// oferecidos" que aparece aqui é só ESSE UM serviço, não todos os que
-/// o prestador oferece).
-///
-/// Por isso esta tela recebe um `servicoOferecidoId` (String) via
-/// argumento da rota — não um `usuarioId` solto, que não teria como ser
-/// usado pra buscar nada hoje. Cobre o caso real mais comum (tocar no
-/// nome do prestador a partir de um serviço específico), mas:
-/// - Não existe perfil de CLIENTE (quem só comenta, sem ser prestador)
-///   — não há nenhum endpoint que devolva dados de um usuário nesse caso.
-/// - Não lista todos os serviços do prestador, só o de origem.
-///
-/// Quando o backend ganhar um endpoint de perfil de verdade, esta tela
-/// deve passar a receber `usuarioId` e este TODO inteiro pode sair.
+/// Esta tela recebe `usuarioId` via argumento da rota e busca o perfil
+/// público diretamente no backend.
 class PerfilPublicoScreen extends StatefulWidget {
   const PerfilPublicoScreen({super.key});
 
@@ -43,15 +26,15 @@ class PerfilPublicoScreen extends StatefulWidget {
 }
 
 class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
-  final _servicoRepository = ServicoRepository();
+  final _usuarioRepository = UsuarioRepository();
   final _conversasRepository = ConversasRepository();
 
-  late String _servicoOferecidoId;
+  late String _usuarioId;
   bool _argumentosCarregados = false;
 
   bool _carregando = true;
   String? _erro;
-  ObterServicoOferecidoResponseDto? _dados;
+  ObterPerfilPublicoResponseDto? _dados;
 
   @override
   void didChangeDependencies() {
@@ -59,7 +42,7 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
     if (_argumentosCarregados) return;
     _argumentosCarregados = true;
 
-    _servicoOferecidoId = ModalRoute.of(context)!.settings.arguments as String;
+    _usuarioId = ModalRoute.of(context)!.settings.arguments as String;
     _carregar();
   }
 
@@ -70,8 +53,8 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
     });
 
     try {
-      final dados = await _servicoRepository.obterServicoOferecido(
-        servicoOferecidoId: _servicoOferecidoId,
+      final dados = await _usuarioRepository.obterPerfilPublico(
+        usuarioId: _usuarioId,
       );
       setState(() => _dados = dados);
     } on WsErroException catch (e) {
@@ -87,18 +70,12 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
     }
   }
 
-  void _abrirServico() {
-    Navigator.of(
-      context,
-    ).pushNamed(AppRoutes.servicoDetalhe, arguments: _servicoOferecidoId);
-  }
-
   Future<void> _conversar() async {
-    final prestador = _dados?.prestador;
-    if (prestador == null) return;
+    final usuario = _dados?.usuario;
+    if (usuario == null) return;
 
     try {
-      final conversaId = await _conversasRepository.criarConversa(prestador.id);
+      final conversaId = await _conversasRepository.criarConversa(usuario.id);
       final conversas = await _conversasRepository.listarConversas();
       final conversa = conversas.firstWhere(
         (item) => item.conversaId == conversaId,
@@ -130,7 +107,7 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: Text(dados?.prestador.nome ?? 'Perfil')),
+      appBar: AppBar(title: Text(dados?.usuario.nome ?? 'Perfil')),
       body: RefreshIndicator(
         onRefresh: _carregar,
         child: _carregando
@@ -146,18 +123,16 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
     );
   }
 
-  List<Widget> _buildConteudo(ObterServicoOferecidoResponseDto dados) {
+  List<Widget> _buildConteudo(ObterPerfilPublicoResponseDto dados) {
     return [
-      Center(
-        child: UserAvatar(avatarUrl: dados.prestador.avatarUrl, radius: 40),
-      ),
+      Center(child: UserAvatar(avatarUrl: dados.usuario.avatarUrl, radius: 40)),
       const SizedBox(height: 12),
       Text(
-        dados.prestador.nome,
+        dados.usuario.nome,
         style: AppTextStyles.titulo,
         textAlign: TextAlign.center,
       ),
-      if (dados.prestador.verificado) ...[
+      if (dados.usuario.verificado) ...[
         const SizedBox(height: 4),
         const Center(
           child: Chip(
@@ -168,55 +143,62 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
         ),
       ],
       const SizedBox(height: 8),
-      Center(
-        child: RatingDisplay(
-          media: dados.mediaAvaliacao,
-          quantidadeAvaliacoes: dados.quantidadeAvaliacoes,
+      if (dados.ehPrestador) ...[
+        Center(
+          child: RatingDisplay(
+            media: dados.mediaAvaliacao,
+            quantidadeAvaliacoes: dados.quantidadeAvaliacoes,
+          ),
         ),
-      ),
-      const SizedBox(height: 24),
-      if (dados.selos.isNotEmpty) ...[
-        Text('Selos', style: AppTextStyles.titulo),
-        const SizedBox(height: 8),
-        SelosList(selos: dados.selos),
         const SizedBox(height: 24),
+        if (dados.selos.isNotEmpty) ...[
+          Text('Selos', style: AppTextStyles.titulo),
+          const SizedBox(height: 8),
+          SelosList(selos: dados.selos),
+          const SizedBox(height: 24),
+        ],
+        Text('Serviços oferecidos', style: AppTextStyles.titulo),
+        const SizedBox(height: 8),
+        ..._buildServicos(dados),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+          onPressed: _conversar,
+          icon: const Icon(Icons.chat_bubble_outline),
+          label: const Text('Conversar'),
+        ),
+        const SizedBox(height: 24),
+        Text('Comentários', style: AppTextStyles.titulo),
+        const SizedBox(height: 8),
+        ComentariosList(comentarios: dados.comentarios),
+      ] else ...[
+        const SizedBox(height: 12),
+        const Text('Usuário não é prestador.'),
       ],
-      Text('Serviço', style: AppTextStyles.titulo),
-      const SizedBox(height: 4),
-      // TODO: quando existir endpoint de "listar serviços por
-      // prestador", trocar este card único por uma lista de
-      // ServicoCard com todos os serviços que ele oferece.
-      Card(
-        child: ListTile(
-          onTap: _abrirServico,
-          title: Text(dados.servico.nome),
-          subtitle: Text(
-            'R\$ ${dados.servicoOferecido.valor.toStringAsFixed(2)}',
-          ),
-          trailing: TextButton(
-            onPressed: () => Navigator.of(context).pushNamed(
-              AppRoutes.criarAgendamento,
-              arguments: CriarAgendamentoArgs(
-                servicoOferecidoId: _servicoOferecidoId,
-                prestadorId: dados.prestador.id,
-              ),
+    ];
+  }
+
+  List<Widget> _buildServicos(ObterPerfilPublicoResponseDto dados) {
+    if (dados.servicosOferecidos.isEmpty) {
+      return const [Text('Nenhum serviço oferecido cadastrado.')];
+    }
+
+    return [
+      for (final servico in dados.servicosOferecidos) ...[
+        Card(
+          child: ListTile(
+            onTap: () => Navigator.of(context).pushNamed(
+              AppRoutes.servicoDetalhe,
+              arguments: servico.servicoOferecidoId,
             ),
-            child: const Text('Agendar'),
+            title: Text(servico.servicoNome),
+            subtitle: Text(
+              '${servico.categoriaNome} • R\$ ${servico.valor.toStringAsFixed(2)}',
+            ),
+            trailing: const Icon(Icons.chevron_right),
           ),
         ),
-      ),
-      const SizedBox(height: 12),
-      OutlinedButton.icon(
-        onPressed: _conversar,
-        icon: const Icon(Icons.chat_bubble_outline),
-        label: const Text('Conversar com o prestador'),
-      ),
-      const SizedBox(height: 24),
-      Text('Comentários', style: AppTextStyles.titulo),
-      const SizedBox(height: 8),
-      ComentariosList(comentarios: dados.comentarios),
-      // TODO: agenda de disponibilidade (dias/horários livres do
-      // prestador) — combinado que fica pra depois, sem backend ainda.
+        const SizedBox(height: 8),
+      ],
     ];
   }
 }

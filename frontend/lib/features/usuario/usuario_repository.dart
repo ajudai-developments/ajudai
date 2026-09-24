@@ -55,6 +55,21 @@ class UsuarioRepository {
     return usuarioAtualizado;
   }
 
+  Future<ObterPerfilPublicoResponseDto> obterPerfilPublico({
+    required String usuarioId,
+  }) async {
+    await WsClient.instance.conectar();
+
+    WsClient.instance.enviar(
+      ObterPerfilPublicoRequestDto(usuarioId: usuarioId),
+    );
+
+    final json = await WsMessageStream.instance.aguardar(
+      TipoMensagem.obterPerfilPublicoOk,
+    );
+    return ObterPerfilPublicoResponseDto.fromJson(json);
+  }
+
   /// Média de avaliação, total de avaliações e conquistas (selos) do
   /// usuário logado. Usado em meu_perfil_screen.dart pra exibir os
   /// selos logo abaixo da foto de perfil.

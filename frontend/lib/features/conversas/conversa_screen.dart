@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:ajudai/core/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -11,6 +12,7 @@ import '../../core/errors/erro_mapper.dart';
 import '../../core/session/sessao.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/error_banner.dart';
+import '../../core/widgets/user_avatar.dart';
 import '../../core/ws/ws_message_stream.dart';
 import 'conversas_repository.dart';
 
@@ -223,7 +225,31 @@ class _ConversaScreenState extends State<ConversaScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F7F7),
-      appBar: AppBar(title: Text(widget.conversa.outroUsuario.nome)),
+      appBar: AppBar(
+        titleSpacing: 0,
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            GestureDetector(
+              onTap: () => Navigator.of(context).pushNamed(
+                AppRoutes.perfilPublico,
+                arguments: widget.conversa.outroUsuario.id,
+              ),
+              child: UserAvatar(
+                avatarUrl: widget.conversa.outroUsuario.avatarUrl,
+                radius: 18,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Flexible(
+              child: Text(
+                widget.conversa.outroUsuario.nome,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
       body: Column(
         children: [
           ErrorBanner(mensagem: _erro),
