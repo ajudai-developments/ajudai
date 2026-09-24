@@ -12,7 +12,7 @@ import '../../../core/theme/app_text_styles.dart';
 /// widget foi desenhado pra média+contagem, não pra uma nota isolada de
 /// um comentário.
 class ComentariosList extends StatelessWidget {
-  final List<AvaliacaoUsuario> comentarios;
+  final List<AvaliacaoServico> comentarios;
 
   const ComentariosList({super.key, required this.comentarios});
 
@@ -36,7 +36,10 @@ class ComentariosList extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: Text(comentario.avaliadorNome, style: AppTextStyles.corpo),
+                          child: Text(
+                            comentario.avaliadorNome,
+                            style: AppTextStyles.corpo,
+                          ),
                         ),
                         const Icon(Icons.star, size: 16, color: Colors.amber),
                         const SizedBox(width: 4),

@@ -99,10 +99,10 @@ class ServicoCard extends StatelessWidget {
                   _CategoriaChip(nome: servico.categoriaNome),
                   RatingDisplay(
                     media: servico.mediaAvaliacao,
-                    quantidadeAvaliacoes: servico.quantidadeAvaliacoes,
+                    quantidadeAvaliacoes: servico.quantidadeAvaliacoes ?? 0,
                   ),
-                  if (servico.quantidadeSelos > 0)
-                    _SelosBadge(quantidade: servico.quantidadeSelos),
+                  if (servico.quantidadeSelos != null)
+                    _SelosBadge(quantidade: servico.quantidadeSelos ?? 0),
                 ],
               ),
               const SizedBox(height: 14),

@@ -16,6 +16,7 @@ import '../../core/ws/ws_message_stream.dart';
 class AvaliacaoRepository {
   Future<void> avaliarAgendamento({
     required String agendamentoId,
+    required String avaliadoId,
     required double avaliacao,
     String? mensagem,
     String? descricao,

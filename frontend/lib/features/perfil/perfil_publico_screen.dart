@@ -169,7 +169,7 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
         const SizedBox(height: 24),
         Text('Comentários', style: AppTextStyles.titulo),
         const SizedBox(height: 8),
-        ComentariosList(comentarios: dados.comentarios),
+        ComentariosList(comentarios: dados.comentariosServicos),
       ] else ...[
         const SizedBox(height: 12),
         const Text('Usuário não é prestador.'),
