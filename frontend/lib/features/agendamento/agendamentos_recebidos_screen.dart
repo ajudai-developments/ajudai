@@ -47,7 +47,7 @@ class AgendamentosRecebidosScreen extends StatelessWidget {
                   AppRoutes.agendamentoDetalhe,
                   arguments: AgendamentoDetalheArgs(
                     agendamentoId: item.agendamento.id,
-                    comoCliente: item.comoCliente,
+                    comoCliente: false,
                   ),
                 ),
               ),

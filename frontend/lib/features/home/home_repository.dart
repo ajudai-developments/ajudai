@@ -1,9 +1,5 @@
 import 'package:shared/shared.dart';
 
-import '../agendamento/agendamento_com_detalhes.dart';
-import '../agendamento/agendamento_repository.dart';
-import '../servico/servico_repository.dart';
-
 /// Repositório da Home.
 ///
 /// Categorias de serviço NÃO ficam aqui — usar ServicoRepository
@@ -19,47 +15,9 @@ import '../servico/servico_repository.dart';
 /// aqui, seguindo o mesmo padrão de enviar um WsMessage e aguardar o
 /// TipoMensagem de resposta correspondente.
 class HomeRepository {
-  final _agendamentoRepository = AgendamentoRepository();
-  final _servicoRepository = ServicoRepository();
+  // TODO: Future<List<ServicoOferecidoPreview>> obterServicosRecentes()
+  //   — aguardando endpoint no backend.
 
-  Future<AgendamentoComDetalhes?> obterAgendamentoAtual() async {
-    final itens = <AgendamentoComDetalhes>[];
-
-    try {
-      final agendamentosCliente = await _agendamentoRepository
-          .listarAgendamentosCliente();
-      itens.addAll(
-        await carregarComDetalhesCliente(
-          agendamentosCliente,
-          _servicoRepository,
-        ),
-      );
-    } catch (_) {}
-
-    try {
-      final agendamentosPrestador = await _agendamentoRepository
-          .listarAgendamentosPrestador();
-      itens.addAll(
-        await carregarComDetalhesPrestador(
-          agendamentosPrestador,
-          _servicoRepository,
-        ),
-      );
-    } catch (_) {}
-
-    final atuais =
-        itens
-            .where(
-              (item) =>
-                  item.agendamento.status == StatusAgendamento.emAndamento,
-            )
-            .toList()
-          ..sort(
-            (a, b) =>
-                a.agendamento.horaInicio.compareTo(b.agendamento.horaInicio),
-          );
-
-    if (atuais.isEmpty) return null;
-    return atuais.first;
-  }
+  // TODO: Future<List<ServicoOferecidoPreview>> buscarServicosProximos()
+  //   — aguardando geolocalização + endpoint no backend.
 }
