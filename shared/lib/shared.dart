@@ -12,9 +12,15 @@ export 'src/models/servico/servico_oferecido_preview.dart';
 export 'src/models/verificacao/verificacao.dart';
 export 'src/models/verificacao/verificacao_com_detalhes.dart';
 export 'src/models/verificacao/verificacao_com_urls.dart';
+
 export 'src/models/agendamento/agendamento.dart';
 export 'src/models/agendamento/agendamento_detalhado_cliente.dart';
 export 'src/models/agendamento/agendamento_detalhado_prestador.dart';
+export 'src/models/agendamento/agendamento_detalhado.dart';
+export 'src/models/agendamento/solicitacao_preco_resumo.dart';
+export 'src/models/agendamento/timeline_item_agendamento.dart';
+export 'src/models/agendamento/avaliacao_resumo.dart';
+
 export 'src/models/horario_ocupado.dart';
 export 'src/models/conquista/conquista.dart';
 export 'src/models/conquista/conquista_usuario.dart';
@@ -93,6 +99,9 @@ export 'src/dto/agendamento/listar_agendamentos_cliente_dto.dart';
 export 'src/dto/agendamento/listar_agendamentos_prestador_dto.dart';
 export 'src/dto/agendamento/responder_agendamento_dto.dart';
 export 'src/dto/agendamento/listar_horario_ocupado_prestador_dto.dart';
+export 'src/dto/agendamento/buscar_agendamento_proximo_cliente_dto.dart';
+export 'src/dto/agendamento/buscar_agendamento_proximo_prestador_dto.dart';
+export 'src/dto/agendamento/buscar_agendamento_detalhado_dto.dart';
 
 export 'src/dto/avaliacao/avaliacao_agendamento_dto.dart';
 export 'src/dto/avaliacao/avaliar_usuario_dto.dart';

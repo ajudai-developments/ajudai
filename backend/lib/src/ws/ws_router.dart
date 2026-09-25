@@ -67,6 +67,15 @@ class WsRouter {
       TipoMensagem.listarAgendamentosPrestador:
           h.agendamento.handleListarAgendamentosPrestador,
 
+      TipoMensagem.buscarAgendamentoProximoCliente:
+          h.agendamento.handleBuscarAgendamentoProximoCliente,
+
+      TipoMensagem.buscarAgendamentoProximoPrestador:
+          h.agendamento.handleBuscarAgendamentoProximoPrestador,
+
+      TipoMensagem.buscarAgendamentoDetalhado:
+          h.agendamento.handleBuscarAgendamentoDetalhado,
+
       TipoMensagem.listarHorariosOcupadosPrestador:
           h.agendamento.handleListarHorariosOcupadosPrestador,
 

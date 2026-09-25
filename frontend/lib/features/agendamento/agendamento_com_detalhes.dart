@@ -10,6 +10,7 @@ class AgendamentoComDetalhes {
   final String nomeContraparte;
   final String? contraparteAvatarUrl;
   final bool contraparteVerificada;
+  final String contraParteId;
   final String nomeServico;
 
   const AgendamentoComDetalhes({
@@ -18,6 +19,7 @@ class AgendamentoComDetalhes {
     required this.nomeContraparte,
     required this.contraparteAvatarUrl,
     required this.contraparteVerificada,
+    required this.contraParteId,
     required this.nomeServico,
   });
 
@@ -33,6 +35,7 @@ class AgendamentoComDetalhes {
     nomeContraparte: d.prestadorNome,
     contraparteAvatarUrl: d.prestadorAvatarUrl,
     contraparteVerificada: d.prestadorVerificado,
+    contraParteId: d.agendamento.prestadorId,
     nomeServico: nomeServico,
   );
 
@@ -45,6 +48,7 @@ class AgendamentoComDetalhes {
     nomeContraparte: d.clienteNome,
     contraparteAvatarUrl: d.clienteAvatarUrl,
     contraparteVerificada: d.clienteVerificado,
+    contraParteId: d.agendamento.usuarioId,
     nomeServico: nomeServico,
   );
 
@@ -56,6 +60,7 @@ class AgendamentoComDetalhes {
         nomeContraparte: nomeContraparte,
         contraparteAvatarUrl: contraparteAvatarUrl,
         contraparteVerificada: contraparteVerificada,
+        contraParteId: contraParteId,
         nomeServico: nomeServico,
       );
 } // <-- a classe fecha AQUI

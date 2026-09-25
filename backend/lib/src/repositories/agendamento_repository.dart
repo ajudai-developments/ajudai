@@ -164,4 +164,54 @@ class AgendamentoRepository {
 
     return lista.map((json) => HorarioOcupado.fromJson(json)).toList();
   }
+
+  Future<AgendamentoDetalhadoCliente?> buscarAgendamentoProximoCliente({
+    required String usuarioId,
+  }) async {
+    final response = await _client.rpc(
+      'buscar_agendamento_proximo_cliente',
+      params: {'p_usuario_atual_id': usuarioId},
+    );
+
+    final lista = response as List;
+    if (lista.isEmpty) return null;
+
+    return AgendamentoDetalhadoCliente.fromJson(
+      lista.first as Map<String, dynamic>,
+    );
+  }
+
+  Future<AgendamentoDetalhadoPrestador?> buscarAgendamentoProximoPrestador({
+    required String prestadorId,
+  }) async {
+    final response = await _client.rpc(
+      'buscar_agendamento_proximo_prestador',
+      params: {'p_usuario_atual_id': prestadorId},
+    );
+
+    final lista = response as List;
+    if (lista.isEmpty) return null;
+
+    return AgendamentoDetalhadoPrestador.fromJson(
+      lista.first as Map<String, dynamic>,
+    );
+  }
+
+  Future<AgendamentoDetalhado?> buscarAgendamentoDetalhado({
+    required String agendamentoId,
+    required String usuarioId,
+  }) async {
+    final response = await _client.rpc(
+      'buscar_agendamento_detalhado',
+      params: {
+        'p_agendamento_id': agendamentoId,
+        'p_usuario_atual_id': usuarioId,
+      },
+    );
+
+    final lista = response as List;
+    if (lista.isEmpty) return null;
+
+    return AgendamentoDetalhado.fromJson(lista.first as Map<String, dynamic>);
+  }
 }

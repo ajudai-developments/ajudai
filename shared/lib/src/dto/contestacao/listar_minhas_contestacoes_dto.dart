@@ -26,6 +26,13 @@ class ContestacaoComUrls {
     ...contestacao.toJson(),
     'urls_arquivos': urlsArquivos,
   };
+
+  factory ContestacaoComUrls.fromJson(Map<String, dynamic> json) {
+    return ContestacaoComUrls(
+      contestacao: ContestacaoComDetalhes.fromJson(json),
+      urlsArquivos: (json['urls_arquivos'] as List).cast<String>(),
+    );
+  }
 }
 
 class ListarMinhasContestacoesResponseDto implements WsMessage {

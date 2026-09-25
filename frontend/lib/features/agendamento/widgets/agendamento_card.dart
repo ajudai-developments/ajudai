@@ -1,3 +1,4 @@
+import 'package:ajudai/core/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_text_styles.dart';
@@ -195,54 +196,59 @@ class AgendamentoCard extends StatelessWidget {
     final temAvatar = avatarUrl != null && avatarUrl.isNotEmpty;
     final rotulo = item.comoCliente ? 'Prestador' : 'Cliente';
 
-    return Row(
-      children: [
-        CircleAvatar(
-          radius: 22,
-          backgroundColor: scheme.primaryContainer,
-          backgroundImage: temAvatar ? NetworkImage(avatarUrl) : null,
-          child: temAvatar
-              ? null
-              : Text(
-                  _iniciais(item.nomeContraparte),
-                  style: TextStyle(
-                    color: scheme.onPrimaryContainer,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(rotulo, style: AppTextStyles.legenda),
-              Row(
-                children: [
-                  Flexible(
-                    child: Text(
-                      item.nomeContraparte,
-                      style: AppTextStyles.corpo.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
+    return GestureDetector(
+      onTap: () => Navigator.of(
+        context,
+      ).pushNamed(AppRoutes.perfilPublico, arguments: item.contraParteId),
+      child: Row(
+        children: [
+          CircleAvatar(
+            radius: 22,
+            backgroundColor: scheme.primaryContainer,
+            backgroundImage: temAvatar ? NetworkImage(avatarUrl) : null,
+            child: temAvatar
+                ? null
+                : Text(
+                    _iniciais(item.nomeContraparte),
+                    style: TextStyle(
+                      color: scheme.onPrimaryContainer,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  if (item.contraparteVerificada) ...[
-                    const SizedBox(width: 4),
-                    Icon(
-                      Icons.verified_rounded,
-                      size: 16,
-                      color: scheme.primary,
-                    ),
-                  ],
-                ],
-              ),
-            ],
           ),
-        ),
-      ],
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(rotulo, style: AppTextStyles.legenda),
+                Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        item.nomeContraparte,
+                        style: AppTextStyles.corpo.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (item.contraparteVerificada) ...[
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.verified_rounded,
+                        size: 16,
+                        color: scheme.primary,
+                      ),
+                    ],
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

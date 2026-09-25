@@ -3,6 +3,7 @@ import 'package:backend/src/repositories/agendamento_repository.dart';
 import 'package:backend/src/repositories/endereco_repository.dart';
 import 'package:backend/src/repositories/servico_repository.dart';
 import 'package:backend/src/repositories/usuario_repository.dart';
+import 'package:backend/src/services/arquivo_upload_service.dart';
 import 'package:backend/src/services/pagamento_service.dart';
 import 'package:backend/src/services/sessao_service.dart';
 import 'package:backend/src/supabase/supabase_client_factory.dart';
@@ -603,6 +604,122 @@ class AgendamentoService {
 
     return ListarHorarioOcupadoPrestadorResponseDto(
       horariosOcupados: horariosOcupados,
+    );
+  }
+
+  Future<BuscarAgendamentoProximoPrestadorResponseDto>
+  buscarAgendamentoProximoPrestador(
+    WsConnection conexao,
+    BuscarAgendamentoProximoPrestadorRequestDto dto,
+  ) async {
+    final client = _sessaoService.clientDe(conexao);
+    final prestadorId = _sessaoService.userIdDe(conexao);
+    if (client == null || prestadorId == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final usuario = await UsuarioRepository(
+      SupabaseClientFactory.criarSecret(),
+    ).buscarPorId(prestadorId);
+
+    if (usuario == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.usuarioInexistente,
+        mensagem: 'usuário inválido',
+      );
+    }
+
+    if (usuario.userRole != UserRole.prestador) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoPermitido,
+        mensagem: 'Você não é permitido para realizar esta ação.',
+      );
+    }
+
+    final agendamento = await AgendamentoRepository(
+      client,
+    ).buscarAgendamentoProximoPrestador(prestadorId: prestadorId);
+
+    return BuscarAgendamentoProximoPrestadorResponseDto(
+      agendamento: agendamento,
+    );
+  }
+
+  Future<BuscarAgendamentoProximoClienteResponseDto>
+  buscarAgendamentoProximoCliente(
+    WsConnection conexao,
+    BuscarAgendamentoProximoClienteRequestDto dto,
+  ) async {
+    final client = _sessaoService.clientDe(conexao);
+    final userId = _sessaoService.userIdDe(conexao);
+    if (client == null || userId == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final agendamento = await AgendamentoRepository(
+      client,
+    ).buscarAgendamentoProximoCliente(usuarioId: userId);
+
+    return BuscarAgendamentoProximoClienteResponseDto(agendamento: agendamento);
+  }
+
+  Future<BuscarAgendamentoDetalhadoResponseDto> buscarAgendamentoDetalhado(
+    WsConnection conexao,
+    BuscarAgendamentoDetalhadoRequestDto dto,
+  ) async {
+    final client = _sessaoService.clientDe(conexao);
+    final userId = _sessaoService.userIdDe(conexao);
+    if (client == null || userId == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final agendamento = await AgendamentoRepository(client)
+        .buscarAgendamentoDetalhado(
+          agendamentoId: dto.agendamentoId,
+          usuarioId: userId,
+        );
+
+    if (agendamento == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoEncontrado,
+        mensagem: 'Agendamento não encontrado',
+      );
+    }
+
+    ContestacaoComUrls? contestacaoComUrls;
+    final contestacao = agendamento.contestacaoAberta;
+
+    if (contestacao != null && contestacao.arquivos.isNotEmpty) {
+      final urls = <String>[];
+      for (final arquivo in contestacao.arquivos) {
+        final url = await ArquivoUploadService.urlAssinada(
+          client: client,
+          bucket: 'contestamentos',
+          prefixo: contestacao.id,
+          arquivo: arquivo,
+        );
+        urls.add(url);
+      }
+      contestacaoComUrls = ContestacaoComUrls(
+        contestacao: contestacao,
+        urlsArquivos: urls,
+      );
+    }
+
+    return BuscarAgendamentoDetalhadoResponseDto(
+      agendamento: AgendamentoDetalhadoComUrls(
+        agendamento: agendamento,
+        contestacaoComUrls: contestacaoComUrls,
+      ),
     );
   }
 }

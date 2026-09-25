@@ -326,4 +326,87 @@ class AgendamentoHandler {
       );
     }
   }
+
+  Future<void> handleBuscarAgendamentoProximoCliente(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final dto = BuscarAgendamentoProximoClienteRequestDto.fromJson(msg);
+      final resposta = await _agendamentoService
+          .buscarAgendamentoProximoCliente(conexao, dto);
+      conexao.enviar(resposta);
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } catch (e, stackTrace) {
+      print('Erro ao buscar agendamento próximo do cliente: $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao buscar agendamento próximo',
+        ),
+      );
+    }
+  }
+
+  Future<void> handleBuscarAgendamentoProximoPrestador(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final dto = BuscarAgendamentoProximoPrestadorRequestDto.fromJson(msg);
+      final resposta = await _agendamentoService
+          .buscarAgendamentoProximoPrestador(conexao, dto);
+      conexao.enviar(resposta);
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } catch (e, stackTrace) {
+      print('Erro ao buscar agendamento próximo do prestador: $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao buscar agendamento próximo',
+        ),
+      );
+    }
+  }
+
+  Future<void> handleBuscarAgendamentoDetalhado(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final dto = BuscarAgendamentoDetalhadoRequestDto.fromJson(msg);
+      final resposta = await _agendamentoService.buscarAgendamentoDetalhado(
+        conexao,
+        dto,
+      );
+      conexao.enviar(resposta);
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } catch (e, stackTrace) {
+      print('Erro ao buscar agendamento detalhado: $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao buscar detalhes do agendamento',
+        ),
+      );
+    }
+  }
 }
