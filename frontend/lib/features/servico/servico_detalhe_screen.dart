@@ -1,4 +1,5 @@
 import 'package:ajudai/core/widgets/user_avatar.dart';
+import 'package:ajudai/features/servico/widgets/comentarios_servico_list.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -9,7 +10,6 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/error_banner.dart';
 import '../../core/widgets/rating_display.dart';
-import '../perfil/widgets/comentarios_list.dart';
 import '../perfil/widgets/selos_list.dart';
 import '../agendamento/criar_agendamento_args.dart';
 import 'servico_repository.dart';
@@ -166,7 +166,7 @@ class _ServicoDetalheScreenState extends State<ServicoDetalheScreen> {
       const SizedBox(height: 16),
       Text('Comentários', style: AppTextStyles.titulo),
       const SizedBox(height: 8),
-      ComentariosList(comentarios: dados.comentariosServico),
+      ComentariosServicoList(comentarios: dados.comentariosServico),
       const SizedBox(height: 80), // espaço pro botão fixo de agendar
     ];
   }

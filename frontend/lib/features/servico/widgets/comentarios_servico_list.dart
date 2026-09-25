@@ -3,14 +3,18 @@ import 'package:shared/shared.dart';
 
 import '../../../core/theme/app_text_styles.dart';
 
-/// Lista de comentários (AvaliacaoUsuario) — nome de quem avaliou, nota
-/// e mensagem opcional.
+/// Lista de comentários (AvaliacaoServico) — nome de quem avaliou, nota
+/// e mensagem opcional, feitos sobre um serviço/agendamento específico.
 ///
-/// Reutilizado em servico_detalhe_screen e perfil_publico_screen.
-class ComentariosList extends StatelessWidget {
-  final List<AvaliacaoUsuario> comentarios;
+/// Mesmo visual de [ComentariosList] (que trabalha com AvaliacaoUsuario,
+/// avaliação da pessoa em geral) — mantidos como widgets separados
+/// porque os models são diferentes e cada um é usado num contexto.
+///
+/// Usado em servico_detalhe_screen.
+class ComentariosServicoList extends StatelessWidget {
+  final List<AvaliacaoServico> comentarios;
 
-  const ComentariosList({super.key, required this.comentarios});
+  const ComentariosServicoList({super.key, required this.comentarios});
 
   @override
   Widget build(BuildContext context) {

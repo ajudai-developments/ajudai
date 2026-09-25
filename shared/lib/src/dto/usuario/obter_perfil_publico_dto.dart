@@ -30,9 +30,6 @@ class ObterPerfilPublicoResponseDto implements WsMessage {
   final double? mediaAvaliacao;
   final int quantidadeAvaliacoes;
   final List<AvaliacaoUsuario> comentarios;
-  final double? mediaAvaliacaoServicos;
-  final int quantidadeAvaliacoesServicos;
-  final List<AvaliacaoServico> comentariosServicos;
 
   ObterPerfilPublicoResponseDto({
     required this.usuario,
@@ -43,9 +40,6 @@ class ObterPerfilPublicoResponseDto implements WsMessage {
     this.mediaAvaliacao,
     required this.quantidadeAvaliacoes,
     required this.comentarios,
-    this.mediaAvaliacaoServicos,
-    required this.quantidadeAvaliacoesServicos,
-    required this.comentariosServicos,
   });
 
   @override
@@ -55,10 +49,6 @@ class ObterPerfilPublicoResponseDto implements WsMessage {
     final servicos = JsonUtils.requireListaDeMapas(json, 'servicos_oferecidos');
     final selos = JsonUtils.requireListaDeMapas(json, 'selos');
     final comentarios = JsonUtils.requireListaDeMapas(json, 'comentarios');
-    final comentariosServicos = JsonUtils.requireListaDeMapas(
-      json,
-      'comentarios_servicos',
-    );
 
     return ObterPerfilPublicoResponseDto(
       usuario: UsuarioBasico.fromJson(json['usuario'] as Map<String, dynamic>),
@@ -74,17 +64,6 @@ class ObterPerfilPublicoResponseDto implements WsMessage {
       mediaAvaliacao: JsonUtils.optionalDouble(json, 'media_avaliacao'),
       quantidadeAvaliacoes: JsonUtils.requireInt(json, 'quantidade_avaliacoes'),
       comentarios: comentarios.map(AvaliacaoUsuario.fromJson).toList(),
-      mediaAvaliacaoServicos: JsonUtils.optionalDouble(
-        json,
-        'media_avaliacao_servicos',
-      ),
-      quantidadeAvaliacoesServicos: JsonUtils.requireInt(
-        json,
-        'quantidade_avaliacoes_servicos',
-      ),
-      comentariosServicos: comentariosServicos
-          .map(AvaliacaoServico.fromJson)
-          .toList(),
     );
   }
 
@@ -99,8 +78,5 @@ class ObterPerfilPublicoResponseDto implements WsMessage {
     'media_avaliacao': mediaAvaliacao,
     'quantidade_avaliacoes': quantidadeAvaliacoes,
     'comentarios': comentarios.map((c) => c.toJson()).toList(),
-    'media_avaliacao_servicos': mediaAvaliacaoServicos,
-    'quantidade_avaliacoes_servicos': quantidadeAvaliacoesServicos,
-    'comentarios_servicos': comentariosServicos.map((c) => c.toJson()).toList(),
   };
 }
