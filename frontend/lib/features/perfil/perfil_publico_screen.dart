@@ -1,3 +1,4 @@
+import 'package:ajudai/features/perfil/widgets/modal_detalhe_servico.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -148,9 +149,11 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
                   padding: const EdgeInsets.only(bottom: 10),
                   child: CartaoServicoOferecido(
                     servico: servico,
-                    onTap: () => Navigator.of(
-                      context,
-                    ).pushNamed(AppRoutes.servicoDetalhe, arguments: servico),
+                    onTap: () => abrirModalDetalheServico(
+                      context: context,
+                      servicoOferecidoId: servico.servicoOferecidoId,
+                      prestadorId: dados.usuario.id,
+                    ),
                   ),
                 ),
             ],
