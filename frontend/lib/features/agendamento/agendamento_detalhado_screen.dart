@@ -1,4 +1,7 @@
+import 'package:ajudai/core/routes/app_routes.dart';
 import 'package:ajudai/core/ws/ws_message_stream.dart';
+import 'package:ajudai/features/agendamento/agendamento_acoes.dart';
+import 'package:ajudai/features/agendamento/widgets/dialogo_cancelar_agendamento.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -31,6 +34,8 @@ class AgendamentoDetalhadoScreen extends StatefulWidget {
 class _AgendamentoDetalhadoScreenState
     extends State<AgendamentoDetalhadoScreen> {
   final _repository = AgendamentoRepository();
+
+  bool _executandoAcao = false;
 
   late String _agendamentoId;
   bool _carregado = false;
@@ -119,9 +124,11 @@ class _AgendamentoDetalhadoScreenState
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          _buildHeader(agendamento),
+          _buildHeader(agendamento, souCliente: souCliente),
           const SizedBox(height: 16),
           _buildContraparte(agendamento, souCliente: souCliente),
+          const SizedBox(height: 16),
+          _buildAcoes(agendamento, souCliente: souCliente),
           const SizedBox(height: 16),
           _buildSecao(
             titulo: 'Endereço',
@@ -152,7 +159,7 @@ class _AgendamentoDetalhadoScreenState
     );
   }
 
-  Widget _buildHeader(AgendamentoDetalhado a) {
+  Widget _buildHeader(AgendamentoDetalhado a, {required bool souCliente}) {
     return _Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -188,7 +195,7 @@ class _AgendamentoDetalhadoScreenState
           ),
           const SizedBox(height: 8),
           _linhaInfo(Icons.attach_money, _formatarValor(a.valor)),
-          if (a.servicoOferecidoDescricao.isNotEmpty) ...[
+          if (souCliente && a.servicoOferecidoDescricao.isNotEmpty) ...[
             const SizedBox(height: 12),
             Text(a.servicoOferecidoDescricao, style: AppTextStyles.corpo),
           ],
@@ -203,45 +210,54 @@ class _AgendamentoDetalhadoScreenState
     final verificado = souCliente ? a.prestadorVerificado : a.clienteVerificado;
     final telefone = souCliente ? a.prestadorTelefone : a.clienteTelefone;
     final papel = souCliente ? 'Prestador' : 'Cliente';
+    final idOutro = souCliente ? a.prestadorId : a.clienteId;
 
-    return _Card(
-      child: Row(
-        children: [
-          UserAvatar(avatarUrl: avatarUrl, radius: 24),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Flexible(
-                      child: Text(
-                        nome,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                        overflow: TextOverflow.ellipsis,
+    return GestureDetector(
+      onTap: () => Navigator.of(
+        context,
+      ).pushNamed(AppRoutes.perfilPublico, arguments: idOutro),
+      child: _Card(
+        child: Row(
+          children: [
+            UserAvatar(avatarUrl: avatarUrl, radius: 24),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Flexible(
+                        child: Text(
+                          nome,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
-                    ),
-                    if (verificado) ...[
-                      const SizedBox(width: 4),
-                      Icon(
-                        Icons.verified,
-                        size: 16,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
+                      if (verificado) ...[
+                        const SizedBox(width: 4),
+                        Icon(
+                          Icons.verified,
+                          size: 16,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ],
                     ],
-                  ],
-                ),
-                Text(
-                  papel,
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                ),
-              ],
+                  ),
+                  Text(
+                    papel,
+                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+                  ),
+                ],
+              ),
             ),
-          ),
-          if (telefone != null)
-            IconButton(icon: const Icon(Icons.call_outlined), onPressed: () {}),
-        ],
+            if (telefone != null)
+              IconButton(
+                icon: const Icon(Icons.call_outlined),
+                onPressed: () {},
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -399,6 +415,187 @@ class _AgendamentoDetalhadoScreenState
         ],
       ),
     );
+  }
+
+  Widget _buildAcoes(AgendamentoDetalhado a, {required bool souCliente}) {
+    final acoes = AcoesAgendamento.calcular(
+      status: a.status,
+      horaInicio: a.horaInicio,
+      horaFim: a.horaFim,
+      comoPrestador: !souCliente,
+      jaAvaliado: a.avaliacaoFeitaPorMim != null,
+    );
+
+    final temAlgo =
+        acoes.temAcaoPrincipal || acoes.podeCancelar || acoes.instrucao != null;
+    if (!temAlgo) return const SizedBox.shrink();
+
+    final scheme = Theme.of(context).colorScheme;
+
+    return _Card(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (acoes.instrucao != null)
+            Text(acoes.instrucao!, style: AppTextStyles.corpo),
+          if (acoes.temAcaoPrincipal || acoes.podeCancelar) ...[
+            if (acoes.instrucao != null) const SizedBox(height: 12),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                if (acoes.podeRecusar)
+                  OutlinedButton(
+                    onPressed: _executandoAcao
+                        ? null
+                        : () => _executarAcao(
+                            () => _repository.responderAgendamento(
+                              agendamentoId: _agendamentoId,
+                              aceitar: false,
+                            ),
+                          ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: scheme.error,
+                    ),
+                    child: const Text('Recusar'),
+                  ),
+                if (acoes.podeAceitar)
+                  FilledButton(
+                    onPressed: _executandoAcao
+                        ? null
+                        : () => _executarAcao(
+                            () => _repository.responderAgendamento(
+                              agendamentoId: _agendamentoId,
+                              aceitar: true,
+                            ),
+                          ),
+                    child: const Text('Aceitar'),
+                  ),
+                if (acoes.podeIniciar)
+                  FilledButton.icon(
+                    onPressed: _executandoAcao
+                        ? null
+                        : () => _executarAcao(
+                            () =>
+                                _repository.iniciarAgendamento(_agendamentoId),
+                          ),
+                    icon: const Icon(Icons.play_arrow_rounded, size: 18),
+                    label: const Text('Iniciar atendimento'),
+                  ),
+                if (acoes.podeConcluir)
+                  FilledButton.icon(
+                    onPressed: _executandoAcao
+                        ? null
+                        : () => _executarAcao(
+                            () =>
+                                _repository.concluirAgendamento(_agendamentoId),
+                          ),
+                    icon: const Icon(Icons.task_alt_rounded, size: 18),
+                    label: const Text('Concluir atendimento'),
+                  ),
+                if (acoes.podeConfirmarConclusao)
+                  FilledButton.icon(
+                    onPressed: _executandoAcao ? null : _confirmarConclusao,
+                    icon: const Icon(
+                      Icons.check_circle_outline_rounded,
+                      size: 18,
+                    ),
+                    label: const Text('Confirmar conclusão'),
+                  ),
+                if (acoes.podeAvaliar)
+                  OutlinedButton.icon(
+                    onPressed: _executandoAcao ? null : _irParaAvaliacao,
+                    icon: const Icon(Icons.star_border_rounded, size: 18),
+                    label: const Text('Avaliar'),
+                  ),
+                if (acoes.podeCancelar)
+                  TextButton(
+                    onPressed: _executandoAcao ? null : _cancelar,
+                    style: TextButton.styleFrom(foregroundColor: scheme.error),
+                    child: const Text('Cancelar'),
+                  ),
+                if (_executandoAcao)
+                  const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Future<void> _executarAcao(Future<dynamic> Function() chamada) async {
+    setState(() => _executandoAcao = true);
+    try {
+      await chamada();
+      await _carregar();
+    } on WsErroException catch (e) {
+      _mostrarErroAcao(
+        ErroMapper.paraMensagem(e.codigo, mensagemServidor: e.mensagem),
+      );
+    } on WsTimeoutException {
+      _mostrarErroAcao(
+        'Não foi possível conectar ao servidor. Tente novamente.',
+      );
+    } finally {
+      if (mounted) setState(() => _executandoAcao = false);
+    }
+  }
+
+  void _mostrarErroAcao(String mensagem) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(mensagem)));
+  }
+
+  Future<void> _cancelar() async {
+    final motivo = await mostrarDialogoCancelarAgendamento(context);
+    if (motivo == null) return;
+    await _executarAcao(
+      () => _repository.cancelarAgendamento(
+        agendamentoId: _agendamentoId,
+        motivo: motivo,
+      ),
+    );
+  }
+
+  Future<void> _confirmarConclusao() async {
+    setState(() => _executandoAcao = true);
+    try {
+      await _repository.confirmarConclusaoAgendamento(_agendamentoId);
+    } on WsErroException catch (e) {
+      if (mounted) setState(() => _executandoAcao = false);
+      _mostrarErroAcao(
+        ErroMapper.paraMensagem(e.codigo, mensagemServidor: e.mensagem),
+      );
+      return;
+    } on WsTimeoutException {
+      if (mounted) setState(() => _executandoAcao = false);
+      _mostrarErroAcao(
+        'Não foi possível conectar ao servidor. Tente novamente.',
+      );
+      return;
+    }
+    if (mounted) setState(() => _executandoAcao = false);
+    if (!mounted) return;
+
+    await Navigator.of(
+      context,
+    ).pushNamed(AppRoutes.avaliarAgendamento, arguments: _agendamentoId);
+    if (mounted) _carregar();
+  }
+
+  Future<void> _irParaAvaliacao() async {
+    await Navigator.of(
+      context,
+    ).pushNamed(AppRoutes.avaliarAgendamento, arguments: _agendamentoId);
+    if (mounted) _carregar();
   }
 
   Widget _buildSecao({

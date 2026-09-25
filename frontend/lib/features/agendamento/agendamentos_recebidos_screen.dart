@@ -1,3 +1,4 @@
+import 'package:ajudai/features/agendamento/widgets/lista_agendamentos_filtravel.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/routes/app_routes.dart';
@@ -6,18 +7,10 @@ import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_bottom_nav.dart';
 import '../../core/widgets/async_list_view.dart';
 import '../servico/servico_repository.dart';
-import 'widgets/agendamento_com_detalhes.dart';
+import 'agendamento_acoes.dart';
 import 'agendamento_repository.dart';
-import 'widgets/agendamento_card.dart';
+import 'widgets/agendamento_com_detalhes.dart';
 
-/// Visão do prestador: agendamentos que clientes pediram pra ele.
-///
-/// Usa `listarAgendamentosPrestador`, que já vem com `clienteNome`
-/// pronto — sem chamada extra pra isso.
-///
-/// Também é alcançável direto pelo ícone "Marketplace" da barra de
-/// navegação inferior (ver AppBottomNav) e pelo botão "Agendamentos
-/// recebidos" em meu_perfil_screen.
 class AgendamentosRecebidosScreen extends StatelessWidget {
   const AgendamentosRecebidosScreen({super.key});
 
@@ -36,17 +29,22 @@ class AgendamentosRecebidosScreen extends StatelessWidget {
           return carregarComDetalhesPrestador(agendamentos, servicoRepository);
         },
         mensagemVazio: 'Você ainda não recebeu nenhum pedido de agendamento.',
-        builder: (context, itens) => Column(
-          children: [
-            for (final item in itens)
-              AgendamentoCard(
-                item: item,
-                onTap: () => Navigator.of(context).pushNamed(
-                  AppRoutes.agendamentoDetalhe,
-                  arguments: item.agendamento.id,
-                ),
-              ),
-          ],
+        builder: (context, itens) => ListaAgendamentosFiltravel(
+          itens: itens,
+          onTapItem: (item) => Navigator.of(context).pushNamed(
+            AppRoutes.agendamentoDetalhe,
+            arguments: item.agendamento.id,
+          ),
+          executarAcao: (item, acao, {motivo}) => executarAcaoAgendamento(
+            agendamentoRepository,
+            item.agendamento.id,
+            acao,
+            motivo: motivo,
+          ),
+          onAvaliar: (item) => Navigator.of(context).pushNamed(
+            AppRoutes.avaliarAgendamento,
+            arguments: item.agendamento.id,
+          ),
         ),
       ),
       bottomNavigationBar: Sessao.instance.ehPrestador

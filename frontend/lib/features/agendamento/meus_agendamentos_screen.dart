@@ -5,9 +5,10 @@ import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_bottom_nav.dart';
 import '../../core/widgets/async_list_view.dart';
 import '../servico/servico_repository.dart';
-import 'widgets/agendamento_com_detalhes.dart';
+import 'agendamento_acoes.dart';
 import 'agendamento_repository.dart';
-import 'widgets/agendamento_card.dart';
+import 'widgets/agendamento_com_detalhes.dart';
+import 'widgets/lista_agendamentos_filtravel.dart';
 
 class MeusAgendamentosScreen extends StatelessWidget {
   const MeusAgendamentosScreen({super.key});
@@ -24,23 +25,25 @@ class MeusAgendamentosScreen extends StatelessWidget {
         carregar: () async {
           final agendamentos = await agendamentoRepository
               .listarAgendamentosCliente();
-          return await carregarComDetalhesCliente(
-            agendamentos,
-            servicoRepository,
-          );
+          return carregarComDetalhesCliente(agendamentos, servicoRepository);
         },
         mensagemVazio: 'Você ainda não tem agendamentos.',
-        builder: (context, itens) => Column(
-          children: [
-            for (final item in itens)
-              AgendamentoCard(
-                item: item,
-                onTap: () => Navigator.of(context).pushNamed(
-                  AppRoutes.agendamentoDetalhe,
-                  arguments: item.agendamento.id,
-                ),
-              ),
-          ],
+        builder: (context, itens) => ListaAgendamentosFiltravel(
+          itens: itens,
+          onTapItem: (item) => Navigator.of(context).pushNamed(
+            AppRoutes.agendamentoDetalhe,
+            arguments: item.agendamento.id,
+          ),
+          executarAcao: (item, acao, {motivo}) => executarAcaoAgendamento(
+            agendamentoRepository,
+            item.agendamento.id,
+            acao,
+            motivo: motivo,
+          ),
+          onAvaliar: (item) => Navigator.of(context).pushNamed(
+            AppRoutes.avaliarAgendamento, // ajuste se o nome real for outro
+            arguments: item.agendamento.id,
+          ),
         ),
       ),
       bottomNavigationBar: const AppBottomNav(currentIndex: 0),

@@ -81,8 +81,8 @@ class AppBottomNav extends StatelessWidget {
         ),
         if (_mostrarMarketplace)
           const BottomNavigationBarItem(
-            icon: Icon(Icons.storefront),
-            label: 'Marketplace',
+            icon: Icon(Icons.assignment_outlined),
+            label: 'Pedidos',
           ),
       ],
     );
