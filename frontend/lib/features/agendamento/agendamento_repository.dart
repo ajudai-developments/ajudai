@@ -198,4 +198,19 @@ class AgendamentoRepository {
       json,
     ).horariosOcupados;
   }
+
+  Future<AgendamentoDetalhadoComUrls> buscarAgendamentoDetalhado(
+    String agendamentoId,
+  ) async {
+    await WsClient.instance.conectar();
+
+    WsClient.instance.enviar(
+      BuscarAgendamentoDetalhadoRequestDto(agendamentoId: agendamentoId),
+    );
+
+    final json = await WsMessageStream.instance.aguardar(
+      TipoMensagem.buscarAgendamentoDetalhadoOk,
+    );
+    return BuscarAgendamentoDetalhadoResponseDto.fromJson(json).agendamento;
+  }
 }

@@ -2,7 +2,7 @@ import 'package:ajudai/core/routes/app_routes.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_text_styles.dart';
-import '../agendamento_com_detalhes.dart';
+import 'agendamento_com_detalhes.dart';
 import 'status_badge.dart';
 
 /// Card de um agendamento.

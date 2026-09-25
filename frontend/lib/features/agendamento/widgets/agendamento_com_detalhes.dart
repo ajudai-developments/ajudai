@@ -1,6 +1,6 @@
 import 'package:shared/shared.dart';
 
-import '../servico/servico_repository.dart';
+import '../../servico/servico_repository.dart';
 
 enum PapelAgendamento { cliente, prestador }
 

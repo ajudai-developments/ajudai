@@ -244,20 +244,32 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final cards = <Widget>[
       if (_agendamentoCliente != null)
-        AgendamentoProximoCard(
-          nome: _agendamentoCliente!.prestadorNome,
-          avatarUrl: _agendamentoCliente!.prestadorAvatarUrl,
-          verificado: _agendamentoCliente!.prestadorVerificado,
-          agendamento: _agendamentoCliente!.agendamento,
-          subtitulo: 'Você contratou',
+        GestureDetector(
+          onTap: () => Navigator.of(context).pushNamed(
+            AppRoutes.agendamentoDetalhe,
+            arguments: _agendamentoCliente!.agendamento.id,
+          ),
+          child: AgendamentoProximoCard(
+            nome: _agendamentoCliente!.prestadorNome,
+            avatarUrl: _agendamentoCliente!.prestadorAvatarUrl,
+            verificado: _agendamentoCliente!.prestadorVerificado,
+            agendamento: _agendamentoCliente!.agendamento,
+            subtitulo: 'Você contratou',
+          ),
         ),
       if (_agendamentoPrestador != null)
-        AgendamentoProximoCard(
-          nome: _agendamentoPrestador!.clienteNome,
-          avatarUrl: _agendamentoPrestador!.clienteAvatarUrl,
-          verificado: _agendamentoPrestador!.clienteVerificado,
-          agendamento: _agendamentoPrestador!.agendamento,
-          subtitulo: 'Cliente agendou com você',
+        GestureDetector(
+          onTap: () => Navigator.of(context).pushNamed(
+            AppRoutes.agendamentoDetalhe,
+            arguments: _agendamentoPrestador!.agendamento.id,
+          ),
+          child: AgendamentoProximoCard(
+            nome: _agendamentoPrestador!.clienteNome,
+            avatarUrl: _agendamentoPrestador!.clienteAvatarUrl,
+            verificado: _agendamentoPrestador!.clienteVerificado,
+            agendamento: _agendamentoPrestador!.agendamento,
+            subtitulo: 'Cliente agendou com você',
+          ),
         ),
     ];
 

@@ -1,3 +1,4 @@
+import 'package:ajudai/features/agendamento/agendamento_detalhado_screen.dart';
 import 'package:ajudai/features/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
@@ -116,6 +117,7 @@ class _AppRootState extends State<_AppRoot> {
       AppRoutes.meusAgendamentos: (_) => const MeusAgendamentosScreen(),
       AppRoutes.agendamentosRecebidos: (_) =>
           const AgendamentosRecebidosScreen(),
+      AppRoutes.agendamentoDetalhe: (_) => const AgendamentoDetalhadoScreen(),
       AppRoutes.avaliarAgendamento: (_) => const AvaliarAgendamentoScreen(),
       AppRoutes.avaliarUsuario: (_) => const AvaliarUsuarioScreen(),
       AppRoutes.solicitarPrestador: (_) => const SolicitarPrestadorScreen(),
