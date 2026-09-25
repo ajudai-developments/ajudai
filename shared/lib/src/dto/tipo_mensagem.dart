@@ -89,6 +89,12 @@ enum TipoMensagem {
   obterAgendamentoClienteOk('obter_agendamento_cliente_ok'),
   obterAgendamentoPrestador('obter_agendamento_prestador'),
   obterAgendamentoPrestadorOk('obter_agendamento_prestador_ok'),
+  buscarAgendamentoProximoCliente('buscar_agendamento_proximo_cliente'),
+  buscarAgendamentoProximoClienteOk('buscar_agendamento_proximo_cliente_ok'),
+  buscarAgendamentoProximoPrestador('buscar_agendamento_proximo_prestador'),
+  buscarAgendamentoProximoPrestadorOk(
+    'buscar_agendamento_proximo_prestador_ok',
+  ),
 
   listarAgendamentosCliente('listar_agendamentos_cliente'),
   listarAgendamentosClienteOk('listar_agendamentos_cliente_ok'),
