@@ -213,4 +213,32 @@ class AgendamentoRepository {
     );
     return BuscarAgendamentoDetalhadoResponseDto.fromJson(json).agendamento;
   }
+
+  /// Histórico do cliente: agendamentos concluídos ou cancelados.
+  Future<List<AgendamentoDetalhadoCliente>> listarHistoricoCliente() async {
+    await WsClient.instance.conectar();
+
+    WsClient.instance.enviar(ListarHistoricoAgendamentoClienteRequestDto());
+
+    final json = await WsMessageStream.instance.aguardar(
+      TipoMensagem.listarAgendamentosHistoricoClienteOk,
+    );
+    return ListarHistoricoAgendamentoClienteResponseDto.fromJson(
+      json,
+    ).agendamentos;
+  }
+
+  /// Histórico do prestador: agendamentos concluídos ou cancelados.
+  Future<List<AgendamentoDetalhadoPrestador>> listarHistoricoPrestador() async {
+    await WsClient.instance.conectar();
+
+    WsClient.instance.enviar(ListarHistoricoAgendamentoPrestadorRequestDto());
+
+    final json = await WsMessageStream.instance.aguardar(
+      TipoMensagem.listarAgendamentosHistoricoPrestadorOk,
+    );
+    return ListarHistoricoAgendamentoPrestadorResponseDto.fromJson(
+      json,
+    ).agendamentos;
+  }
 }

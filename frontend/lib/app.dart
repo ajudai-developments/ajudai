@@ -1,4 +1,6 @@
 import 'package:ajudai/features/agendamento/agendamento_detalhado_screen.dart';
+import 'package:ajudai/features/contestacao/contestar_agendamento_screen.dart';
+import 'package:ajudai/features/denuncia/denunciar_usuario_screen.dart';
 import 'package:ajudai/features/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
@@ -125,6 +127,8 @@ class _AppRootState extends State<_AppRoot> {
           const MeusServicosOferecidosScreen(),
 
       AppRoutes.formServicoOferecido: (_) => const FormServicoOferecidoScreen(),
+      AppRoutes.denunciarUsuario: (_) => const DenunciarUsuarioScreen(),
+      AppRoutes.contestarAgendamento: (_) => const ContestarAgendamentoScreen(),
       // telas forem feitas.
     };
 

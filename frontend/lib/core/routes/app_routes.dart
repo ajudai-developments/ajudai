@@ -60,4 +60,7 @@ class AppRoutes {
   // admin
   static const String verificacoes = '/admin/verificacoes';
   static const String verificacaoDetalhe = '/admin/verificacoes/detalhe';
+
+  static const denunciarUsuario = '/denuncia/usuario';
+  static const contestarAgendamento = '/contestacao/agendamento';
 }

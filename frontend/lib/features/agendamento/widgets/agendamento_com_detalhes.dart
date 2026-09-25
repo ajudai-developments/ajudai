@@ -12,6 +12,8 @@ class AgendamentoComDetalhes {
   final bool contraparteVerificada;
   final String contraParteId;
   final String nomeServico;
+  final bool avaliacaoAgendamentoFeita;
+  final bool avaliacaoUsuarioFeita;
 
   const AgendamentoComDetalhes({
     required this.agendamento,
@@ -21,10 +23,19 @@ class AgendamentoComDetalhes {
     required this.contraparteVerificada,
     required this.contraParteId,
     required this.nomeServico,
+    this.avaliacaoAgendamentoFeita = false,
+    this.avaliacaoUsuarioFeita = false,
   });
 
   bool get comoCliente => papel == PapelAgendamento.cliente;
   bool get comoPrestador => papel == PapelAgendamento.prestador;
+
+  /// Se já terminou de avaliar tudo que cabe ao seu papel.
+  /// Cliente avalia em 2 passos (serviço + pessoa); prestador só a
+  /// pessoa (1 passo).
+  bool get avaliacaoCompleta => comoPrestador
+      ? avaliacaoUsuarioFeita
+      : (avaliacaoAgendamentoFeita && avaliacaoUsuarioFeita);
 
   factory AgendamentoComDetalhes.doCliente(
     AgendamentoDetalhadoCliente d,
@@ -37,6 +48,8 @@ class AgendamentoComDetalhes {
     contraparteVerificada: d.prestadorVerificado,
     contraParteId: d.agendamento.prestadorId,
     nomeServico: nomeServico,
+    avaliacaoAgendamentoFeita: d.avaliacaoAgendamentoFeita,
+    avaliacaoUsuarioFeita: d.avaliacaoUsuarioFeita,
   );
 
   factory AgendamentoComDetalhes.doPrestador(
@@ -50,6 +63,8 @@ class AgendamentoComDetalhes {
     contraparteVerificada: d.clienteVerificado,
     contraParteId: d.agendamento.usuarioId,
     nomeServico: nomeServico,
+    avaliacaoAgendamentoFeita: d.avaliacaoAgendamentoFeita,
+    avaliacaoUsuarioFeita: d.avaliacaoUsuarioFeita,
   );
 
   /// Depois de uma ação (aceitar, cancelar...) só o Agendamento muda.
@@ -62,6 +77,8 @@ class AgendamentoComDetalhes {
         contraparteVerificada: contraparteVerificada,
         contraParteId: contraParteId,
         nomeServico: nomeServico,
+        avaliacaoAgendamentoFeita: avaliacaoAgendamentoFeita,
+        avaliacaoUsuarioFeita: avaliacaoUsuarioFeita,
       );
 } // <-- a classe fecha AQUI
 

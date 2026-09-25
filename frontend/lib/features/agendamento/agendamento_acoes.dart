@@ -173,7 +173,7 @@ class AcoesAgendamento {
     };
 
     return AcoesAgendamento(
-      podeCancelar: podeCancelar,
+      podeCancelar: true,
       podeConfirmarConclusao: status == StatusAgendamento.aguardandoConfirmacao,
       podeAvaliar: status == StatusAgendamento.concluido && !jaAvaliado,
       instrucao: instrucao,
