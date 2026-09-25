@@ -181,4 +181,21 @@ class AgendamentoRepository {
     );
     return ListarAgendamentosPrestadorResponseDto.fromJson(json).agendamentos;
   }
+
+  Future<List<HorarioOcupado>> listarHorariosOcupados(
+    String prestadorId,
+  ) async {
+    await WsClient.instance.conectar();
+
+    WsClient.instance.enviar(
+      ListarHorarioOcupadoPrestadorRequestDto(prestadorId: prestadorId),
+    );
+
+    final json = await WsMessageStream.instance.aguardar(
+      TipoMensagem.listarHorariosOcupadosPrestadorOk,
+    );
+    return ListarHorarioOcupadoPrestadorResponseDto.fromJson(
+      json,
+    ).horariosOcupados;
+  }
 }

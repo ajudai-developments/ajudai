@@ -79,7 +79,7 @@ class _MeuPerfilScreenState extends State<MeuPerfilScreen> {
     if (!mounted) return;
     Navigator.of(
       context,
-    ).pushNamedAndRemoveUntil(AppRoutes.login, (route) => false);
+    ).pushNamedAndRemoveUntil(AppRoutes.home, (route) => false);
   }
 
   @override
@@ -108,12 +108,7 @@ class _MeuPerfilScreenState extends State<MeuPerfilScreen> {
         child: ListView(
           padding: const EdgeInsets.all(24),
           children: [
-            Center(
-              child: UserAvatar(
-                avatarUrl: usuario.avatarUrl,
-                radius: 40,
-              ),
-            ),
+            Center(child: UserAvatar(avatarUrl: usuario.avatarUrl, radius: 40)),
             const SizedBox(height: 12),
             if (_carregandoSelos)
               const Center(

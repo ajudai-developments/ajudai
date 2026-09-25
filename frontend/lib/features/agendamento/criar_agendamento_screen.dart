@@ -12,21 +12,28 @@ import '../endereco/endereco_repository.dart';
 import 'agendamento_repository.dart';
 import 'criar_agendamento_args.dart';
 import 'confirmar_pagamento_args.dart';
+import 'widgets/cartao_selecao.dart';
+import 'widgets/modal_selecionar_horario.dart';
 
 /// Tela de criação de agendamento.
 ///
-/// Recebe `servicoOferecidoId` (String) via argumento da rota. Deixa o
-/// usuário escolher um endereço já cadastrado, data e horário, valida
-/// tudo com AgendamentoValidator (do shared) e, se passar, chama
-/// AgendamentoRepository.criarAgendamento pra gerar o preview — que é
-/// repassado pra confirmar_pagamento_screen junto dos parâmetros
-/// originais (ver ConfirmarPagamentoArgs).
+/// A escolha de data/horário fica num bottom sheet (ver
+/// modal_selecionar_horario.dart) pra manter a tela principal enxuta —
+/// aqui só aparece um resumo tocável do que foi escolhido. A grade de
+/// horários do modal já vem com os intervalos ocupados do prestador
+/// desabilitados, incluindo o caso de um intervalo "cobrir" um
+/// agendamento existente.
 class CriarAgendamentoScreen extends StatefulWidget {
   const CriarAgendamentoScreen({super.key});
 
   @override
   State<CriarAgendamentoScreen> createState() => _CriarAgendamentoScreenState();
 }
+
+const _horaMinima = 7;
+const _horaMaxima = 23;
+const _passoMinutos = 10;
+const _diasFuturos = 30;
 
 class _CriarAgendamentoScreenState extends State<CriarAgendamentoScreen> {
   final _enderecoRepository = EnderecoRepository();
@@ -36,17 +43,25 @@ class _CriarAgendamentoScreenState extends State<CriarAgendamentoScreen> {
   late String _prestadorId;
   bool _argumentosCarregados = false;
 
-  bool _carregandoEnderecos = true;
-  String? _erroEnderecos;
+  bool _carregandoDadosIniciais = true;
+  String? _erroCarregamento;
   List<Endereco> _enderecos = [];
   Endereco? _enderecoSelecionado;
+  List<HorarioOcupado> _horariosOcupados = [];
 
-  DateTime? _data;
-  TimeOfDay? _horaInicio;
-  TimeOfDay? _horaFim;
+  late DateTime _diaSelecionado;
+  DateTime? _horaInicio;
+  DateTime? _horaFim;
 
   bool _enviando = false;
   String? _erroGeral;
+
+  @override
+  void initState() {
+    super.initState();
+    final hoje = DateTime.now();
+    _diaSelecionado = DateTime(hoje.year, hoje.month, hoje.day);
+  }
 
   @override
   void didChangeDependencies() {
@@ -54,82 +69,93 @@ class _CriarAgendamentoScreenState extends State<CriarAgendamentoScreen> {
     if (_argumentosCarregados) return;
     _argumentosCarregados = true;
 
-    final args = ModalRoute.of(context)!.settings.arguments as CriarAgendamentoArgs;
+    final args =
+        ModalRoute.of(context)!.settings.arguments as CriarAgendamentoArgs;
     _servicoOferecidoId = args.servicoOferecidoId;
     _prestadorId = args.prestadorId;
-    _carregarEnderecos();
+    _carregarDadosIniciais();
   }
 
-  Future<void> _carregarEnderecos() async {
+  Future<void> _carregarDadosIniciais() async {
     setState(() {
-      _carregandoEnderecos = true;
-      _erroEnderecos = null;
+      _carregandoDadosIniciais = true;
+      _erroCarregamento = null;
     });
 
     try {
-      final enderecos = await _enderecoRepository.obterMeusEnderecos();
+      final resultados = await Future.wait([
+        _enderecoRepository.obterMeusEnderecos(),
+        _agendamentoRepository.listarHorariosOcupados(_prestadorId),
+      ]);
       setState(() {
-        _enderecos = enderecos;
-        _enderecoSelecionado = enderecos.isNotEmpty ? enderecos.first : null;
+        _enderecos = resultados[0] as List<Endereco>;
+        _enderecoSelecionado = _enderecos.isNotEmpty ? _enderecos.first : null;
+        _horariosOcupados = resultados[1] as List<HorarioOcupado>;
       });
     } on WsErroException catch (e) {
       setState(() {
-        _erroEnderecos = ErroMapper.paraMensagem(e.codigo, mensagemServidor: e.mensagem);
+        _erroCarregamento = ErroMapper.paraMensagem(
+          e.codigo,
+          mensagemServidor: e.mensagem,
+        );
       });
     } on WsTimeoutException {
-      setState(() => _erroEnderecos = 'Não foi possível carregar seus endereços.');
+      setState(() => _erroCarregamento = 'Não foi possível carregar os dados.');
     } finally {
-      if (mounted) setState(() => _carregandoEnderecos = false);
+      if (mounted) setState(() => _carregandoDadosIniciais = false);
     }
   }
 
   Future<void> _cadastrarNovoEndereco() async {
-    final resultado = await Navigator.of(context).pushNamed(AppRoutes.formEndereco);
-    if (resultado == true) _carregarEnderecos();
+    final resultado = await Navigator.of(
+      context,
+    ).pushNamed(AppRoutes.formEndereco);
+    if (resultado == true) _carregarDadosIniciais();
   }
 
-  Future<void> _selecionarData() async {
-    final agora = DateTime.now();
-    final escolhida = await showDatePicker(
+  Future<void> _abrirSeletorHorario() async {
+    final resultado = await abrirModalSelecionarHorario(
       context: context,
-      initialDate: _data ?? agora,
-      firstDate: agora,
-      lastDate: agora.add(const Duration(days: 30)),
+      diaInicial: _diaSelecionado,
+      horaInicioInicial: _horaInicio,
+      horaFimInicial: _horaFim,
+      horariosOcupados: _horariosOcupados,
+      diasFuturos: _diasFuturos,
+      horaMinima: _horaMinima,
+      horaMaxima: _horaMaxima,
+      passoMinutos: _passoMinutos,
     );
-    if (escolhida != null) setState(() => _data = escolhida);
-  }
-
-  Future<void> _selecionarHora({required bool inicio}) async {
-    final escolhida = await showTimePicker(
-      context: context,
-      initialTime: (inicio ? _horaInicio : _horaFim) ?? TimeOfDay.now(),
-    );
-    if (escolhida == null) return;
+    if (resultado == null || !mounted) return;
     setState(() {
-      if (inicio) {
-        _horaInicio = escolhida;
-      } else {
-        _horaFim = escolhida;
-      }
+      _diaSelecionado = resultado.dia;
+      _horaInicio = resultado.horaInicio;
+      _horaFim = resultado.horaFim;
     });
   }
 
-  DateTime? _combinar(TimeOfDay? hora) {
-    if (_data == null || hora == null) return null;
-    return DateTime(_data!.year, _data!.month, _data!.day, hora.hour, hora.minute);
+  String _resumoHorario() {
+    if (_horaInicio == null || _horaFim == null) {
+      return 'Escolher data e horário';
+    }
+    final data =
+        '${_diaSelecionado.day.toString().padLeft(2, '0')}/'
+        '${_diaSelecionado.month.toString().padLeft(2, '0')}';
+    String h(DateTime d) =>
+        '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+    return '$data · ${h(_horaInicio!)} às ${h(_horaFim!)}';
   }
 
   Future<void> _continuar() async {
     final endereco = _enderecoSelecionado;
-    final inicioLocal = _combinar(_horaInicio);
-    final fimLocal = _combinar(_horaFim);
+    final inicioLocal = _horaInicio;
+    final fimLocal = _horaFim;
 
     if (endereco == null) {
       setState(() => _erroGeral = 'Selecione um endereço.');
       return;
     }
     if (inicioLocal == null || fimLocal == null) {
-      setState(() => _erroGeral = 'Selecione data e horário de início e fim.');
+      setState(() => _erroGeral = 'Selecione o horário de início e término.');
       return;
     }
 
@@ -174,7 +200,10 @@ class _CriarAgendamentoScreenState extends State<CriarAgendamentoScreen> {
       );
     } on WsErroException catch (e) {
       setState(() {
-        _erroGeral = ErroMapper.paraMensagem(e.codigo, mensagemServidor: e.mensagem);
+        _erroGeral = ErroMapper.paraMensagem(
+          e.codigo,
+          mensagemServidor: e.mensagem,
+        );
       });
     } on WsTimeoutException {
       setState(() {
@@ -190,7 +219,7 @@ class _CriarAgendamentoScreenState extends State<CriarAgendamentoScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(title: const Text('Novo agendamento')),
-      body: _carregandoEnderecos
+      body: _carregandoDadosIniciais
           ? const Center(child: CircularProgressIndicator())
           : SafeArea(
               child: SingleChildScrollView(
@@ -198,9 +227,12 @@ class _CriarAgendamentoScreenState extends State<CriarAgendamentoScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    ErrorBanner(mensagem: _erroGeral ?? _erroEnderecos),
-                    Text('Endereço', style: AppTextStyles.titulo),
-                    const SizedBox(height: 8),
+                    ErrorBanner(mensagem: _erroGeral ?? _erroCarregamento),
+                    Text(
+                      'Detalhes do agendamento',
+                      style: AppTextStyles.titulo,
+                    ),
+                    const SizedBox(height: 12),
                     if (_enderecos.isEmpty)
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -217,56 +249,68 @@ class _CriarAgendamentoScreenState extends State<CriarAgendamentoScreen> {
                         ],
                       )
                     else
-                      DropdownButtonFormField<Endereco>(
-                        initialValue: _enderecoSelecionado,
-                        items: [
-                          for (final endereco in _enderecos)
-                            DropdownMenuItem(
-                              value: endereco,
-                              child: Text('${endereco.nome} — ${endereco.logradouro}, ${endereco.numero}'),
-                            ),
-                        ],
-                        onChanged: (endereco) => setState(() => _enderecoSelecionado = endereco),
+                      CartaoSelecao(
+                        icone: Icons.location_on_outlined,
+                        titulo: 'Endereço',
+                        valor: _enderecoSelecionado == null
+                            ? 'Selecionar endereço'
+                            : '${_enderecoSelecionado!.nome} — '
+                                  '${_enderecoSelecionado!.logradouro}, '
+                                  '${_enderecoSelecionado!.numero}',
+                        preenchido: _enderecoSelecionado != null,
+                        onTap: () => _mostrarSeletorEndereco(context),
                       ),
-                    const SizedBox(height: 24),
-                    Text('Data e horário', style: AppTextStyles.titulo),
-                    const SizedBox(height: 8),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(_data == null
-                          ? 'Selecionar data'
-                          : '${_data!.day.toString().padLeft(2, '0')}/'
-                              '${_data!.month.toString().padLeft(2, '0')}/'
-                              '${_data!.year}'),
-                      trailing: const Icon(Icons.calendar_today),
-                      onTap: _selecionarData,
+                    const SizedBox(height: 12),
+                    CartaoSelecao(
+                      icone: Icons.calendar_today_outlined,
+                      titulo: 'Data e horário',
+                      valor: _resumoHorario(),
+                      preenchido: _horaInicio != null && _horaFim != null,
+                      onTap: _abrirSeletorHorario,
                     ),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(_horaInicio == null
-                          ? 'Horário de início'
-                          : 'Início: ${_horaInicio!.format(context)}'),
-                      trailing: const Icon(Icons.access_time),
-                      onTap: () => _selecionarHora(inicio: true),
-                    ),
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(_horaFim == null
-                          ? 'Horário de término'
-                          : 'Término: ${_horaFim!.format(context)}'),
-                      trailing: const Icon(Icons.access_time),
-                      onTap: () => _selecionarHora(inicio: false),
-                    ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 28),
                     AppButton(
                       label: 'Continuar',
                       loading: _enviando,
-                      onPressed: _enderecos.isEmpty ? null : _continuar,
+                      onPressed:
+                          _enderecos.isEmpty ||
+                              _enderecoSelecionado == null ||
+                              _horaInicio == null ||
+                              _horaFim == null
+                          ? null
+                          : _continuar,
                     ),
                   ],
                 ),
               ),
             ),
     );
+  }
+
+  Future<void> _mostrarSeletorEndereco(BuildContext context) async {
+    final escolhido = await showModalBottomSheet<Endereco>(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'Escolha o endereço',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+            ),
+            for (final endereco in _enderecos)
+              ListTile(
+                title: Text(endereco.nome),
+                subtitle: Text('${endereco.logradouro}, ${endereco.numero}'),
+                onTap: () => Navigator.of(context).pop(endereco),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (escolhido != null) setState(() => _enderecoSelecionado = escolhido);
   }
 }
