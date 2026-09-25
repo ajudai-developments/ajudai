@@ -97,6 +97,8 @@ export 'src/dto/agendamento/confirmar_conclusao_agendamento_dto.dart';
 export 'src/dto/agendamento/iniciar_agendamento_dto.dart';
 export 'src/dto/agendamento/listar_agendamentos_cliente_dto.dart';
 export 'src/dto/agendamento/listar_agendamentos_prestador_dto.dart';
+export 'src/dto/agendamento/listar_historico_agendamento_cliente_dto.dart';
+export 'src/dto/agendamento/listar_historico_agendamento_prestador_dto.dart';
 export 'src/dto/agendamento/responder_agendamento_dto.dart';
 export 'src/dto/agendamento/listar_horario_ocupado_prestador_dto.dart';
 export 'src/dto/agendamento/buscar_agendamento_proximo_cliente_dto.dart';

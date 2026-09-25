@@ -409,4 +409,58 @@ class AgendamentoHandler {
       );
     }
   }
+
+  Future<void> handleListarHistoricoAgendamentosCliente(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final dto = ListarHistoricoAgendamentoClienteRequestDto.fromJson(msg);
+      final resposta = await _agendamentoService
+          .listarHistoricoAgendamentosCliente(conexao, dto);
+      conexao.enviar(resposta);
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } catch (e, stackTrace) {
+      print('Erro ao listar histórico de agendamentos do cliente: $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao listar histórico de agendamentos',
+        ),
+      );
+    }
+  }
+
+  Future<void> handleListarHistoricoAgendamentosPrestador(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final dto = ListarHistoricoAgendamentoPrestadorRequestDto.fromJson(msg);
+      final resposta = await _agendamentoService
+          .listarHistoricoAgendamentosPrestador(conexao, dto);
+      conexao.enviar(resposta);
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } catch (e, stackTrace) {
+      print('Erro ao listar histórico de agendamentos do prestador: $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao listar histórico de agendamentos',
+        ),
+      );
+    }
+  }
 }

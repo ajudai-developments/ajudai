@@ -722,4 +722,68 @@ class AgendamentoService {
       ),
     );
   }
+
+  Future<ListarHistoricoAgendamentoClienteResponseDto>
+  listarHistoricoAgendamentosCliente(
+    WsConnection conexao,
+    ListarHistoricoAgendamentoClienteRequestDto dto,
+  ) async {
+    final client = _sessaoService.clientDe(conexao);
+    final userId = _sessaoService.userIdDe(conexao);
+    if (client == null || userId == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final usuario = await UsuarioRepository(
+      SupabaseClientFactory.criarSecret(),
+    ).buscarPorId(userId);
+
+    if (usuario == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.usuarioInexistente,
+        mensagem: 'usuário inválido',
+      );
+    }
+
+    if (usuario.userRole != UserRole.prestador) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoPermitido,
+        mensagem: 'Você não é permitido para realizar esta ação.',
+      );
+    }
+
+    final agendamentos = await AgendamentoRepository(
+      client,
+    ).listarHistoricoAgendamentosCliente(usuarioId: userId);
+
+    return ListarHistoricoAgendamentoClienteResponseDto(
+      agendamentos: agendamentos,
+    );
+  }
+
+  Future<ListarHistoricoAgendamentoPrestadorResponseDto>
+  listarHistoricoAgendamentosPrestador(
+    WsConnection conexao,
+    ListarHistoricoAgendamentoPrestadorRequestDto dto,
+  ) async {
+    final client = _sessaoService.clientDe(conexao);
+    final prestadorId = _sessaoService.userIdDe(conexao);
+    if (client == null || prestadorId == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final agendamentos = await AgendamentoRepository(
+      client,
+    ).listarHistoricoAgendamentosPrestador(usuarioId: prestadorId);
+
+    return ListarHistoricoAgendamentoPrestadorResponseDto(
+      agendamentos: agendamentos,
+    );
+  }
 }

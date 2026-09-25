@@ -96,6 +96,17 @@ enum TipoMensagem {
     'buscar_agendamento_proximo_prestador_ok',
   ),
 
+  listarAgendamentosHistoricoCliente('listar_agendamentos_historico_cliente'),
+  listarAgendamentosHistoricoClienteOk(
+    'listar_agendamentos_historico_cliente_ok',
+  ),
+  listarAgendamentosHistoricoPrestador(
+    'listar_agendamentos_historico_prestador',
+  ),
+  listarAgendamentosHistoricoPrestadorOk(
+    'listar_agendamentos_historico_prestador_ok',
+  ),
+
   buscarAgendamentoDetalhado('buscar_agendamento_detalhado'),
   buscarAgendamentoDetalhadoOk('buscar_agendamento_detalhado_ok'),
 

@@ -79,6 +79,12 @@ class WsRouter {
       TipoMensagem.listarHorariosOcupadosPrestador:
           h.agendamento.handleListarHorariosOcupadosPrestador,
 
+      TipoMensagem.listarAgendamentosHistoricoCliente:
+          h.agendamento.handleListarHistoricoAgendamentosCliente,
+
+      TipoMensagem.listarAgendamentosHistoricoPrestador:
+          h.agendamento.handleListarHistoricoAgendamentosPrestador,
+
       TipoMensagem.listarNotificacoes: h.notificacao.handleListarNotificacoes,
 
       TipoMensagem.marcarNotificacaoComoLida:

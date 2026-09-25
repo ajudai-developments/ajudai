@@ -214,4 +214,27 @@ class AgendamentoRepository {
 
     return AgendamentoDetalhado.fromJson(lista.first as Map<String, dynamic>);
   }
+
+  Future<List<AgendamentoDetalhadoCliente>> listarHistoricoAgendamentosCliente({
+    required String usuarioId,
+  }) async {
+    final response = await _client.rpc(
+      'listar_agendamentos_cliente_historico',
+      params: {'p_usuario_atual_id': usuarioId},
+    );
+
+    final lista = (response as List).cast<Map<String, dynamic>>();
+    return lista.map((r) => AgendamentoDetalhadoCliente.fromJson(r)).toList();
+  }
+
+  Future<List<AgendamentoDetalhadoPrestador>>
+  listarHistoricoAgendamentosPrestador({required String usuarioId}) async {
+    final response = await _client.rpc(
+      'listar_agendamentos_prestador_historico',
+      params: {'p_usuario_atual_id': usuarioId},
+    );
+
+    final lista = (response as List).cast<Map<String, dynamic>>();
+    return lista.map((r) => AgendamentoDetalhadoPrestador.fromJson(r)).toList();
+  }
 }
