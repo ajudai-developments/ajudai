@@ -147,3 +147,4 @@ export 'src/models/enums/tipo_arquivo.dart';
 export 'src/models/enums/status_contestacao.dart';
 export 'src/models/enums/status_solicitacao_preco.dart';
 export 'src/models/enums/status_denuncia.dart';
+export 'src/models/enums/categoria_notificacao.dart';
