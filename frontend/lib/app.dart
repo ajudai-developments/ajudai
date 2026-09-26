@@ -3,6 +3,7 @@ import 'package:ajudai/features/contestacao/contestar_agendamento_screen.dart';
 import 'package:ajudai/features/denuncia/denunciar_usuario_screen.dart';
 import 'package:ajudai/features/notificacao/widgets/notificacao_snack_bar_content.dart';
 import 'package:ajudai/features/splash/splash_screen.dart';
+import 'package:ajudai/features/usuario/meu_perfil_completo_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -135,6 +136,7 @@ class _AppRootState extends State<_AppRoot> {
       AppRoutes.notificacoes: (_) => const NotificacoesScreen(),
       AppRoutes.conversas: (_) => const ConversasScreen(),
       AppRoutes.meuPerfil: (_) => const MeuPerfilScreen(),
+      AppRoutes.meuPerfilCompleto: (_) => const MeuPerfilCompletoScreen(),
       AppRoutes.editarPerfil: (_) => const EditarPerfilScreen(),
       AppRoutes.meusEnderecos: (_) => const MeusEnderecosScreen(),
       AppRoutes.formEndereco: (_) => const FormEnderecoScreen(),

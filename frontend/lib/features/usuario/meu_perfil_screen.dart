@@ -7,28 +7,12 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/app_bottom_nav.dart';
 import '../../core/widgets/app_button.dart';
+import '../../core/widgets/rating_display.dart';
 import '../../core/widgets/user_avatar.dart';
 import '../auth/auth_repository.dart';
 import '../perfil/widgets/selos_destaque.dart';
 import 'usuario_repository.dart';
 
-/// Perfil do PRÓPRIO usuário logado — dados básicos vêm direto de
-/// `Sessao.instance.usuario` (populado no login/cadastro), sem chamada
-/// de rede própria. Os selos (conquistas) são a exceção: vêm de
-/// `UsuarioRepository.obterPerfilCompleto`, que não faz parte do
-/// `Usuario` da sessão, então são buscados à parte (ver
-/// `_carregarSelos`) e exibidos logo abaixo da foto.
-///
-/// Seções condicionais:
-/// - cliente sem solicitação de prestador -> botão "Quero ser prestador".
-/// - cliente com solicitação pendente/aprovada/suspensa -> aviso de status.
-/// - prestador -> link pra "Meus serviços oferecidos" e "Agendamentos
-///   recebidos" (esta última também alcançável pelo ícone Marketplace
-///   da barra de navegação inferior, ver AppBottomNav).
-///
-/// O botão genérico "Meus agendamentos" (visão de cliente) foi retirado
-/// desta tela — já é alcançável a qualquer momento pela aba "Agenda" da
-/// barra de navegação inferior, então repeti-lo aqui era redundante.
 class MeuPerfilScreen extends StatefulWidget {
   const MeuPerfilScreen({super.key});
 
@@ -39,33 +23,29 @@ class MeuPerfilScreen extends StatefulWidget {
 class _MeuPerfilScreenState extends State<MeuPerfilScreen> {
   final _usuarioRepository = UsuarioRepository();
 
-  List<ConquistaUsuario> _selos = [];
-  bool _carregandoSelos = true;
+  PerfilCompleto? _perfilCompleto;
+  bool _carregandoPerfilCompleto = true;
 
   @override
   void initState() {
     super.initState();
-    _carregarSelos();
+    _carregarPerfilCompleto();
   }
 
-  Future<void> _carregarSelos() async {
+  Future<void> _carregarPerfilCompleto() async {
     try {
       final perfil = await _usuarioRepository.obterPerfilCompleto();
-      if (mounted) setState(() => _selos = perfil.conquistas);
+      if (mounted) setState(() => _perfilCompleto = perfil);
     } catch (_) {
-      // Selos são um extra visual — se a busca falhar, a tela segue
-      // funcionando normalmente, só sem essa seção.
+      // Selos e avaliação são extras visuais — se a busca falhar, a
+      // tela segue funcionando normalmente, só sem essas seções.
     } finally {
-      if (mounted) setState(() => _carregandoSelos = false);
+      if (mounted) setState(() => _carregandoPerfilCompleto = false);
     }
   }
 
   Future<void> _abrirEdicao() async {
     await Navigator.of(context).pushNamed(AppRoutes.editarPerfil);
-    // UsuarioRepository.atualizarPerfil já atualiza a Sessao sozinho;
-    // só precisamos forçar este widget a reconstruir e reler o valor
-    // atual — não importa se a edição foi salva ou cancelada, reler é
-    // inofensivo nos dois casos.
     if (mounted) setState(() {});
   }
 
@@ -86,8 +66,6 @@ class _MeuPerfilScreenState extends State<MeuPerfilScreen> {
   Widget build(BuildContext context) {
     final usuario = Sessao.instance.usuario;
 
-    // Não deveria acontecer (só se chega aqui autenticado), mas evita
-    // um crash feio caso a sessão tenha sido limpa por algum motivo.
     if (usuario == null) {
       return Scaffold(
         backgroundColor: AppColors.background,
@@ -95,6 +73,8 @@ class _MeuPerfilScreenState extends State<MeuPerfilScreen> {
         body: const Center(child: Text('Sessão não encontrada.')),
       );
     }
+
+    final selos = _perfilCompleto?.conquistas ?? [];
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -104,68 +84,82 @@ class _MeuPerfilScreenState extends State<MeuPerfilScreen> {
           IconButton(icon: const Icon(Icons.edit), onPressed: _abrirEdicao),
         ],
       ),
-      body: SafeArea(
-        child: ListView(
-          padding: const EdgeInsets.all(24),
-          children: [
-            Center(child: UserAvatar(avatarUrl: usuario.avatarUrl, radius: 40)),
-            const SizedBox(height: 12),
-            if (_carregandoSelos)
-              const Center(
-                child: SizedBox(
-                  height: 16,
-                  width: 16,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-              )
-            else if (_selos.isNotEmpty) ...[
-              SelosDestaque(selos: _selos),
+      body: RefreshIndicator(
+        onRefresh: () => _carregarPerfilCompleto(),
+        child: SafeArea(
+          child: ListView(
+            padding: const EdgeInsets.all(24),
+            children: [
+              Center(
+                child: UserAvatar(avatarUrl: usuario.avatarUrl, radius: 40),
+              ),
               const SizedBox(height: 12),
-            ],
-            Text(
-              usuario.nome,
-              style: AppTextStyles.titulo,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 4),
-            if (usuario.verificado)
-              const Center(
-                child: Chip(
-                  avatar: Icon(Icons.verified, size: 16, color: Colors.white),
-                  label: Text(
-                    'Verificado',
-                    style: TextStyle(color: Colors.white),
+              if (_carregandoPerfilCompleto)
+                const Center(
+                  child: SizedBox(
+                    height: 16,
+                    width: 16,
+                    child: CircularProgressIndicator(strokeWidth: 2),
                   ),
-                  backgroundColor: AppColors.success,
+                )
+              else if (selos.isNotEmpty) ...[
+                SelosDestaque(selos: selos),
+                const SizedBox(height: 12),
+              ],
+              Text(
+                usuario.nome,
+                style: AppTextStyles.titulo,
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 4),
+              if (usuario.verificado)
+                const Center(
+                  child: Chip(
+                    avatar: Icon(Icons.verified, size: 16, color: Colors.white),
+                    label: Text(
+                      'Verificado',
+                      style: TextStyle(color: Colors.white),
+                    ),
+                    backgroundColor: AppColors.success,
+                  ),
+                ),
+              if (!_carregandoPerfilCompleto && _perfilCompleto != null) ...[
+                const SizedBox(height: 8),
+                Center(
+                  child: RatingDisplay(
+                    media: _perfilCompleto!.mediaAvaliacao,
+                    quantidadeAvaliacoes: _perfilCompleto!.totalAvaliacoes,
+                  ),
+                ),
+              ],
+              Center(
+                child: TextButton(
+                  onPressed: () => Navigator.of(
+                    context,
+                  ).pushNamed(AppRoutes.meuPerfilCompleto),
+                  child: const Text('Ver mais'),
                 ),
               ),
-            Center(
-              child: TextButton(
-                onPressed: () => Navigator.of(
-                  context,
-                ).pushNamed(AppRoutes.meuPerfilCompleto),
-                child: const Text('Ver mais'),
+              const SizedBox(height: 24),
+              _linha('Telefone', usuario.telefone ?? 'Não informado'),
+              const SizedBox(height: 24),
+              ..._buildSecaoPrestador(context, usuario),
+              const SizedBox(height: 24),
+              OutlinedButton(
+                onPressed: () =>
+                    Navigator.of(context).pushNamed(AppRoutes.meusEnderecos),
+                child: const Text('Meus endereços'),
               ),
-            ),
-            const SizedBox(height: 24),
-            _linha('Telefone', usuario.telefone ?? 'Não informado'),
-            const SizedBox(height: 24),
-            ..._buildSecaoPrestador(context, usuario),
-            const SizedBox(height: 24),
-            OutlinedButton(
-              onPressed: () =>
-                  Navigator.of(context).pushNamed(AppRoutes.meusEnderecos),
-              child: const Text('Meus endereços'),
-            ),
-            const SizedBox(height: 8),
-            OutlinedButton(
-              onPressed: () =>
-                  Navigator.of(context).pushNamed(AppRoutes.conversas),
-              child: const Text('Conversas'),
-            ),
-            const SizedBox(height: 32),
-            TextButton(onPressed: _sair, child: const Text('Sair da conta')),
-          ],
+              const SizedBox(height: 8),
+              OutlinedButton(
+                onPressed: () =>
+                    Navigator.of(context).pushNamed(AppRoutes.conversas),
+                child: const Text('Conversas'),
+              ),
+              const SizedBox(height: 32),
+              TextButton(onPressed: _sair, child: const Text('Sair da conta')),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: const AppBottomNav(currentIndex: 2),
@@ -192,7 +186,6 @@ class _MeuPerfilScreenState extends State<MeuPerfilScreen> {
       ];
     }
 
-    // Cliente: o que mostrar depende do status da solicitação de prestador.
     switch (usuario.statusPrestador) {
       case StatusPrestador.naoSolicitado:
         return [
@@ -206,8 +199,6 @@ class _MeuPerfilScreenState extends State<MeuPerfilScreen> {
           _avisoStatus('Sua solicitação para ser prestador está em análise.'),
         ];
       case StatusPrestador.aprovado:
-        // Caso de borda: aprovado mas userRole ainda não é prestador
-        // (não deveria persistir, mas evita não mostrar nada).
         return [
           _avisoStatus('Solicitação aprovada! Atualize o app se necessário.'),
         ];

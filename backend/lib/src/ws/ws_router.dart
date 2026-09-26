@@ -18,6 +18,8 @@ class WsRouter {
 
       TipoMensagem.atualizarPerfil: h.usuario.handleAtualizarPerfil,
 
+      TipoMensagem.buscarPerfilEstatisticas: h.usuario.handleObterEstatisticas,
+
       TipoMensagem.consultarCep: h.endereco.handleConsultarCep,
 
       TipoMensagem.criarEndereco: h.endereco.handleCriarEndereco,

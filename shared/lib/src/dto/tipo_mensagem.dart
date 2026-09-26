@@ -7,6 +7,8 @@ enum TipoMensagem {
   restaurarSessaoOk('restaurar_sessao_ok'),
   atualizarPerfil('atualizar_perfil'),
   atualizarPerfilOk('atualizar_perfil_ok'),
+  buscarPerfilEstatisticas('buscar_perfil_estatisticas'),
+  buscarPerfilEstatisticasOk('buscar_perfil_estatisticas_ok'),
 
   consultarCep('consultar_cep'),
   consultarCepOk('consultar_cep_ok'),

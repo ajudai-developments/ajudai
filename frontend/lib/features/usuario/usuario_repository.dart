@@ -83,4 +83,14 @@ class UsuarioRepository {
     );
     return PerfilCompletoResponseDto.fromJson(json).perfil;
   }
+
+  Future<PerfilEstatisticas> obterPerfilEstatisticas() async {
+    await WsClient.instance.conectar();
+    WsClient.instance.enviar(BuscarPerfilEstatisticasRequestDto());
+
+    final json = await WsMessageStream.instance.aguardar(
+      TipoMensagem.buscarPerfilEstatisticasOk,
+    );
+    return BuscarPerfilEstatisticasResponseDto.fromJson(json).estatisticas;
+  }
 }

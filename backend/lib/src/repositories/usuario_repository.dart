@@ -120,4 +120,14 @@ class UsuarioRepository {
     );
     return resultado as String;
   }
+
+  Future<PerfilEstatisticas> obterPerfilEstatisticas(String usuarioId) async {
+    final resultado = await _client.rpc(
+      'obter_perfil_estatisticas',
+      params: {'p_usuario_id': usuarioId},
+    );
+    final dados = resultado as Map<String, dynamic>;
+
+    return PerfilEstatisticas.fromJson(dados);
+  }
 }

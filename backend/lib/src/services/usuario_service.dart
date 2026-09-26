@@ -262,4 +262,23 @@ class UsuarioService {
 
     return AtualizarAvatarResponseDto(avatarUrl: url);
   }
+
+  Future<BuscarPerfilEstatisticasResponseDto> buscarPerfilEstatisticas(
+    WsConnection conexao,
+    BuscarPerfilEstatisticasRequestDto dto,
+  ) async {
+    final client = _sessaoService.clientDe(conexao);
+    final userId = _sessaoService.userIdDe(conexao);
+    if (client == null || userId == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final estatisticas = await UsuarioRepository(
+      client,
+    ).obterPerfilEstatisticas(userId);
+    return BuscarPerfilEstatisticasResponseDto(estatisticas: estatisticas);
+  }
 }

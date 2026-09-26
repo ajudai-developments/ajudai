@@ -3,6 +3,8 @@ library;
 export 'src/models/usuario/usuario.dart';
 export 'src/models/usuario/usuario_basico.dart';
 export 'src/models/usuario/perfil_completo.dart';
+export 'src/models/usuario/perfil_estatisticas.dart';
+export 'src/models/usuario/requisito_verificacao.dart';
 export 'src/models/endereco/endereco.dart';
 export 'src/models/categoria/categoria.dart';
 export 'src/models/servico/servico.dart';
@@ -50,6 +52,8 @@ export 'src/dto/usuario/atualizar_perfil_response_dto.dart';
 export 'src/dto/usuario/obter_perfil_publico_dto.dart';
 export 'src/dto/usuario/perfil_completo_dto.dart';
 export 'src/dto/usuario/atualizar_avatar_dto.dart';
+export 'src/dto/usuario/buscar_perfil_estatisticas_dto.dart';
+
 export 'src/dto/tipo_mensagem.dart';
 export 'src/dto/json_utils.dart';
 export 'src/dto/endereco/consultar_cep_request.dart';
