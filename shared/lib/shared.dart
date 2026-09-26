@@ -123,6 +123,7 @@ export 'src/dto/chat/listar_conversas_dto.dart';
 export 'src/dto/chat/listar_mensagens_dto.dart';
 export 'src/dto/chat/enviar_mensagem_dto.dart';
 export 'src/dto/chat/criar_conversa_dto.dart';
+export 'src/dto/chat/buscar_conversa_dto.dart';
 
 export 'src/dto/admin/admin_listar_contestacao_dto.dart';
 export 'src/dto/admin/admin_responder_contestacao_dto.dart';

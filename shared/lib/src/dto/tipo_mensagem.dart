@@ -142,6 +142,8 @@ enum TipoMensagem {
   criarConversaOk('criar_conversa_ok'),
   listarConversas('listar_conversas'),
   listarConversasOk('listar_conversas_ok'),
+  buscarConversa('buscar_conversa'),
+  buscarConversaOk('buscar_conversa_ok'),
 
   listarMensagens('listar_mensagens'),
   listarMensagensOk('listar_mensagens_ok'),
