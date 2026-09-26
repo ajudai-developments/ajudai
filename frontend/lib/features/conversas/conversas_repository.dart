@@ -64,4 +64,14 @@ class ConversasRepository {
         )
         .map((json) => NovaMensagemDto.fromJson(json).mensagem);
   }
+
+  Future<ConversaResumo> buscarConversa(String conversaId) async {
+    await WsClient.instance.conectar();
+    WsClient.instance.enviar(BuscarConversaRequestDto(conversaId: conversaId));
+
+    final json = await WsMessageStream.instance.aguardar(
+      TipoMensagem.buscarConversaOk,
+    );
+    return BuscarConversaResponseDto.fromJson(json).conversa;
+  }
 }

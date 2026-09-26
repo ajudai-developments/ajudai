@@ -18,19 +18,32 @@ class _VideoMensagemState extends State<VideoMensagem> {
   static const _alturaMaxima = 300.0;
 
   late final VideoPlayerController _controller;
+  late final Future<void> _inicializacao;
+  bool _disposed = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.url))
-      ..initialize().then((_) {
-        if (mounted) setState(() {});
-      });
+    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.url));
+    _inicializacao = _controller
+        .initialize()
+        .then((_) {
+          if (mounted && !_disposed) setState(() {});
+        })
+        .catchError((_) {
+          // se quiser, trate erro de carregamento aqui
+        });
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _disposed = true;
+    // Nunca descarta o controller enquanto initialize() ainda está em
+    // andamento — descartar no meio da inicialização é o gatilho mais
+    // comum de crash nativo no video_player (a inicialização, ao
+    // terminar depois do dispose, tenta operar num controller que já
+    // foi liberado).
+    _inicializacao.whenComplete(_controller.dispose);
     super.dispose();
   }
 

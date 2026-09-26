@@ -1,6 +1,7 @@
 import 'package:ajudai/features/agendamento/agendamento_detalhado_screen.dart';
 import 'package:ajudai/features/contestacao/contestar_agendamento_screen.dart';
 import 'package:ajudai/features/denuncia/denunciar_usuario_screen.dart';
+import 'package:ajudai/features/notificacao/widgets/notificacao_snack_bar_content.dart';
 import 'package:ajudai/features/splash/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
@@ -15,6 +16,7 @@ import 'features/auth/cadastro_screen.dart';
 import 'features/auth/login_screen.dart';
 import 'features/avaliacao/avaliar_agendamento_screen.dart';
 import 'features/conversas/conversa_screen.dart';
+import 'features/conversas/conversas_repository.dart';
 import 'features/conversas/conversas_screen.dart';
 import 'features/endereco/form_endereco_screen.dart';
 import 'features/endereco/meus_enderecos_screen.dart';
@@ -31,14 +33,6 @@ import 'features/servico/servicos_lista_screen.dart';
 import 'features/usuario/editar_perfil_screen.dart';
 import 'features/usuario/meu_perfil_screen.dart';
 
-/// Widget raiz do app.
-///
-/// A tabela de rotas (nome -> tela) fica aqui, não em
-/// core/routes/app_routes.dart: aquele arquivo só define os nomes
-/// (constantes) e não conhece nenhuma tela, pra não inverter a
-/// dependência de core -> features. Este arquivo é o topo da árvore de
-/// composição, então é o único lugar com legitimidade de importar todas
-/// as features de uma vez.
 class App extends StatelessWidget {
   const App({super.key});
 
@@ -59,6 +53,7 @@ class _AppRootState extends State<_AppRoot> {
   final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
   final _navigatorKey = GlobalKey<NavigatorState>();
   final _notificacaoRepository = NotificacaoRepository();
+  final _conversasRepository = ConversasRepository();
 
   Stream<NotificacaoDto>? _notificacoes;
 
@@ -78,15 +73,49 @@ class _AppRootState extends State<_AppRoot> {
       SnackBar(
         behavior: SnackBarBehavior.floating,
         duration: const Duration(seconds: 5),
-        content: Text('${notificacao.titulo}: ${notificacao.mensagem}'),
+        content: NotificacaoSnackBarContent(notificacao: notificacao),
         action: SnackBarAction(
           label: 'Ver',
-          onPressed: () {
-            _navigatorKey.currentState?.pushNamed(AppRoutes.notificacoes);
-          },
+          onPressed: () => _abrirNotificacao(notificacao),
         ),
       ),
     );
+  }
+
+  Future<void> _abrirNotificacao(NotificacaoDto notificacao) async {
+    final navigator = _navigatorKey.currentState;
+    if (navigator == null) return;
+
+    final dados = notificacao.dados;
+
+    switch (notificacao.categoria) {
+      case CategoriaNotificacao.agendamento:
+        final agendamentoId = dados?['agendamento_id'] as String?;
+        if (agendamentoId == null) break;
+        navigator.pushNamed(
+          AppRoutes.agendamentoDetalhe,
+          arguments: agendamentoId,
+        );
+        return;
+
+      case CategoriaNotificacao.conversa:
+        final conversaId = dados?['conversa_id'] as String?;
+        if (conversaId == null) break;
+        try {
+          final conversa = await _conversasRepository.buscarConversa(
+            conversaId,
+          );
+          navigator.pushNamed(AppRoutes.conversa, arguments: conversa);
+          return;
+        } catch (_) {
+          break;
+        }
+
+      case CategoriaNotificacao.geral:
+        break;
+    }
+
+    navigator.pushNamed(AppRoutes.notificacoes);
   }
 
   Route<dynamic> _onGenerateRoute(RouteSettings settings) {
@@ -123,11 +152,9 @@ class _AppRootState extends State<_AppRoot> {
       AppRoutes.solicitarPrestador: (_) => const SolicitarPrestadorScreen(),
       AppRoutes.meusServicosOferecidos: (_) =>
           const MeusServicosOferecidosScreen(),
-
       AppRoutes.formServicoOferecido: (_) => const FormServicoOferecidoScreen(),
       AppRoutes.denunciarUsuario: (_) => const DenunciarUsuarioScreen(),
       AppRoutes.contestarAgendamento: (_) => const ContestarAgendamentoScreen(),
-      // telas forem feitas.
     };
 
     final builder = builders[settings.name];

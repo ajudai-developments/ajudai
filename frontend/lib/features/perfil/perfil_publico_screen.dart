@@ -159,27 +159,26 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
             ],
           ),
         const SizedBox(height: 16),
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            style: OutlinedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 13),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              side: const BorderSide(color: AppColors.primary),
+      ],
+      SizedBox(
+        width: double.infinity,
+        child: OutlinedButton.icon(
+          style: OutlinedButton.styleFrom(
+            padding: const EdgeInsets.symmetric(vertical: 13),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
             ),
-            onPressed: _conversar,
-            icon: const Icon(Icons.chat_bubble_outline, size: 18),
-            label: const Text('Conversar'),
+            side: const BorderSide(color: AppColors.primary),
           ),
+          onPressed: _conversar,
+          icon: const Icon(Icons.chat_bubble_outline, size: 18),
+          label: const Text('Conversar'),
         ),
-        const SizedBox(height: 28),
-        _SecaoTitulo('Comentários'),
-        const SizedBox(height: 10),
-        ComentariosList(comentarios: dados.comentarios),
-      ] else
-        _mensagemVazia('Este usuário não é prestador de serviços.'),
+      ),
+      const SizedBox(height: 28),
+      _SecaoTitulo('Comentários'),
+      const SizedBox(height: 10),
+      ComentariosList(comentarios: dados.comentarios),
     ];
   }
 

@@ -183,7 +183,8 @@ class AgendamentoService {
       NotificacaoDto(
         titulo: 'Novo agendamento',
         mensagem: '${detalhe.prestadorNome}, você recebeu um novo agendamento',
-        dados: {'agendamentoId': agendamento.id},
+        categoria: CategoriaNotificacao.agendamento,
+        dados: {'agendamento_id': agendamento.id},
       ),
     );
 
@@ -224,24 +225,6 @@ class AgendamentoService {
       );
     }
 
-    final agora = DateTime.now().toUtc();
-    if (agendamento.horaInicio.isBefore(agora)) {
-      throw ErroDto(
-        codigo: ErroCodigo.dadosInvalidos,
-        mensagem: 'Esse agendamento já passou do horário de início',
-      );
-    }
-
-    if (agora.isAfter(
-      agendamento.horaInicio.subtract(const Duration(minutes: 5)),
-    )) {
-      throw ErroDto(
-        codigo: ErroCodigo.dadosInvalidos,
-        mensagem:
-            'Você só pode aceitar ou recusar o agendamento até 5 minutos antes do horário de início',
-      );
-    }
-
     final novoStatus = dto.aceitar
         ? StatusAgendamento.aceito
         : StatusAgendamento.recusado;
@@ -250,7 +233,6 @@ class AgendamentoService {
       status: novoStatus,
       alteradoPorUsuarioId: prestadorId,
     );
-
     _sessaoService.enviarParaUsuario(
       atualizado.usuarioId,
       NotificacaoDto(
@@ -258,7 +240,8 @@ class AgendamentoService {
         mensagem: dto.aceitar
             ? 'Seu prestador aceitou o agendamento.'
             : 'Seu prestador recusou o agendamento. O valor de R\$${agendamento.valor} do agendamento será reembolsado.',
-        dados: {'agendamentoId': atualizado.id},
+        categoria: CategoriaNotificacao.agendamento,
+        dados: {'agendamento_id': atualizado.id},
       ),
     );
 
@@ -299,18 +282,6 @@ class AgendamentoService {
       );
     }
 
-    final agora = DateTime.now().toUtc();
-    final limiteAntecedencia = agendamento.horaInicio.subtract(
-      const Duration(minutes: 5),
-    );
-    if (agora.isBefore(limiteAntecedencia)) {
-      throw ErroDto(
-        codigo: ErroCodigo.dadosInvalidos,
-        mensagem:
-            'Você só pode iniciar o atendimento a partir de 5 minutos antes do horário agendado',
-      );
-    }
-
     final atualizado = await repo.atualizarStatus(
       id: agendamento.id,
       status: StatusAgendamento.emAndamento,
@@ -325,7 +296,8 @@ class AgendamentoService {
       NotificacaoDto(
         titulo: 'Atendimento iniciado',
         mensagem: 'Seu prestador iniciou o atendimento',
-        dados: {'agendamentoId': atualizado.id},
+        categoria: CategoriaNotificacao.agendamento,
+        dados: {'agendamento_id': atualizado.id},
       ),
     );
     return IniciarAgendamentoResponseDto(agendamento: atualizado);
@@ -389,10 +361,10 @@ class AgendamentoService {
       NotificacaoDto(
         titulo: 'Serviço concluído pelo prestador',
         mensagem: 'Confirme a conclusão do seu agendamento',
-        dados: {'agendamentoId': atualizado.id},
+        categoria: CategoriaNotificacao.agendamento,
+        dados: {'agendamento_id': atualizado.id},
       ),
     );
-
     return ConcluirAgendamentoResponseDto(agendamento: atualizado);
   }
 
@@ -444,7 +416,8 @@ class AgendamentoService {
       NotificacaoDto(
         titulo: 'Avalie o serviço',
         mensagem: 'Você tem 15 minutos para avaliar o atendimento.',
-        dados: {'agendamentoId': atualizado.id},
+        categoria: CategoriaNotificacao.agendamento,
+        dados: {'agendamento_id': atualizado.id},
       ),
     );
     _sessaoService.enviarParaUsuario(
@@ -452,7 +425,8 @@ class AgendamentoService {
       NotificacaoDto(
         titulo: 'Avalie o cliente',
         mensagem: 'Você tem 15 minutos para avaliar o cliente.',
-        dados: {'agendamentoId': atualizado.id},
+        categoria: CategoriaNotificacao.agendamento,
+        dados: {'agendamento_id': atualizado.id},
       ),
     );
 
@@ -461,7 +435,8 @@ class AgendamentoService {
       NotificacaoDto(
         titulo: 'Agendamento concluído',
         mensagem: 'O cliente confirmou a conclusão do agendamento',
-        dados: {'agendamentoId': atualizado.id},
+        categoria: CategoriaNotificacao.agendamento,
+        dados: {'agendamento_id': atualizado.id},
       ),
     );
 
@@ -519,7 +494,8 @@ class AgendamentoService {
       NotificacaoDto(
         titulo: 'Agendamento cancelado',
         mensagem: dto.motivo,
-        dados: {'agendamentoId': atualizado.id},
+        categoria: CategoriaNotificacao.agendamento,
+        dados: {'agendamento_id': atualizado.id},
       ),
     );
 

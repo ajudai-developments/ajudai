@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
+import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/async_list_view.dart';
+import '../conversas/conversas_repository.dart';
 import 'notificacao_repository.dart';
 
-/// Lista as notificações do usuário, com toque pra marcar como lida e
-/// um botão no AppBar pra marcar todas de uma vez.
+/// Lista as notificações do usuário, com toque pra marcar como lida
+/// e navegar pra tela correspondente à categoria, e um botão no AppBar
+/// pra marcar todas de uma vez.
 ///
 /// LIMITAÇÃO: `NotificacaoDto` ainda não tem campo `lida` nem
 /// `criadoEm` — então "lida"/"não lida" é um estado só LOCAL desta
@@ -26,10 +29,12 @@ class NotificacoesScreen extends StatefulWidget {
 
 class _NotificacoesScreenState extends State<NotificacoesScreen> {
   final _repository = NotificacaoRepository();
+  final _conversasRepository = ConversasRepository();
 
   final Set<String> _idsLidas = {};
   List<NotificacaoDto> _notificacoesAtuais = [];
   bool _marcandoTodas = false;
+  bool _navegando = false;
 
   Future<void> _marcarComoLida(NotificacaoDto notificacao) async {
     final id = notificacao.id;
@@ -71,6 +76,55 @@ class _NotificacoesScreenState extends State<NotificacoesScreen> {
     }
   }
 
+  Future<void> _abrirNotificacao(NotificacaoDto notificacao) async {
+    if (_navegando) return;
+    setState(() => _navegando = true);
+
+    try {
+      await _marcarComoLida(notificacao);
+      if (!mounted) return;
+
+      final dados = notificacao.dados;
+
+      switch (notificacao.categoria) {
+        case CategoriaNotificacao.agendamento:
+          final agendamentoId = dados?['agendamento_id'] as String?;
+          if (agendamentoId == null) return;
+          await Navigator.of(
+            context,
+          ).pushNamed(AppRoutes.agendamentoDetalhe, arguments: agendamentoId);
+          return;
+
+        case CategoriaNotificacao.conversa:
+          final conversaId = dados?['conversa_id'] as String?;
+          if (conversaId == null) return;
+          try {
+            final conversa = await _conversasRepository.buscarConversa(
+              conversaId,
+            );
+            if (!mounted) return;
+            await Navigator.of(
+              context,
+            ).pushNamed(AppRoutes.conversa, arguments: conversa);
+          } catch (_) {
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Não foi possível abrir a conversa.'),
+                ),
+              );
+            }
+          }
+          return;
+
+        case CategoriaNotificacao.geral:
+          return;
+      }
+    } finally {
+      if (mounted) setState(() => _navegando = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -103,14 +157,12 @@ class _NotificacoesScreenState extends State<NotificacoesScreen> {
 
   Widget _buildCard(NotificacaoDto notificacao) {
     final lida = notificacao.id != null && _idsLidas.contains(notificacao.id);
+    final (icone, cor) = _iconeECor(notificacao.categoria, lida: lida);
 
     return Card(
       child: ListTile(
-        onTap: () => _marcarComoLida(notificacao),
-        leading: Icon(
-          lida ? Icons.notifications_none : Icons.notifications,
-          color: lida ? AppColors.textoSecundario : AppColors.primary,
-        ),
+        onTap: _navegando ? null : () => _abrirNotificacao(notificacao),
+        leading: Icon(icone, color: cor),
         title: Text(
           notificacao.titulo,
           style: AppTextStyles.titulo.copyWith(
@@ -120,5 +172,25 @@ class _NotificacoesScreenState extends State<NotificacoesScreen> {
         subtitle: Text(notificacao.mensagem, style: AppTextStyles.corpo),
       ),
     );
+  }
+
+  (IconData, Color) _iconeECor(
+    CategoriaNotificacao categoria, {
+    required bool lida,
+  }) {
+    if (lida) {
+      return (Icons.notifications_none, AppColors.textoSecundario);
+    }
+    return switch (categoria) {
+      CategoriaNotificacao.agendamento => (
+        Icons.calendar_today_rounded,
+        AppColors.primary,
+      ),
+      CategoriaNotificacao.conversa => (
+        Icons.chat_bubble_rounded,
+        AppColors.primary,
+      ),
+      CategoriaNotificacao.geral => (Icons.notifications, AppColors.primary),
+    };
   }
 }

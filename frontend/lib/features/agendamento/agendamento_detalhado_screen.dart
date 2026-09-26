@@ -234,7 +234,6 @@ class _AgendamentoDetalhadoScreenState
     final nome = souCliente ? a.prestadorNome : a.clienteNome;
     final avatarUrl = souCliente ? a.prestadorAvatarUrl : a.clienteAvatarUrl;
     final verificado = souCliente ? a.prestadorVerificado : a.clienteVerificado;
-    final telefone = souCliente ? a.prestadorTelefone : a.clienteTelefone;
     final papel = souCliente ? 'Prestador' : 'Cliente';
     final idOutro = souCliente ? a.prestadorId : a.clienteId;
 
@@ -284,11 +283,6 @@ class _AgendamentoDetalhadoScreenState
                   ? null
                   : () => _abrirConversaCom(idOutro),
             ),
-            if (telefone != null)
-              IconButton(
-                icon: const Icon(Icons.call_outlined),
-                onPressed: () {},
-              ),
           ],
         ),
       ),

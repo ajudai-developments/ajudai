@@ -1,3 +1,4 @@
+import 'package:ajudai/core/session/sessao.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -27,6 +28,13 @@ class _TimelineTile extends StatelessWidget {
   final bool ultimo;
 
   const _TimelineTile({required this.item, required this.ultimo});
+
+  String? get _autorLabel {
+    if (item.alteradoPorNome == null) return null;
+    final meuId = Sessao.instance.usuario?.id;
+    final fuiEu = meuId != null && item.alteradoPorUsuarioId == meuId;
+    return fuiEu ? 'Por você' : 'Por ${item.alteradoPorNome}';
+  }
 
   IconData get _icone {
     switch (item.tipo) {
@@ -153,10 +161,10 @@ class _TimelineTile extends StatelessWidget {
                     _formatarDataHora(item.ocorridoEm),
                     style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
                   ),
-                  if (item.alteradoPorNome != null) ...[
+                  if (_autorLabel != null) ...[
                     const SizedBox(height: 2),
                     Text(
-                      'Por ${item.alteradoPorNome}',
+                      _autorLabel!,
                       style: TextStyle(
                         fontSize: 12,
                         color: Colors.grey.shade500,

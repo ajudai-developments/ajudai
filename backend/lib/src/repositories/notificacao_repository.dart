@@ -9,6 +9,7 @@ class NotificacaoRepository {
     required String usuarioId,
     required String titulo,
     required String mensagem,
+    required CategoriaNotificacao categoria,
     Map<String, dynamic>? dados,
   }) async {
     final response = await _client
@@ -17,6 +18,7 @@ class NotificacaoRepository {
           'usuario_id': usuarioId,
           'titulo': titulo,
           'mensagem': mensagem,
+          'categoria': categoria.valor,
           'dados': dados,
         })
         .select('id')

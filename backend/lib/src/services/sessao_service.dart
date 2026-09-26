@@ -88,12 +88,14 @@ class SessaoService {
           usuarioId: userId,
           titulo: mensagem.titulo,
           mensagem: mensagem.mensagem,
+          categoria: mensagem.categoria,
           dados: mensagem.dados,
         );
         mensagemParaEnviar = NotificacaoDto(
           id: id,
           titulo: mensagem.titulo,
           mensagem: mensagem.mensagem,
+          categoria: mensagem.categoria,
           dados: mensagem.dados,
         );
       } catch (e) {
