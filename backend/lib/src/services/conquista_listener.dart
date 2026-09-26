@@ -27,7 +27,8 @@ class ConquistaListener {
               NotificacaoDto(
                 titulo: 'Nova conquista desbloqueada!',
                 mensagem: '${conquista['nome']} — ${conquista['descricao']}',
-                dados: {'tipo': 'conquista', 'conquistaId': conquistaId},
+                categoria: CategoriaNotificacao.geral,
+                dados: {'conquista_id': conquistaId},
               ),
             );
           },

@@ -40,6 +40,7 @@ class EventosAgendamentoListener {
                     titulo: 'Atenção: atraso no atendimento',
                     mensagem:
                         'Você está atrasado para iniciar o atendimento. Isso pode gerar penalidade caso não inicie em breve.',
+                    categoria: CategoriaNotificacao.agendamento,
                     dados: {'agendamentoId': agendamento.id},
                   ),
                 );
@@ -49,6 +50,7 @@ class EventosAgendamentoListener {
                     titulo: 'Atenção: atraso no atendimento',
                     mensagem:
                         'O prestador está atrasado para iniciar o atendimento.',
+                    categoria: CategoriaNotificacao.agendamento,
                     dados: {'agendamentoId': agendamento.id},
                   ),
                 );
@@ -61,6 +63,7 @@ class EventosAgendamentoListener {
                     titulo: 'Agendamento não concluído',
                     mensagem:
                         'O prestador não marcou a conclusão do atendimento a tempo. Você pode abrir uma reclamação se desejar. O valor de R\$${agendamento.valor} do agendamento será reembolsado.',
+                    categoria: CategoriaNotificacao.agendamento,
                     dados: {'agendamentoId': agendamento.id},
                   ),
                 );
@@ -70,6 +73,7 @@ class EventosAgendamentoListener {
                     titulo: 'Agendamento marcado como não concluído',
                     mensagem: 'Você não marcou a conclusão a tempo.',
                     dados: {'agendamentoId': agendamento.id},
+                    categoria: CategoriaNotificacao.agendamento,
                   ),
                 );
                 break;
@@ -82,6 +86,7 @@ class EventosAgendamentoListener {
                     mensagem:
                         'O sistema confirmou a conclusão automaticamente.',
                     dados: {'agendamentoId': agendamento.id},
+                    categoria: CategoriaNotificacao.agendamento,
                   ),
                 );
 
@@ -91,6 +96,7 @@ class EventosAgendamentoListener {
                     titulo: 'Avalie o serviço',
                     mensagem: 'Você tem 15 minutos para avaliar o atendimento.',
                     dados: {'agendamentoId': agendamento.id},
+                    categoria: CategoriaNotificacao.agendamento,
                   ),
                 );
                 _sessaoService.enviarParaUsuario(
@@ -99,6 +105,7 @@ class EventosAgendamentoListener {
                     titulo: 'Avalie o cliente',
                     mensagem: 'Você tem 15 minutos para avaliar o cliente.',
                     dados: {'agendamentoId': agendamento.id},
+                    categoria: CategoriaNotificacao.agendamento,
                   ),
                 );
                 break;
@@ -111,6 +118,7 @@ class EventosAgendamentoListener {
                     mensagem:
                         'Faltam poucos minutos para o início do atendimento. Você já pode iniciá-lo.',
                     dados: {'agendamentoId': agendamento.id},
+                    categoria: CategoriaNotificacao.agendamento,
                   ),
                 );
                 break;
@@ -123,6 +131,7 @@ class EventosAgendamentoListener {
                     mensagem:
                         'O horário previsto para o término do atendimento chegou. Marque como concluído.',
                     dados: {'agendamentoId': agendamento.id},
+                    categoria: CategoriaNotificacao.agendamento,
                   ),
                 );
                 break;
