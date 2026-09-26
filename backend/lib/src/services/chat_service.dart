@@ -26,12 +26,6 @@ class ChatService {
         mensagem: 'Você não pode iniciar uma conversa consigo mesmo.',
       );
     }
-    if (mensagem.contains('prestador_nao_aprovado')) {
-      return ErroDto(
-        codigo: ErroCodigo.naoPermitido,
-        mensagem: 'Só é possível iniciar conversa com um prestador aprovado.',
-      );
-    }
     if (mensagem.contains('nao_participante')) {
       return ErroDto(
         codigo: ErroCodigo.naoPermitido,
