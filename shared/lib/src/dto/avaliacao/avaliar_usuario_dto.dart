@@ -5,13 +5,15 @@ import '../ws_message.dart';
 
 class AvaliarUsuarioRequestDto implements WsMessage {
   final String agendamentoId;
-  final double avaliacao;
+  final double? avaliacao;
+  final bool pulado;
   final String? descricao;
   final String? mensagem;
 
   AvaliarUsuarioRequestDto({
     required this.agendamentoId,
-    required this.avaliacao,
+    this.avaliacao,
+    this.pulado = false,
     this.descricao,
     this.mensagem,
   });
@@ -22,7 +24,8 @@ class AvaliarUsuarioRequestDto implements WsMessage {
   factory AvaliarUsuarioRequestDto.fromJson(Map<String, dynamic> json) {
     return AvaliarUsuarioRequestDto(
       agendamentoId: JsonUtils.requireString(json, 'agendamento_id'),
-      avaliacao: JsonUtils.requireDouble(json, 'avaliacao'),
+      avaliacao: JsonUtils.optionalDouble(json, 'avaliacao'),
+      pulado: JsonUtils.optionalBool(json, 'pulado'),
       descricao: JsonUtils.optionalString(json, 'descricao'),
       mensagem: JsonUtils.optionalString(json, 'mensagem'),
     );
@@ -33,6 +36,7 @@ class AvaliarUsuarioRequestDto implements WsMessage {
     'tipo': tipo.valor,
     'agendamento_id': agendamentoId,
     'avaliacao': avaliacao,
+    'pulado': pulado,
     'descricao': descricao,
     'mensagem': mensagem,
   };

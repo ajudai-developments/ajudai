@@ -1,5 +1,6 @@
 import 'package:ajudai/features/agendamento/widgets/lista_agendamento_historico.dart';
 import 'package:ajudai/features/agendamento/widgets/segmented_tab_bar.dart';
+import 'package:ajudai/features/avaliacao/avaliar_agendamento_args.dart';
 import 'package:ajudai/features/denuncia/denunciar_usuario_args.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
@@ -28,6 +29,7 @@ class _AgendamentosRecebidosScreenState
   final _agendamentoRepository = AgendamentoRepository();
   final _servicoRepository = ServicoRepository();
   int _aba = 0;
+  int _reloadTick = 0;
 
   void _abrirDetalhe(AgendamentoComDetalhes item) {
     Navigator.of(
@@ -35,13 +37,20 @@ class _AgendamentosRecebidosScreenState
     ).pushNamed(AppRoutes.agendamentoDetalhe, arguments: item.agendamento.id);
   }
 
-  void _abrirAvaliacao(AgendamentoComDetalhes item) {
-    Navigator.of(context).pushNamed(
-      item.comoPrestador
-          ? AppRoutes.avaliarUsuario
-          : AppRoutes.avaliarAgendamento,
-      arguments: item.agendamento.id,
+  Future<void> _abrirAvaliacao(AgendamentoComDetalhes item) async {
+    final args = AvaliarAgendamentoArgs(
+      agendamentoId: item.agendamento.id,
+      avaliadoId: item.contraParteId,
+      nomeContraparte: item.nomeContraparte,
+      avatarContraparte: item.contraparteAvatarUrl,
+      nomeServico: item.nomeServico,
+      papelContraparte: item.comoPrestador ? 'Cliente' : 'Prestador',
+      avaliarServico: item.comoCliente,
     );
+    await Navigator.of(
+      context,
+    ).pushNamed(AppRoutes.avaliarAgendamento, arguments: args);
+    if (mounted) setState(() => _reloadTick++);
   }
 
   void _abrirDenuncia(AgendamentoComDetalhes item) {
@@ -89,6 +98,7 @@ class _AgendamentosRecebidosScreenState
               sizing: StackFit.expand,
               children: [
                 AsyncListView<AgendamentoComDetalhes>(
+                  key: ValueKey('ativos-$_reloadTick'),
                   carregar: () async {
                     final agendamentos = await _agendamentoRepository
                         .listarAgendamentosPrestador();
@@ -107,6 +117,7 @@ class _AgendamentosRecebidosScreenState
                   ),
                 ),
                 AsyncListView<AgendamentoComDetalhes>(
+                  key: ValueKey('historico-$_reloadTick'),
                   carregar: () async {
                     final agendamentos = await _agendamentoRepository
                         .listarHistoricoPrestador();

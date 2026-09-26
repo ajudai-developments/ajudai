@@ -90,11 +90,23 @@ class _TimelineTile extends StatelessWidget {
 
   String _statusLabel(String? valor) {
     if (valor == null) return '';
+    late final StatusAgendamento status;
     try {
-      return StatusAgendamento.fromValor(valor).valor;
+      status = StatusAgendamento.fromValor(valor);
     } catch (_) {
       return valor;
     }
+    return switch (status) {
+      StatusAgendamento.pendente => 'Pendente',
+      StatusAgendamento.aceito => 'Aceito',
+      StatusAgendamento.recusado => 'Recusado',
+      StatusAgendamento.emAndamento => 'Em andamento',
+      StatusAgendamento.aguardandoConfirmacao => 'Aguardando confirmação',
+      StatusAgendamento.concluido => 'Concluído',
+      StatusAgendamento.cancelado => 'Cancelado',
+      StatusAgendamento.contestado => 'Contestado',
+      StatusAgendamento.naoConcluido => 'Não concluído',
+    };
   }
 
   @override

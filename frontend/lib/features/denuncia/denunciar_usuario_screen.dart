@@ -114,7 +114,7 @@ class _DenunciarUsuarioScreenState extends State<DenunciarUsuarioScreen> {
               ),
               const SizedBox(height: 20),
               DropdownButtonFormField<TipoDenuncia>(
-                value: _tipo,
+                initialValue: _tipo,
                 decoration: const InputDecoration(
                   labelText: 'Motivo',
                   border: OutlineInputBorder(),

@@ -11,13 +11,18 @@ import '../../core/ws/ws_message_stream.dart';
 ///   cliente — o backend decide o avaliado_id a partir de quem está
 ///   avaliando, não é um parâmetro que a gente passa).
 ///
+/// A avaliação é OPCIONAL: quando [pulado] é true, [avaliacao] deve
+/// vir nulo — o backend registra que a pessoa optou por não avaliar,
+/// pra não voltar a oferecer essa opção depois.
+///
 /// Nenhuma das duas respostas (*Ok) carrega dados — só confirmam
 /// sucesso, por isso os métodos retornam `void`.
 class AvaliacaoRepository {
   Future<void> avaliarAgendamento({
     required String agendamentoId,
     required String avaliadoId,
-    required double avaliacao,
+    double? avaliacao,
+    bool pulado = false,
     String? mensagem,
     String? descricao,
   }) async {
@@ -27,6 +32,7 @@ class AvaliacaoRepository {
       AvaliarAgendamentoRequestDto(
         agendamentoId: agendamentoId,
         avaliacao: avaliacao,
+        pulado: pulado,
         mensagem: mensagem,
         descricao: descricao,
       ),
@@ -37,7 +43,8 @@ class AvaliacaoRepository {
 
   Future<void> avaliarUsuario({
     required String agendamentoId,
-    required double avaliacao,
+    double? avaliacao,
+    bool pulado = false,
     String? mensagem,
     String? descricao,
   }) async {
@@ -47,6 +54,7 @@ class AvaliacaoRepository {
       AvaliarUsuarioRequestDto(
         agendamentoId: agendamentoId,
         avaliacao: avaliacao,
+        pulado: pulado,
         mensagem: mensagem,
         descricao: descricao,
       ),

@@ -14,7 +14,6 @@ import 'features/agendamento/meus_agendamentos_screen.dart';
 import 'features/auth/cadastro_screen.dart';
 import 'features/auth/login_screen.dart';
 import 'features/avaliacao/avaliar_agendamento_screen.dart';
-import 'features/avaliacao/avaliar_usuario_screen.dart';
 import 'features/conversas/conversa_screen.dart';
 import 'features/conversas/conversas_screen.dart';
 import 'features/endereco/form_endereco_screen.dart';
@@ -121,7 +120,6 @@ class _AppRootState extends State<_AppRoot> {
           const AgendamentosRecebidosScreen(),
       AppRoutes.agendamentoDetalhe: (_) => const AgendamentoDetalhadoScreen(),
       AppRoutes.avaliarAgendamento: (_) => const AvaliarAgendamentoScreen(),
-      AppRoutes.avaliarUsuario: (_) => const AvaliarUsuarioScreen(),
       AppRoutes.solicitarPrestador: (_) => const SolicitarPrestadorScreen(),
       AppRoutes.meusServicosOferecidos: (_) =>
           const MeusServicosOferecidosScreen(),

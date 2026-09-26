@@ -9,10 +9,11 @@ class AvaliacaoRepository {
     required String agendamentoId,
     required String avaliadorId,
     required String avaliadoId,
-    required double avaliacao,
+    required double? avaliacao,
     String? descricao,
     String? mensagem,
     TipoDenuncia? denuncia,
+    bool? pulada,
   }) async {
     try {
       await _client.from('avaliacoes_agendamento').insert({
@@ -36,9 +37,10 @@ class AvaliacaoRepository {
     required String agendamentoId,
     required String avaliadorId,
     required String avaliadoId,
-    required double avaliacao,
+    required double? avaliacao,
     String? descricao,
     String? mensagem,
+    bool? pulada,
   }) async {
     try {
       await _client.from('avaliacoes_usuario').insert({

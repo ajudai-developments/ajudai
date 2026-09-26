@@ -52,7 +52,6 @@ class AppRoutes {
 
   // avaliacao
   static const String avaliarAgendamento = '/avaliacao/agendamento';
-  static const String avaliarUsuario = '/avaliacao/usuario';
 
   // notificacao
   static const String notificacoes = '/notificacoes';

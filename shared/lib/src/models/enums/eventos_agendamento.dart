@@ -1,11 +1,9 @@
 enum EventosAgendamentos {
   alertaAtraso('alerta_atraso'),
   alertaInicio('alerta_inicio'),
-  denunciaAtraso('denuncia_atraso'),
   alertaFinalizacao('alerta_finalizacao'),
   naoConcluido('nao_concluido'),
-  confirmacaoAutomatica('confirmacao_automatica'),
-  canceladoPorAtraso('cancelado_por_atraso');
+  confirmacaoAutomatica('confirmacao_automatica');
 
   final String valor;
   const EventosAgendamentos(this.valor);

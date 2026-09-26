@@ -2,6 +2,8 @@ import 'package:ajudai/core/routes/app_routes.dart';
 import 'package:ajudai/core/ws/ws_message_stream.dart';
 import 'package:ajudai/features/agendamento/agendamento_acoes.dart';
 import 'package:ajudai/features/agendamento/widgets/dialogo_cancelar_agendamento.dart';
+import 'package:ajudai/features/avaliacao/avaliar_agendamento_args.dart';
+import 'package:ajudai/features/conversas/conversas_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -34,8 +36,10 @@ class AgendamentoDetalhadoScreen extends StatefulWidget {
 class _AgendamentoDetalhadoScreenState
     extends State<AgendamentoDetalhadoScreen> {
   final _repository = AgendamentoRepository();
+  final _conversasRepository = ConversasRepository();
 
   bool _executandoAcao = false;
+  bool _enviandoParaChat = false;
 
   late String _agendamentoId;
   bool _carregado = false;
@@ -204,6 +208,28 @@ class _AgendamentoDetalhadoScreenState
     );
   }
 
+  Future<void> _abrirConversaCom(String usuarioId) async {
+    setState(() => _enviandoParaChat = true);
+    try {
+      final conversaId = await _conversasRepository.criarConversa(usuarioId);
+      final conversas = await _conversasRepository.listarConversas();
+      final conversa = conversas.firstWhere((c) => c.conversaId == conversaId);
+
+      if (!mounted) return;
+      await Navigator.of(
+        context,
+      ).pushNamed(AppRoutes.conversa, arguments: conversa);
+    } on WsErroException catch (e) {
+      _mostrarErroAcao(
+        ErroMapper.paraMensagem(e.codigo, mensagemServidor: e.mensagem),
+      );
+    } on WsTimeoutException {
+      _mostrarErroAcao('Não foi possível abrir a conversa.');
+    } finally {
+      if (mounted) setState(() => _enviandoParaChat = false);
+    }
+  }
+
   Widget _buildContraparte(AgendamentoDetalhado a, {required bool souCliente}) {
     final nome = souCliente ? a.prestadorNome : a.clienteNome;
     final avatarUrl = souCliente ? a.prestadorAvatarUrl : a.clienteAvatarUrl;
@@ -250,6 +276,13 @@ class _AgendamentoDetalhadoScreenState
                   ),
                 ],
               ),
+            ),
+            IconButton(
+              icon: const Icon(Icons.chat_bubble_outline_rounded),
+              tooltip: 'Enviar mensagem',
+              onPressed: _enviandoParaChat
+                  ? null
+                  : () => _abrirConversaCom(idOutro),
             ),
             if (telefone != null)
               IconButton(
@@ -587,14 +620,28 @@ class _AgendamentoDetalhadoScreenState
 
     await Navigator.of(
       context,
-    ).pushNamed(AppRoutes.avaliarAgendamento, arguments: _agendamentoId);
+    ).pushNamed(AppRoutes.avaliarAgendamento, arguments: _argsAvaliacao());
     if (mounted) _carregar();
+  }
+
+  AvaliarAgendamentoArgs _argsAvaliacao() {
+    final a = _dados!.agendamento;
+    final souCliente = a.souCliente(Sessao.instance.usuario!.id);
+    return AvaliarAgendamentoArgs(
+      agendamentoId: _agendamentoId,
+      avaliadoId: souCliente ? a.prestadorId : a.clienteId,
+      nomeContraparte: souCliente ? a.prestadorNome : a.clienteNome,
+      avatarContraparte: souCliente ? a.prestadorAvatarUrl : a.clienteAvatarUrl,
+      nomeServico: a.servicoNome,
+      papelContraparte: souCliente ? 'Prestador' : 'Cliente',
+      avaliarServico: souCliente,
+    );
   }
 
   Future<void> _irParaAvaliacao() async {
     await Navigator.of(
       context,
-    ).pushNamed(AppRoutes.avaliarAgendamento, arguments: _agendamentoId);
+    ).pushNamed(AppRoutes.avaliarAgendamento, arguments: _argsAvaliacao());
     if (mounted) _carregar();
   }
 

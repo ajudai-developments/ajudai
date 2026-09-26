@@ -1,9 +1,16 @@
 import 'package:ajudai/features/agendamento/widgets/agendamento_com_detalhes.dart';
 import 'package:shared/shared.dart';
 
-/// Decide se dá pra avaliar um agendamento AGORA — só faz sentido se
-/// ele está concluído, ainda dentro da janela de 24h da conclusão, e a
-/// pessoa ainda não terminou de avaliar tudo que cabe ao papel dela.
+/// Decide se dá pra avaliar um agendamento AGORA:
+/// - só quando ele chegou a um status "final" que faz sentido avaliar
+///   (concluído, cancelado ou contestado — não pendente/aceito/em
+///   andamento, que ainda estão rolando);
+/// - só depois que o horário de INÍCIO marcado já passou (não faz
+///   sentido pedir avaliação de algo que nem chegou a começar, mesmo
+///   que tenha sido cancelado bem antes disso);
+/// - só dentro da janela de 24h a partir desse horário de início;
+/// - e só se a pessoa ainda não terminou de avaliar tudo que cabe ao
+///   papel dela.
 class AvaliacaoElegibilidade {
   final bool podeAvaliar;
   final DateTime? prazoLimite;
@@ -12,23 +19,42 @@ class AvaliacaoElegibilidade {
 
   static const janela = Duration(hours: 24);
 
+  static const _statusAvaliaveis = {
+    StatusAgendamento.concluido,
+    StatusAgendamento.cancelado,
+    StatusAgendamento.contestado,
+  };
+
   static AvaliacaoElegibilidade calcular(
     AgendamentoComDetalhes item, {
     DateTime? agora,
   }) {
-    final a = item.agendamento;
+    return calcularDe(
+      status: item.agendamento.status,
+      horaInicio: item.agendamento.horaInicio,
+      jaAvaliado: item.avaliacaoCompleta,
+      agora: agora,
+    );
+  }
 
-    if (a.status != StatusAgendamento.concluido || item.avaliacaoCompleta) {
+  /// Versão que não depende de [AgendamentoComDetalhes] — usada na tela
+  /// de detalhes, que trabalha direto com os campos soltos de
+  /// `AgendamentoDetalhado`.
+  static AvaliacaoElegibilidade calcularDe({
+    required StatusAgendamento status,
+    required DateTime horaInicio,
+    required bool jaAvaliado,
+    DateTime? agora,
+  }) {
+    if (jaAvaliado || !_statusAvaliaveis.contains(status)) {
       return const AvaliacaoElegibilidade(podeAvaliar: false);
     }
 
-    final concluidoEm =
-        a.horaConfirmacaoUsuario ?? a.horaConclusaoPrestador ?? a.horaFim;
-    final prazo = concluidoEm.add(janela);
+    final prazo = horaInicio.add(janela);
     final now = agora ?? DateTime.now();
 
     return AvaliacaoElegibilidade(
-      podeAvaliar: now.isBefore(prazo),
+      podeAvaliar: now.isAfter(horaInicio) && now.isBefore(prazo),
       prazoLimite: prazo,
     );
   }

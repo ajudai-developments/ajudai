@@ -2,11 +2,8 @@ import 'package:shared/shared.dart';
 
 import 'agendamento_repository.dart';
 import 'widgets/agendamento_com_detalhes.dart';
+import 'widgets/avaliacao_elegibilidade.dart';
 
-/// Ações de ciclo de vida que um usuário pode disparar sobre um
-/// agendamento. `avaliar` não muda estado nenhum no backend — é só
-/// navegação pra tela de avaliação — mas entra aqui pra ficar junto
-/// das outras ações na hora de decidir o que mostrar na tela.
 enum AcaoAgendamento {
   cancelar,
   aceitar,
@@ -24,9 +21,6 @@ typedef ExecutarAcaoAgendamento =
       String? motivo,
     });
 
-/// Chama o método certo do repositório pra cada ação de estado. Não
-/// trata `AcaoAgendamento.avaliar` — essa é só navegação, quem chama
-/// deve tratar antes de chegar aqui.
 Future<Agendamento> executarAcaoAgendamento(
   AgendamentoRepository repositorio,
   String agendamentoId,
@@ -64,12 +58,6 @@ Future<Agendamento> executarAcaoAgendamento(
   }
 }
 
-/// Quais ações fazem sentido mostrar agora, dado o status, o horário
-/// marcado e o papel de quem está olhando.
-///
-/// A validação de verdade é sempre feita pelo backend — isso aqui só
-/// decide o que HABILITAR na tela, pra não deixar a pessoa nem tentar
-/// uma ação fora de hora.
 class AcoesAgendamento {
   final bool podeCancelar;
   final bool podeAceitar;
@@ -99,9 +87,6 @@ class AcoesAgendamento {
       podeConfirmarConclusao ||
       podeAvaliar;
 
-  /// Antecedência mínima pro prestador poder iniciar o atendimento,
-  /// contada a partir do horário de INÍCIO marcado (ver observação no
-  /// topo da resposta sobre essa regra).
   static const antecedenciaIniciar = Duration(minutes: 5);
 
   static AcoesAgendamento calcular({
@@ -114,15 +99,22 @@ class AcoesAgendamento {
   }) {
     final now = agora ?? DateTime.now();
 
-    // Cancelamento só faz sentido depois que foi aceito — se ainda tá
-    // pendente, não tem nada "marcado" pra cancelar (o prestador recusa,
-    // e o cliente simplesmente aguarda ou o pedido expira).
-    final podeCancelar =
-        status == StatusAgendamento.aceito ||
-        status == StatusAgendamento.emAndamento ||
-        status == StatusAgendamento.aguardandoConfirmacao;
+    final elegibilidade = AvaliacaoElegibilidade.calcularDe(
+      status: status,
+      horaInicio: horaInicio,
+      jaAvaliado: jaAvaliado,
+      agora: now,
+    );
 
     if (comoPrestador) {
+      // Prestador só cancela depois de ACEITAR (antes disso ele recusa);
+      // depois de terminado (concluído/cancelado/contestado/recusado...)
+      // não há mais o que cancelar.
+      final podeCancelar =
+          status == StatusAgendamento.aceito ||
+          status == StatusAgendamento.emAndamento ||
+          status == StatusAgendamento.aguardandoConfirmacao;
+
       final liberadoParaIniciar = horaInicio.subtract(antecedenciaIniciar);
 
       final instrucao = switch (status) {
@@ -140,8 +132,12 @@ class AcoesAgendamento {
               : 'O horário terminou — você já pode concluir o atendimento.',
         StatusAgendamento.aguardandoConfirmacao =>
           'Aguardando o cliente confirmar a conclusão.',
-        StatusAgendamento.concluido =>
-          jaAvaliado ? null : 'Que tal avaliar como foi esse atendimento?',
+        StatusAgendamento.concluido ||
+        StatusAgendamento.cancelado ||
+        StatusAgendamento.contestado =>
+          elegibilidade.podeAvaliar
+              ? 'Que tal avaliar como foi esse atendimento?'
+              : null,
         _ => null,
       };
 
@@ -154,10 +150,19 @@ class AcoesAgendamento {
             !now.isBefore(liberadoParaIniciar),
         podeConcluir:
             status == StatusAgendamento.emAndamento && now.isAfter(horaFim),
-        podeAvaliar: status == StatusAgendamento.concluido && !jaAvaliado,
+        podeAvaliar: elegibilidade.podeAvaliar,
         instrucao: instrucao,
       );
     }
+
+    // Cliente pode cancelar desde que fez o pedido (pendente) até o
+    // atendimento acabar — nunca depois de concluído/cancelado/
+    // contestado (ou qualquer outro status "final").
+    final podeCancelar =
+        status == StatusAgendamento.pendente ||
+        status == StatusAgendamento.aceito ||
+        status == StatusAgendamento.emAndamento ||
+        status == StatusAgendamento.aguardandoConfirmacao;
 
     final instrucao = switch (status) {
       StatusAgendamento.pendente =>
@@ -167,15 +172,19 @@ class AcoesAgendamento {
       StatusAgendamento.emAndamento => 'Atendimento em andamento.',
       StatusAgendamento.aguardandoConfirmacao =>
         'O prestador marcou como concluído. Confirme se está tudo certo.',
-      StatusAgendamento.concluido =>
-        jaAvaliado ? null : 'Que tal avaliar como foi esse atendimento?',
+      StatusAgendamento.concluido ||
+      StatusAgendamento.cancelado ||
+      StatusAgendamento.contestado =>
+        elegibilidade.podeAvaliar
+            ? 'Que tal avaliar como foi esse atendimento?'
+            : null,
       _ => null,
     };
 
     return AcoesAgendamento(
-      podeCancelar: true,
+      podeCancelar: podeCancelar,
       podeConfirmarConclusao: status == StatusAgendamento.aguardandoConfirmacao,
-      podeAvaliar: status == StatusAgendamento.concluido && !jaAvaliado,
+      podeAvaliar: elegibilidade.podeAvaliar,
       instrucao: instrucao,
     );
   }

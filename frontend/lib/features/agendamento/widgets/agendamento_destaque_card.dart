@@ -1,4 +1,5 @@
 import 'package:ajudai/features/agendamento/widgets/acoes_agendamento_row.dart';
+import 'package:ajudai/features/agendamento/widgets/agendamento_alerta_status.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -162,6 +163,7 @@ class AgendamentoDestaqueCard extends StatelessWidget {
                             ),
                           ],
                         ),
+                        AgendamentoAlertaStatus(item: item),
                         AcoesAgendamentoRow(
                           item: item,
                           onExecutarAcao: onExecutarAcao,

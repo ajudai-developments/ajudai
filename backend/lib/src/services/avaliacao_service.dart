@@ -4,7 +4,13 @@ import 'package:backend/src/services/sessao_service.dart';
 import 'package:backend/src/ws/ws_connection.dart';
 import 'package:shared/shared.dart';
 
-const _janelaAvaliacao = Duration(minutes: 15);
+const _janelaAvaliacao = Duration(hours: 24);
+
+const _statusAvaliaveis = {
+  StatusAgendamento.concluido,
+  StatusAgendamento.cancelado,
+  StatusAgendamento.contestado,
+};
 
 class AvaliacaoService {
   final SessaoService _sessaoService;
@@ -46,26 +52,26 @@ class AvaliacaoService {
       );
     }
 
-    if (agendamento.status != StatusAgendamento.concluido) {
+    if (!_statusAvaliaveis.contains(agendamento.status)) {
       throw ErroDto(
         codigo: ErroCodigo.dadosInvalidos,
-        mensagem: 'Esse agendamento ainda não foi concluído',
+        mensagem: 'Esse agendamento não está em um status avaliável',
       );
     }
 
-    final concluidoEm = agendamento.horaConfirmacaoUsuario;
-    if (concluidoEm == null) {
+    final now = DateTime.now().toUtc();
+    if (!now.isAfter(agendamento.horaInicio)) {
       throw ErroDto(
         codigo: ErroCodigo.dadosInvalidos,
-        mensagem: 'Agendamento sem data de conclusão registrada',
+        mensagem: 'Esse agendamento ainda não começou',
       );
     }
 
-    final prazo = concluidoEm.add(_janelaAvaliacao);
-    if (DateTime.now().toUtc().isAfter(prazo)) {
+    final prazo = agendamento.horaInicio.add(_janelaAvaliacao);
+    if (now.isAfter(prazo)) {
       throw ErroDto(
         codigo: ErroCodigo.dadosInvalidos,
-        mensagem: 'O prazo de 15 minutos para avaliar esse agendamento expirou',
+        mensagem: 'O prazo de 24 horas para avaliar esse agendamento expirou',
       );
     }
 
@@ -85,6 +91,12 @@ class AvaliacaoService {
         mensagem: 'Não autenticado',
       );
     }
+    if (!dto.pulado && dto.avaliacao == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.dadosInvalidos,
+        mensagem: 'Informe uma nota ou marque como pulado',
+      );
+    }
 
     final agendamento = await _validarEObter(
       conexao,
@@ -100,7 +112,8 @@ class AvaliacaoService {
         agendamentoId: dto.agendamentoId,
         avaliadorId: userId,
         avaliadoId: avaliadoId,
-        avaliacao: dto.avaliacao,
+        avaliacao: dto.pulado ? null : dto.avaliacao,
+        pulada: dto.pulado,
         descricao: dto.descricao,
         mensagem: dto.mensagem,
         denuncia: dto.tipoDenuncia,
@@ -123,6 +136,12 @@ class AvaliacaoService {
         mensagem: 'Não autenticado',
       );
     }
+    if (!dto.pulado && dto.avaliacao == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.dadosInvalidos,
+        mensagem: 'Informe uma nota ou marque como pulado',
+      );
+    }
 
     final agendamento = await _validarEObter(
       conexao,
@@ -139,7 +158,8 @@ class AvaliacaoService {
         agendamentoId: dto.agendamentoId,
         avaliadorId: userId,
         avaliadoId: avaliadoId,
-        avaliacao: dto.avaliacao,
+        avaliacao: dto.pulado ? null : dto.avaliacao,
+        pulada: dto.pulado,
         descricao: dto.descricao,
         mensagem: dto.mensagem,
       );

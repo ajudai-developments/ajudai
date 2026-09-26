@@ -737,24 +737,6 @@ class AgendamentoService {
       );
     }
 
-    final usuario = await UsuarioRepository(
-      SupabaseClientFactory.criarSecret(),
-    ).buscarPorId(userId);
-
-    if (usuario == null) {
-      throw ErroDto(
-        codigo: ErroCodigo.usuarioInexistente,
-        mensagem: 'usuário inválido',
-      );
-    }
-
-    if (usuario.userRole != UserRole.prestador) {
-      throw ErroDto(
-        codigo: ErroCodigo.naoPermitido,
-        mensagem: 'Você não é permitido para realizar esta ação.',
-      );
-    }
-
     final agendamentos = await AgendamentoRepository(
       client,
     ).listarHistoricoAgendamentosCliente(usuarioId: userId);
@@ -775,6 +757,24 @@ class AgendamentoService {
       throw ErroDto(
         codigo: ErroCodigo.naoAutenticado,
         mensagem: 'Não autenticado',
+      );
+    }
+
+    final usuario = await UsuarioRepository(
+      SupabaseClientFactory.criarSecret(),
+    ).buscarPorId(prestadorId);
+
+    if (usuario == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.usuarioInexistente,
+        mensagem: 'usuário inválido',
+      );
+    }
+
+    if (usuario.userRole != UserRole.prestador) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoPermitido,
+        mensagem: 'Você não é permitido para realizar esta ação.',
       );
     }
 

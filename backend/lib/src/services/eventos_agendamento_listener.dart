@@ -53,17 +53,6 @@ class EventosAgendamentoListener {
                   ),
                 );
                 break;
-              case EventosAgendamentos.denunciaAtraso:
-                _sessaoService.enviarParaUsuario(
-                  agendamento.prestadorId,
-                  NotificacaoDto(
-                    titulo: 'Denúncia registrada',
-                    mensagem:
-                        'Uma denúncia automática foi registrada por atraso no início do atendimento.',
-                    dados: {'agendamentoId': agendamento.id},
-                  ),
-                );
-                break;
 
               case EventosAgendamentos.naoConcluido:
                 _sessaoService.enviarParaUsuario(
@@ -133,26 +122,6 @@ class EventosAgendamentoListener {
                     titulo: 'Hora de finalizar o atendimento',
                     mensagem:
                         'O horário previsto para o término do atendimento chegou. Marque como concluído.',
-                    dados: {'agendamentoId': agendamento.id},
-                  ),
-                );
-                break;
-
-              case EventosAgendamentos.canceladoPorAtraso:
-                _sessaoService.enviarParaUsuario(
-                  agendamento.usuarioId,
-                  NotificacaoDto(
-                    titulo: 'Agendamento cancelado',
-                    mensagem:
-                        'O prestador não confirmou o agendamento a tempo. O valor será reembolsado.',
-                    dados: {'agendamentoId': agendamento.id},
-                  ),
-                );
-                _sessaoService.enviarParaUsuario(
-                  agendamento.prestadorId,
-                  NotificacaoDto(
-                    titulo: 'Agendamento cancelado automaticamente',
-                    mensagem: 'Você não confirmou o agendamento a tempo.',
                     dados: {'agendamentoId': agendamento.id},
                   ),
                 );

@@ -141,7 +141,16 @@ class AgendamentoHistoricoCard extends StatelessWidget {
                                 ],
                               ),
                             ),
-                            StatusBadge(status: a.status),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                StatusBadge(status: a.status),
+                                if (elegibilidade.podeAvaliar) ...[
+                                  const SizedBox(height: 4),
+                                  const _PodeAvaliarBadge(),
+                                ],
+                              ],
+                            ),
                             _buildMenu(context),
                           ],
                         ),
@@ -240,6 +249,37 @@ class AgendamentoHistoricoCard extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _PodeAvaliarBadge extends StatelessWidget {
+  const _PodeAvaliarBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: scheme.primaryContainer,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.star_rounded, size: 11, color: scheme.onPrimaryContainer),
+          const SizedBox(width: 3),
+          Text(
+            'Pode avaliar',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w700,
+              color: scheme.onPrimaryContainer,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
