@@ -33,6 +33,16 @@ class _AudioMensagemState extends State<AudioMensagem> {
   StreamSubscription<PlayerState>? _estadoSub;
   StreamSubscription<int>? _duracaoSub;
 
+  // `preparePlayer(shouldExtractWaveform: true)` dispara extração de
+  // waveform NATIVA, em background, que continua rodando mesmo depois
+  // do await retornar. Se o widget for descartado (usuário sai da tela)
+  // antes dessa extração terminar, e o controller for disposed nesse
+  // meio-tempo, a extração tenta parar um MediaCodec que já foi
+  // liberado — daí o crash nativo "codec is released already". Essa
+  // flag evita qualquer chamada ao controller depois que o widget já
+  // foi desmontado.
+  bool _disposed = false;
+
   bool _preparado = false;
   bool _falhaAoCarregar = false;
   bool _tocando = false;
@@ -56,25 +66,27 @@ class _AudioMensagemState extends State<AudioMensagem> {
   Future<void> _preparar() async {
     final url = widget.url;
     if (url == null) {
-      setState(() => _falhaAoCarregar = true);
+      if (mounted) setState(() => _falhaAoCarregar = true);
       return;
     }
     try {
       final caminhoLocal = await _baixarArquivoTemporario(url);
+      if (_disposed) return;
 
       await _playerController.preparePlayer(
         path: caminhoLocal,
         shouldExtractWaveform: true,
       );
+      if (_disposed) return;
 
       final duracaoMs = await _playerController.getDuration(DurationType.max);
-      if (!mounted) return;
+      if (!mounted || _disposed) return;
       setState(() {
         _preparado = true;
         _duracaoTotal = Duration(milliseconds: duracaoMs);
       });
     } catch (e) {
-      if (mounted) setState(() => _falhaAoCarregar = true);
+      if (mounted && !_disposed) setState(() => _falhaAoCarregar = true);
     }
   }
 
@@ -99,9 +111,19 @@ class _AudioMensagemState extends State<AudioMensagem> {
 
   @override
   void dispose() {
+    _disposed = true;
     _estadoSub?.cancel();
     _duracaoSub?.cancel();
-    _playerController.dispose();
+    // Evita que uma exceção nativa (ex: extração de waveform ainda em
+    // andamento tentando parar um codec já liberado) derrube o dispose
+    // e, com ele, o resto da árvore de widgets sendo desmontada.
+    try {
+      _playerController.dispose();
+    } catch (_) {
+      // Ignorado de propósito: o controller já está sendo descartado
+      // de qualquer forma; não há o que fazer aqui além de não
+      // deixar a exceção subir.
+    }
     super.dispose();
   }
 
