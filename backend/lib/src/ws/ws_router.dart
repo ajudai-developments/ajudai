@@ -133,6 +133,8 @@ class WsRouter {
 
       TipoMensagem.listarConversas: h.chat.handleListarConversas,
 
+      TipoMensagem.buscarConversa: h.chat.handleBuscarConversa,
+
       TipoMensagem.listarMensagens: h.chat.handleListarMensagens,
 
       TipoMensagem.enviarMensagem: h.chat.handleEnviarMensagem,

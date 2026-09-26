@@ -1,3 +1,4 @@
+import 'package:shared/shared.dart';
 import 'package:supabase/supabase.dart';
 
 class ChatRepository {
@@ -69,5 +70,16 @@ class ChatRepository {
       },
     );
     return (resultado as List).cast<Map<String, dynamic>>();
+  }
+
+  Future<ConversaResumo?> buscarConversaComDetalhes(String conversaId) async {
+    final result = await _client.rpc(
+      'buscar_conversa_com_detalhes',
+      params: {'p_conversa_id': conversaId},
+    );
+    final resultado = result as Map<String, dynamic>?;
+    if (resultado == null) return null;
+
+    return ConversaResumo.fromMap(resultado);
   }
 }

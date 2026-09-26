@@ -84,4 +84,25 @@ class ChatHandler {
       );
     }
   }
+
+  Future<void> handleBuscarConversa(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final dto = BuscarConversaRequestDto.fromJson(msg);
+      final resposta = await _chatService.buscarConversa(conexao, dto);
+      conexao.enviar(resposta);
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
+    } catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.erroInterno, mensagem: e.toString()),
+      );
+    }
+  }
 }

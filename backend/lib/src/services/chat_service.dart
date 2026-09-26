@@ -215,6 +215,7 @@ class ChatService {
     ListarMensagensRequestDto dto,
   ) async {
     final client = _clientOuFalha(conexao);
+
     final repositorio = ChatRepository(client);
 
     List<Map<String, dynamic>> linhas;
@@ -244,5 +245,27 @@ class ChatService {
     }
 
     return ListarMensagensResponseDto(mensagens: comUrls);
+  }
+
+  Future<BuscarConversaResponseDto> buscarConversa(
+    WsConnection conexao,
+    BuscarConversaRequestDto dto,
+  ) async {
+    final client = _clientOuFalha(conexao);
+    try {
+      final conversa = await ChatRepository(
+        client,
+      ).buscarConversaComDetalhes(dto.conversaId);
+      if (conversa == null) {
+        throw ErroDto(
+          codigo: ErroCodigo.naoEncontrado,
+          mensagem: 'Conversa não encontrada.',
+        );
+      }
+      return BuscarConversaResponseDto(conversa: conversa);
+    } catch (erro) {
+      if (erro is ErroDto) rethrow;
+      throw _mapearErro(erro);
+    }
   }
 }
