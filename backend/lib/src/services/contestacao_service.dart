@@ -60,11 +60,11 @@ class ContestacaoService {
 
     if (agendamento.status != StatusAgendamento.concluido &&
         agendamento.status != StatusAgendamento.cancelado &&
-        agendamento.status != StatusAgendamento.aguardandoConfirmacao) {
+        agendamento.status != StatusAgendamento.aguardandoConfirmacao &&
+        agendamento.status != StatusAgendamento.naoConcluido) {
       throw ErroDto(
         codigo: ErroCodigo.dadosInvalidos,
-        mensagem:
-            'A contestação só pode ser criada para agendamentos concluídos, cancelados ou aguardando confirmação.',
+        mensagem: 'A contestação não pode ser criada!',
       );
     }
 
