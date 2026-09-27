@@ -291,4 +291,31 @@ class ServicoHandler {
       );
     }
   }
+
+  Future<void> handleObterDetalheServicoOferecidoPrestador(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final dto = ObterDetalheServicoOferecidoPrestadorRequestDto.fromJson(msg);
+      final resposta = await _servicoService
+          .obterDetalheServicoOferecidoPrestador(conexao, dto);
+      conexao.enviar(resposta);
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } catch (e, stackTrace) {
+      print('Erro ao obter detalhe do serviço oferecido (prestador): $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao obter detalhe do serviço oferecido',
+        ),
+      );
+    }
+  }
 }

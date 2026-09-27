@@ -319,4 +319,49 @@ class ServicoService {
       mensagem: "Serviço ativado com sucesso!",
     );
   }
+
+  Future<ObterDetalheServicoOferecidoPrestadorResponseDto>
+  obterDetalheServicoOferecidoPrestador(
+    WsConnection conexao,
+    ObterDetalheServicoOferecidoPrestadorRequestDto dto,
+  ) async {
+    final client = _sessaoService.clientDe(conexao);
+    final userId = _sessaoService.userIdDe(conexao);
+    if (client == null || userId == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final usuario = await UsuarioRepository(client).buscarPorId(userId);
+    if (usuario == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Usuário não encontrado',
+      );
+    }
+    if (usuario.userRole != UserRole.prestador ||
+        usuario.statusPrestador != StatusPrestador.aprovado) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoPermitido,
+        mensagem: 'Você não está autorizado a fazer isso',
+      );
+    }
+
+    final detalhe = await ServicoRepository(client)
+        .obterDetalheServicoOferecidoPrestador(
+          dto.servicoOferecidoId,
+          prestadorId: userId,
+        );
+
+    if (detalhe == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.dadosInvalidos,
+        mensagem: 'Serviço não encontrado ou não pertence a você.',
+      );
+    }
+
+    return ObterDetalheServicoOferecidoPrestadorResponseDto(detalhe: detalhe);
+  }
 }

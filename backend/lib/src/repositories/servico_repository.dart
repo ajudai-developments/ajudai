@@ -197,4 +197,23 @@ class ServicoRepository {
         .eq('id', servicoOferecidoId)
         .eq('usuario_id', usuarioId);
   }
+
+  Future<ServicoOferecidoDetalhePrestador?>
+  obterDetalheServicoOferecidoPrestador(
+    String servicoOferecidoId, {
+    required String prestadorId,
+  }) async {
+    final response = await _client.rpc(
+      'obter_detalhe_servico_oferecido_prestador',
+      params: {
+        'p_servico_oferecido_id': servicoOferecidoId,
+        'p_prestador_id': prestadorId,
+      },
+    );
+
+    if (response == null) return null; // não existe OU não pertence a ele
+    return ServicoOferecidoDetalhePrestador.fromJson(
+      response as Map<String, dynamic>,
+    );
+  }
 }

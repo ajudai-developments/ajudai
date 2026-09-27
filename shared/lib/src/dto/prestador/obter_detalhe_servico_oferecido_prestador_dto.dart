@@ -1,6 +1,4 @@
-import '../tipo_mensagem.dart';
-import '../ws_message.dart';
-import '../../models/servico/servico_oferecido_detalhe_prestador.dart';
+import 'package:shared/shared.dart';
 
 class ObterDetalheServicoOferecidoPrestadorRequestDto implements WsMessage {
   final String servicoOferecidoId;
@@ -11,6 +9,14 @@ class ObterDetalheServicoOferecidoPrestadorRequestDto implements WsMessage {
 
   @override
   TipoMensagem get tipo => TipoMensagem.obterDetalheServicoOferecidoPrestador;
+
+  factory ObterDetalheServicoOferecidoPrestadorRequestDto.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    return ObterDetalheServicoOferecidoPrestadorRequestDto(
+      servicoOferecidoId: JsonUtils.requireString(json, 'servico_oferecido_id'),
+    );
+  }
 
   @override
   Map<String, dynamic> toJson() => {

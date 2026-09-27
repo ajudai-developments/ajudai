@@ -102,6 +102,8 @@ class WsRouter {
 
       TipoMensagem.listarMeusServicosOferecidosDesativados:
           h.servico.handleListarMeusServicosOferecidosDesativados,
+      TipoMensagem.obterDetalheServicoOferecidoPrestador:
+          h.servico.handleObterDetalheServicoOferecidoPrestador,
 
       TipoMensagem.obterServicoOferecido: h.servico.handleObterServicoOferecido,
 
