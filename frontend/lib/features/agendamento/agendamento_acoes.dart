@@ -95,6 +95,7 @@ class AcoesAgendamento {
     required DateTime horaFim,
     required bool comoPrestador,
     bool jaAvaliado = false,
+    DateTime? horaInicioReal,
     DateTime? agora,
   }) {
     final now = agora ?? DateTime.now();
@@ -103,6 +104,7 @@ class AcoesAgendamento {
       status: status,
       horaInicio: horaInicio,
       jaAvaliado: jaAvaliado,
+      horaInicioReal: horaInicioReal,
       agora: now,
     );
 

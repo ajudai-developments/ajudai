@@ -72,6 +72,7 @@ class _AcoesAgendamentoRowState extends State<AcoesAgendamentoRow> {
       horaFim: a.horaFim,
       comoPrestador: widget.item.comoPrestador,
       jaAvaliado: widget.item.avaliacaoCompleta,
+      horaInicioReal: a.horaInicioReal,
     );
 
     final temBotoes = acoes.temAcaoPrincipal || acoes.podeCancelar;

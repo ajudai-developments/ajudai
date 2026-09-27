@@ -5,6 +5,11 @@ import 'package:shared/shared.dart';
 /// - só quando ele chegou a um status "final" que faz sentido avaliar
 ///   (concluído, cancelado ou contestado — não pendente/aceito/em
 ///   andamento, que ainda estão rolando);
+/// - se o status for `contestado`, só quando o atendimento realmente
+///   chegou a COMEÇAR (`horaInicioReal` preenchido) — porque
+///   `contestado` pode vir de qualquer status anterior, inclusive de
+///   um pedido `recusado` ou `nao_concluido` que nunca aconteceu de
+///   fato, e nesses casos não existe nada real pra avaliar;
 /// - só depois que o horário de INÍCIO marcado já passou (não faz
 ///   sentido pedir avaliação de algo que nem chegou a começar, mesmo
 ///   que tenha sido cancelado bem antes disso);
@@ -32,6 +37,7 @@ class AvaliacaoElegibilidade {
     return calcularDe(
       status: item.agendamento.status,
       horaInicio: item.agendamento.horaInicio,
+      horaInicioReal: item.agendamento.horaInicioReal,
       jaAvaliado: item.avaliacaoCompleta,
       agora: agora,
     );
@@ -44,9 +50,18 @@ class AvaliacaoElegibilidade {
     required StatusAgendamento status,
     required DateTime horaInicio,
     required bool jaAvaliado,
+    DateTime? horaInicioReal,
     DateTime? agora,
   }) {
     if (jaAvaliado || !_statusAvaliaveis.contains(status)) {
+      return const AvaliacaoElegibilidade(podeAvaliar: false);
+    }
+
+    // `contestado` pode ter vindo de QUALQUER status anterior —
+    // inclusive de um pedido recusado ou não concluído que nunca
+    // chegou a começar de verdade. Sem essa checagem, contestar um
+    // agendamento assim liberava a avaliação do nada.
+    if (status == StatusAgendamento.contestado && horaInicioReal == null) {
       return const AvaliacaoElegibilidade(podeAvaliar: false);
     }
 

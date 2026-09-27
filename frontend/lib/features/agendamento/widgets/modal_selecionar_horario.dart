@@ -97,20 +97,29 @@ class _ModalSelecionarHorarioState extends State<_ModalSelecionarHorario> {
     return horarios;
   }
 
+  /// Um novo agendamento não pode começar dentro de um intervalo já
+  /// ocupado — e também não pode começar EXATAMENTE no instante em que
+  /// outro termina (o prestador precisa se deslocar até o próximo
+  /// endereço, não pode simplesmente "teleportar" de um atendimento
+  /// para o outro). Por isso os dois limites do intervalo ocupado
+  /// contam como indisponíveis (`[inicio, fim]`, e não `[inicio, fim)`).
   bool _inicioIndisponivel(DateTime horaLocal) {
     if (horaLocal.isBefore(DateTime.now())) return true;
     final horaUtc = horaLocal.toUtc();
     return widget.horariosOcupados.any(
-      (h) => !horaUtc.isBefore(h.horaInicio) && horaUtc.isBefore(h.horaFim),
+      (h) => !horaUtc.isBefore(h.horaInicio) && !horaUtc.isAfter(h.horaFim),
     );
   }
 
+  /// Mesma regra acima, mas para o horário de término: um novo
+  /// agendamento não pode terminar exatamente quando um ocupado começa,
+  /// nem sobrepor (parcial ou totalmente) um intervalo já ocupado.
   bool _fimIndisponivel(DateTime inicioLocal, DateTime fimLocal) {
     if (!fimLocal.isAfter(inicioLocal)) return true;
     final inicioUtc = inicioLocal.toUtc();
     final fimUtc = fimLocal.toUtc();
     return widget.horariosOcupados.any(
-      (h) => inicioUtc.isBefore(h.horaFim) && fimUtc.isAfter(h.horaInicio),
+      (h) => !inicioUtc.isAfter(h.horaFim) && !fimUtc.isBefore(h.horaInicio),
     );
   }
 
@@ -143,19 +152,28 @@ class _ModalSelecionarHorarioState extends State<_ModalSelecionarHorario> {
   @override
   Widget build(BuildContext context) {
     final horariosDoDia = _gerarHorariosDoDia(_dia);
-    final slotsInicio = [
+
+    // Só entram na grade os horários realmente disponíveis — os
+    // indisponíveis não são mais exibidos (nem desabilitados).
+    final horariosInicioDisponiveis = [
       for (final h in horariosDoDia)
-        HorarioSlot(horario: h, desabilitado: _inicioIndisponivel(h)),
+        if (!_inicioIndisponivel(h)) h,
     ];
-    final slotsFim = _horaInicio == null
-        ? const <HorarioSlot>[]
+    final slotsInicio = [
+      for (final h in horariosInicioDisponiveis)
+        HorarioSlot(horario: h, desabilitado: false),
+    ];
+
+    final horariosFimDisponiveis = _horaInicio == null
+        ? const <DateTime>[]
         : [
             for (final h in horariosDoDia)
-              HorarioSlot(
-                horario: h,
-                desabilitado: _fimIndisponivel(_horaInicio!, h),
-              ),
+              if (!_fimIndisponivel(_horaInicio!, h)) h,
           ];
+    final slotsFim = [
+      for (final h in horariosFimDisponiveis)
+        HorarioSlot(horario: h, desabilitado: false),
+    ];
 
     final podeConfirmar = _horaInicio != null && _horaFim != null;
 
@@ -206,22 +224,19 @@ class _ModalSelecionarHorarioState extends State<_ModalSelecionarHorario> {
                         onTrocar: _trocarInicio,
                       )
                     else ...[
-                      Row(
-                        children: [
-                          const Text(
-                            'Início',
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          const Spacer(),
-                          _legendaIndisponivel(),
-                        ],
+                      const Text(
+                        'Início',
+                        style: TextStyle(fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 10),
-                      SeletorHorarioAgendamento(
-                        slots: slotsInicio,
-                        selecionado: _horaInicio,
-                        onSelecionar: _selecionarInicio,
-                      ),
+                      if (slotsInicio.isEmpty)
+                        _mensagemSemHorarios()
+                      else
+                        SeletorHorarioAgendamento(
+                          slots: slotsInicio,
+                          selecionado: _horaInicio,
+                          onSelecionar: _selecionarInicio,
+                        ),
                     ],
 
                     // ---- Término: só aparece depois do início escolhido
@@ -239,11 +254,14 @@ class _ModalSelecionarHorarioState extends State<_ModalSelecionarHorario> {
                           style: TextStyle(fontWeight: FontWeight.w600),
                         ),
                         const SizedBox(height: 10),
-                        SeletorHorarioAgendamento(
-                          slots: slotsFim,
-                          selecionado: _horaFim,
-                          onSelecionar: (h) => setState(() => _horaFim = h),
-                        ),
+                        if (slotsFim.isEmpty)
+                          _mensagemSemHorarios()
+                        else
+                          SeletorHorarioAgendamento(
+                            slots: slotsFim,
+                            selecionado: _horaFim,
+                            onSelecionar: (h) => setState(() => _horaFim = h),
+                          ),
                       ],
                     ],
                     const SizedBox(height: 12),
@@ -285,24 +303,19 @@ class _ModalSelecionarHorarioState extends State<_ModalSelecionarHorario> {
     );
   }
 
-  Widget _legendaIndisponivel() {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 10,
-          height: 10,
-          decoration: BoxDecoration(
-            color: const Color(0xFFF1F1F1),
-            borderRadius: BorderRadius.circular(3),
-          ),
-        ),
-        const SizedBox(width: 5),
-        const Text(
-          'Indisponível',
-          style: TextStyle(fontSize: 11.5, color: Colors.black45),
-        ),
-      ],
+  Widget _mensagemSemHorarios() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF7F7F7),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      alignment: Alignment.center,
+      child: const Text(
+        'Nenhum horário disponível nesse dia.',
+        style: TextStyle(color: Colors.black45, fontSize: 13.5),
+      ),
     );
   }
 }
