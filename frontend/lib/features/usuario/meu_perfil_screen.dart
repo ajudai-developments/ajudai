@@ -35,6 +35,7 @@ class _MeuPerfilScreenState extends State<MeuPerfilScreen> {
   Future<void> _carregarPerfilCompleto() async {
     try {
       final perfil = await _usuarioRepository.obterPerfilCompleto();
+      await AuthRepository().restaurarSessao();
       if (mounted) setState(() => _perfilCompleto = perfil);
     } catch (_) {
       // Selos e avaliação são extras visuais — se a busca falhar, a

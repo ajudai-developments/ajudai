@@ -274,7 +274,7 @@ class _Cabecalho extends StatelessWidget {
               quantidadeAvaliacoes: dados.quantidadeAvaliacoesUsuario,
             ),
             Text(
-              'Avaliação como prestador',
+              'Avaliação deste prestador',
               style: const TextStyle(fontSize: 11.5, color: Colors.black38),
             ),
             const SizedBox(height: 4),
