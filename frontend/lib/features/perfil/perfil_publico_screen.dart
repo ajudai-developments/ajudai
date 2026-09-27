@@ -111,31 +111,35 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: Text(dados?.usuario.nome ?? 'Perfil'),
-        backgroundColor: AppColors.background,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-      ),
-      body: RefreshIndicator(
-        onRefresh: _carregar,
-        child: _carregando
-            ? const Center(child: CircularProgressIndicator())
-            : ListView(
-                padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
-                children: [
-                  ErrorBanner(mensagem: _erro),
-                  if (dados != null) ..._buildConteudo(dados),
-                ],
-              ),
+      body: Column(
+        children: [
+          _Cabecalho(dados: dados, carregando: _carregando),
+          Expanded(
+            child: RefreshIndicator(
+              color: AppColors.primary,
+              onRefresh: _carregar,
+              child: _carregando
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        color: AppColors.primary,
+                      ),
+                    )
+                  : ListView(
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                      children: [
+                        ErrorBanner(mensagem: _erro),
+                        if (dados != null) ..._buildConteudo(dados),
+                      ],
+                    ),
+            ),
+          ),
+        ],
       ),
     );
   }
 
   List<Widget> _buildConteudo(ObterPerfilPublicoResponseDto dados) {
     return [
-      _Cabecalho(dados: dados),
-      const SizedBox(height: 28),
       if (dados.ehPrestador) ...[
         _SecaoTitulo('Serviços oferecidos'),
         const SizedBox(height: 10),
@@ -158,20 +162,20 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
                 ),
             ],
           ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 20),
       ],
       SizedBox(
         width: double.infinity,
-        child: OutlinedButton.icon(
-          style: OutlinedButton.styleFrom(
+        child: FilledButton.icon(
+          style: FilledButton.styleFrom(
+            backgroundColor: AppColors.primary,
             padding: const EdgeInsets.symmetric(vertical: 13),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
-            side: const BorderSide(color: AppColors.primary),
           ),
           onPressed: _conversar,
-          icon: const Icon(Icons.chat_bubble_outline, size: 18),
+          icon: const Icon(Icons.chat_bubble_rounded, size: 18),
           label: const Text('Conversar'),
         ),
       ),
@@ -187,13 +191,13 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFFEDEDED)),
+        border: Border.all(color: AppColors.outline),
       ),
       child: Text(
         texto,
-        style: const TextStyle(color: Colors.black45),
+        style: AppTextStyles.corpo,
         textAlign: TextAlign.center,
       ),
     );
@@ -211,85 +215,113 @@ class _SecaoTitulo extends StatelessWidget {
   }
 }
 
-/// Cabeçalho do perfil: avatar, nome, selo de verificado, nota média
-/// e selos/conquistas em destaque — tudo centralizado num único cartão.
+/// Cabeçalho do perfil público — mesmo padrão vermelho arredondado usado
+/// na Home e em Meu Perfil (CabecalhoComAbas), com avatar, nome, selo de
+/// verificado, avaliação (se for prestador) e selos de conquista.
+///
+/// Fica sempre visível (inclusive durante o loading, com placeholders),
+/// diferente do card branco solto de antes — dá identidade à tela desde
+/// o primeiro frame em vez de abrir em branco.
 class _Cabecalho extends StatelessWidget {
-  final ObterPerfilPublicoResponseDto dados;
+  final ObterPerfilPublicoResponseDto? dados;
+  final bool carregando;
 
-  const _Cabecalho({required this.dados});
+  const _Cabecalho({required this.dados, required this.carregando});
 
   @override
   Widget build(BuildContext context) {
-    final usuario = dados.usuario;
+    final usuario = dados?.usuario;
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 28, horizontal: 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+      decoration: const BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
       ),
-      child: Column(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(3),
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.25),
-                width: 2,
+      padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
+        child: Column(
+          children: [
+            Align(
+              alignment: Alignment.topLeft,
+              child: IconButton(
+                onPressed: () => Navigator.of(context).maybePop(),
+                icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
               ),
             ),
-            child: UserAvatar(avatarUrl: usuario.avatarUrl, radius: 42),
-          ),
-          const SizedBox(height: 14),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Flexible(
-                child: Text(
-                  usuario.nome,
-                  style: AppTextStyles.titulo,
-                  textAlign: TextAlign.center,
-                  overflow: TextOverflow.ellipsis,
+            Container(
+              padding: const EdgeInsets.all(3),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: UserAvatar(avatarUrl: usuario?.avatarUrl, radius: 38),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              usuario?.nome ?? (carregando ? 'Carregando...' : 'Perfil'),
+              style: AppTextStyles.display.copyWith(
+                color: Colors.white,
+                fontSize: 20,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (usuario != null && usuario.verificado) ...[
+              const SizedBox(height: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.verified, size: 14, color: Colors.white),
+                    SizedBox(width: 4),
+                    Text(
+                      'Verificado',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              if (usuario.verificado) ...[
-                const SizedBox(width: 6),
-                const Icon(Icons.verified, size: 18, color: AppColors.primary),
-              ],
             ],
-          ),
-          if (dados.ehPrestador) ...[
-            const SizedBox(height: 8),
-            RatingDisplay(
-              media: dados.mediaAvaliacaoUsuario,
-              quantidadeAvaliacoes: dados.quantidadeAvaliacoesUsuario,
-            ),
-            Text(
-              'Avaliação deste prestador',
-              style: const TextStyle(fontSize: 11.5, color: Colors.black38),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '${dados.quantidadeServicosConcluidos} serviços concluídos',
-              style: const TextStyle(fontSize: 12.5, color: Colors.black45),
-            ),
+            if (dados != null && dados!.ehPrestador) ...[
+              const SizedBox(height: 10),
+              RatingDisplay(
+                media: dados!.mediaAvaliacaoUsuario,
+                quantidadeAvaliacoes: dados!.quantidadeAvaliacoesUsuario,
+                cor: Colors.white,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                '${dados!.quantidadeServicosConcluidos} serviços concluídos',
+                style: TextStyle(
+                  fontSize: 12.5,
+                  color: Colors.white.withValues(alpha: 0.85),
+                ),
+              ),
+            ],
+            if (dados != null && dados!.selos.isNotEmpty) ...[
+              const SizedBox(height: 16),
+              SelosDestaque(selos: dados!.selos, sobreFundoEscuro: true),
+            ],
           ],
-          if (dados.selos.isNotEmpty) ...[
-            const SizedBox(height: 18),
-            const Divider(height: 1),
-            const SizedBox(height: 16),
-            SelosDestaque(selos: dados.selos),
-          ],
-        ],
+        ),
       ),
     );
   }

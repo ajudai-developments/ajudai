@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_text_styles.dart';
 
 class CartaoServicoOferecido extends StatelessWidget {
   final ServicoOferecidoResumo servico;
@@ -21,9 +22,9 @@ class CartaoServicoOferecido extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFFEDEDED)),
+          border: Border.all(color: AppColors.outline),
         ),
         child: Row(
           children: [
@@ -31,11 +32,11 @@ class CartaoServicoOferecido extends StatelessWidget {
               width: 42,
               height: 42,
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
+                color: AppColors.primarySoft,
                 borderRadius: BorderRadius.circular(11),
               ),
               child: const Icon(
-                Icons.handyman_outlined,
+                Icons.handyman_rounded,
                 color: AppColors.primary,
                 size: 20,
               ),
@@ -47,16 +48,13 @@ class CartaoServicoOferecido extends StatelessWidget {
                 children: [
                   Text(
                     servico.servicoNome,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    servico.categoriaNome,
-                    style: const TextStyle(
-                      fontSize: 12.5,
-                      color: Colors.black45,
+                    style: AppTextStyles.corpo.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textoTitulo,
                     ),
                   ),
+                  const SizedBox(height: 2),
+                  Text(servico.categoriaNome, style: AppTextStyles.legenda),
                 ],
               ),
             ),
@@ -65,17 +63,14 @@ class CartaoServicoOferecido extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  'R\$ ${servico.valor.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
-                  ),
+                  'R\$ ${servico.valor.toStringAsFixed(2).replaceAll('.', ',')}',
+                  style: AppTextStyles.preco.copyWith(fontSize: 15),
                 ),
                 const SizedBox(height: 2),
                 const Icon(
-                  Icons.chevron_right,
+                  Icons.chevron_right_rounded,
                   size: 18,
-                  color: Colors.black26,
+                  color: AppColors.textoSecundario,
                 ),
               ],
             ),

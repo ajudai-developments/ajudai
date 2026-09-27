@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
+import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 
 /// Selos (conquistas) do usuário exibidos em destaque, logo abaixo da
@@ -13,7 +14,16 @@ import '../../../core/theme/app_text_styles.dart';
 class SelosDestaque extends StatelessWidget {
   final List<ConquistaUsuario> selos;
 
-  const SelosDestaque({super.key, required this.selos});
+  /// Quando `true` (uso sobre fundo vermelho, ex: cabeçalho do perfil),
+  /// o texto e o círculo do selo trocam pra tons claros/brancos em vez
+  /// da cor padrão — senão ficam ilegíveis sobre o vermelho.
+  final bool sobreFundoEscuro;
+
+  const SelosDestaque({
+    super.key,
+    required this.selos,
+    this.sobreFundoEscuro = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,19 +38,28 @@ class SelosDestaque extends StatelessWidget {
   }
 
   Widget _buildSelo(ConquistaUsuario selo) {
+    final corFundo = sobreFundoEscuro
+        ? Colors.white.withValues(alpha: 0.18)
+        : AppColors.avaliacao.withValues(alpha: 0.14);
+    final corIcone = sobreFundoEscuro ? Colors.white : AppColors.avaliacao;
+    final corTexto = sobreFundoEscuro
+        ? Colors.white.withValues(alpha: 0.9)
+        : AppColors.textoNormal;
+
     return SizedBox(
       width: 72,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const CircleAvatar(
-            radius: 18,
-            child: Icon(Icons.emoji_events, size: 18),
+          CircleAvatar(
+            radius: 20,
+            backgroundColor: corFundo,
+            child: Icon(Icons.emoji_events_rounded, size: 20, color: corIcone),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Text(
             selo.conquista.nome,
-            style: AppTextStyles.legenda,
+            style: AppTextStyles.legenda.copyWith(color: corTexto),
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,

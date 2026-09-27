@@ -22,7 +22,8 @@ const _maxCategoriasNaHome = 6;
 /// Tela inicial do app (ver protótipo compartilhado).
 ///
 /// Estrutura da tela, de cima pra baixo:
-/// 1. Cabeçalho — saudação (com nome, se logado) + notificações.
+/// 1. Cabeçalho — fundo vermelho arredondado embaixo (mesmo padrão visual
+///    de CabecalhoComAbas), com saudação e notificações.
 /// 2. Agendamentos próximos — só aparece se houver usuário logado.
 ///    Mostra o agendamento mais próximo como cliente e, se o usuário
 ///    também for prestador, o mais próximo como prestador. Seção fica
@@ -31,7 +32,9 @@ const _maxCategoriasNaHome = 6;
 /// 3. Categorias de serviço — grade com as primeiras
 ///    [_maxCategoriasNaHome], "Ver mais" abre categorias_screen com a
 ///    lista completa.
-/// 4. "Serviços recentes" — NÃO implementar ainda (sem endpoint no
+/// 4. Central de suporte — atalhos pra Minhas contestações e Minhas
+///    denúncias. Só aparece logado (são telas de "minhas ...").
+/// 5. "Serviços recentes" — NÃO implementar ainda (sem endpoint no
 ///    backend). Seção fica oculta até existir.
 ///
 /// Categorias e agendamentos são buscados com estado próprio (não usa
@@ -151,56 +154,53 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final nome = Sessao.instance.usuario?.nome.split(' ').first;
-    final saudacao = nome != null ? 'Olá, $nome' : 'Início';
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: _atualizarTudo,
-          child: ListView(
-            padding: const EdgeInsets.all(16),
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      body: Column(
+        children: [
+          _HomeHeader(nome: nome),
+          Expanded(
+            child: RefreshIndicator(
+              color: AppColors.primary,
+              onRefresh: _atualizarTudo,
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
                 children: [
-                  Expanded(
-                    child: Text(
-                      saudacao,
-                      style: AppTextStyles.titulo,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                  _buildAgendamentosSection(),
+
+                  _buildSectionHeader(
+                    titulo: 'Serviços disponíveis',
+                    aoTocarAcao: _categorias.length > _maxCategoriasNaHome
+                        ? () => Navigator.of(
+                            context,
+                          ).pushNamed(AppRoutes.categorias)
+                        : null,
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.notifications_none),
-                    onPressed: () =>
-                        Navigator.of(context).pushNamed(AppRoutes.notificacoes),
-                  ),
+                  const SizedBox(height: 12),
+                  _buildCategorias(),
                 ],
               ),
-              const SizedBox(height: 20),
-
-              _buildAgendamentosSection(),
-
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Serviços disponíveis', style: AppTextStyles.titulo),
-                  if (_categorias.length > _maxCategoriasNaHome)
-                    TextButton(
-                      onPressed: () =>
-                          Navigator.of(context).pushNamed(AppRoutes.categorias),
-                      child: const Text('Ver mais'),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              _buildCategorias(),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
       bottomNavigationBar: const AppBottomNav(currentIndex: 1),
+    );
+  }
+
+  Widget _buildSectionHeader({
+    required String titulo,
+    VoidCallback? aoTocarAcao,
+    String rotuloAcao = 'Ver mais',
+  }) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(titulo, style: AppTextStyles.titulo),
+        if (aoTocarAcao != null)
+          TextButton(onPressed: aoTocarAcao, child: Text(rotuloAcao)),
+      ],
     );
   }
 
@@ -216,12 +216,17 @@ class _HomeScreenState extends State<HomeScreen> {
     if (semConteudo) return const SizedBox.shrink();
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 24),
+      padding: const EdgeInsets.only(bottom: 28),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Seus agendamentos', style: AppTextStyles.titulo),
-          const SizedBox(height: 8),
+          _buildSectionHeader(
+            titulo: 'Seus agendamentos',
+            aoTocarAcao: () =>
+                Navigator.of(context).pushNamed(AppRoutes.meusAgendamentos),
+            rotuloAcao: 'Ver todos',
+          ),
+          const SizedBox(height: 12),
           _buildAgendamentos(),
         ],
       ),
@@ -232,7 +237,9 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_carregandoAgendamentos) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 16),
-        child: Center(child: CircularProgressIndicator()),
+        child: Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
       );
     }
 
@@ -285,7 +292,9 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_carregandoCategorias) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 24),
-        child: Center(child: CircularProgressIndicator()),
+        child: Center(
+          child: CircularProgressIndicator(color: AppColors.primary),
+        ),
       );
     }
 
@@ -314,7 +323,7 @@ class _HomeScreenState extends State<HomeScreen> {
       physics: const NeverScrollableScrollPhysics(),
       mainAxisSpacing: 12,
       crossAxisSpacing: 12,
-      childAspectRatio: 1.2,
+      childAspectRatio: 0.95,
       children: [
         for (final categoria in exibidas)
           CategoriaCard(
@@ -322,6 +331,68 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () => _abrirCategoria(categoria),
           ),
       ],
+    );
+  }
+}
+
+/// Cabeçalho da Home — mesmo padrão visual de [CabecalhoComAbas] (fundo
+/// vermelho, cantos arredondados embaixo), mas sem abas: aqui é só
+/// saudação + botão de notificações.
+class _HomeHeader extends StatelessWidget {
+  final String? nome;
+
+  const _HomeHeader({required this.nome});
+
+  @override
+  Widget build(BuildContext context) {
+    final saudacao = nome != null ? 'Olá, $nome' : 'Bem-vindo';
+
+    return Container(
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.only(
+          bottomLeft: Radius.circular(28),
+          bottomRight: Radius.circular(28),
+        ),
+      ),
+      padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(20, 16, 8, 24),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    saudacao,
+                    style: AppTextStyles.display.copyWith(color: Colors.white),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Do que você precisa hoje?',
+                    style: AppTextStyles.corpo.copyWith(
+                      color: Colors.white.withValues(alpha: 0.85),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              onPressed: () =>
+                  Navigator.of(context).pushNamed(AppRoutes.notificacoes),
+              icon: const Icon(
+                Icons.notifications_none_rounded,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

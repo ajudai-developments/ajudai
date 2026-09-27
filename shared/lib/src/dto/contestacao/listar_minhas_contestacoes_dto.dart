@@ -45,6 +45,15 @@ class ListarMinhasContestacoesResponseDto implements WsMessage {
   @override
   TipoMensagem get tipo => TipoMensagem.listarMinhasContestacoesOk;
 
+  factory ListarMinhasContestacoesResponseDto.fromJson(
+    Map<String, dynamic> json,
+  ) {
+    final lista = JsonUtils.requireListaDeMapas(json, 'contestacoes');
+    return ListarMinhasContestacoesResponseDto(
+      contestacoes: lista.map(ContestacaoComUrls.fromJson).toList(),
+    );
+  }
+
   @override
   Map<String, dynamic> toJson() => {
     'tipo': tipo.valor,

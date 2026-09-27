@@ -1,53 +1,63 @@
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
+import '../theme/app_colors.dart';
+import '../theme/app_text_styles.dart';
+import '../utils/categoria_visual.dart';
+
 /// Card de categoria de serviço.
+///
+/// Ícone em círculo colorido (tom claro da cor da categoria) + nome
+/// abaixo — sem foto de fundo, então não há problema de contraste de
+/// texto sobre imagem.
 ///
 /// Reutilizado em: home_screen (grade resumida) e categorias_screen
 /// (lista completa).
-///
-/// NOTA DE ACESSIBILIDADE (do protótipo original): evitar texto branco
-/// sobreposto a imagem de fundo — baixo contraste. Em vez disso, cada
-/// categoria deve ter UMA COR SÓLIDA + UM ÍCONE correspondente (ex:
-/// faxina -> ícone de vassoura/balde, cor azul; cuidado de idosos ->
-/// ícone de coração/mãos, cor laranja; etc). O texto do nome da
-/// categoria fica sobre a cor sólida, não sobre foto, com uma cor de
-/// texto que garanta contraste (ex: branco sobre cor escura saturada,
-/// ou textoTitulo sobre cor clara).
-///
-/// TODO: mapear cada Categoria (vinda do backend, por nome) para um
-/// (IconData, Color) fixo — precisa ser definido com design antes de
-/// implementar de verdade. Por enquanto, ícone/cor genéricos abaixo.
 class CategoriaCard extends StatelessWidget {
   final Categoria categoria;
   final VoidCallback onTap;
 
-  const CategoriaCard({super.key, required this.categoria, required this.onTap});
+  const CategoriaCard({
+    super.key,
+    required this.categoria,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // TODO: substituir por mapeamento categoria -> (icone, cor) real.
-    const icone = Icons.miscellaneous_services;
-    const cor = Colors.blueGrey;
+    final cor = CategoriaVisual.cor(categoria.nome);
+    final icone = CategoriaVisual.icone(categoria.nome);
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(16),
       child: Container(
         decoration: BoxDecoration(
-          color: cor,
-          borderRadius: BorderRadius.circular(12),
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppColors.outline),
         ),
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(icone, color: Colors.white, size: 32),
-            const SizedBox(height: 8),
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: cor.withValues(alpha: 0.12),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icone, color: cor, size: 24),
+            ),
+            const SizedBox(height: 10),
             Text(
               categoria.nome,
-              style: const TextStyle(color: Colors.white),
+              style: AppTextStyles.label.copyWith(color: AppColors.textoTitulo),
               textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),

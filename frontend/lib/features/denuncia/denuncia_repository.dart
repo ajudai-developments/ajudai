@@ -26,4 +26,16 @@ class DenunciaRepository {
     );
     return CriarDenunciaResponseDto.fromJson(json);
   }
+
+  /// Denúncias abertas pelo usuário logado (não as que ele recebeu).
+  Future<List<DenunciaComUrls>> listarMinhasDenuncias() async {
+    await WsClient.instance.conectar();
+
+    WsClient.instance.enviar(const ListarMinhasDenunciasRequestDto());
+
+    final json = await WsMessageStream.instance.aguardar(
+      TipoMensagem.listarMinhasDenunciasOk,
+    );
+    return ListarMinhasDenunciasResponseDto.fromJson(json).denuncias;
+  }
 }

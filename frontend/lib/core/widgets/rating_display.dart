@@ -13,25 +13,48 @@ class RatingDisplay extends StatelessWidget {
   final int quantidadeAvaliacoes;
   final double tamanho;
 
+  /// Cor do texto e, se [corEstrela] não for informada, também do ícone.
+  /// Passar explicitamente (em vez de confiar em Theme/DefaultTextStyle
+  /// herdado) é o que garante contraste correto quando este widget é
+  /// usado sobre um fundo colorido (ex: cabeçalho vermelho do perfil) —
+  /// um Theme() ancestral não repinta um Text sem estilo próprio, porque
+  /// o DefaultTextStyle já foi fixado mais acima pelo Material do Scaffold.
+  final Color? cor;
+
+  /// Cor do ícone de estrela. Se omitida, usa [cor] quando informada,
+  /// senão o dourado padrão (Colors.amber).
+  final Color? corEstrela;
+
   const RatingDisplay({
     super.key,
     required this.media,
     required this.quantidadeAvaliacoes,
     this.tamanho = 16,
+    this.cor,
+    this.corEstrela,
   });
 
   @override
   Widget build(BuildContext context) {
+    final estiloTexto = cor != null ? TextStyle(color: cor) : null;
+
     if (media == null || quantidadeAvaliacoes == 0) {
-      return const Text('Sem avaliações ainda');
+      return Text('Sem avaliações ainda', style: estiloTexto);
     }
-    // TODO: renderizar estrelas (cheias/meias/vazias) com base em `media`.
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.star, size: tamanho, color: Colors.amber),
+        Icon(
+          Icons.star,
+          size: tamanho,
+          color: corEstrela ?? cor ?? Colors.amber,
+        ),
         const SizedBox(width: 4),
-        Text('${media!.toStringAsFixed(1)} ($quantidadeAvaliacoes)'),
+        Text(
+          '${media!.toStringAsFixed(1)} ($quantidadeAvaliacoes)',
+          style: estiloTexto,
+        ),
       ],
     );
   }

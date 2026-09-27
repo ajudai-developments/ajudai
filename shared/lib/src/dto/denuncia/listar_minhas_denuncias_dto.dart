@@ -20,6 +20,15 @@ class DenunciaComUrls {
 
   DenunciaComUrls({required this.denuncia, required this.urlsArquivos});
 
+  factory DenunciaComUrls.fromJson(Map<String, dynamic> json) {
+    return DenunciaComUrls(
+      denuncia: Denuncia.fromJson(json),
+      urlsArquivos: (json['urls_arquivos'] as List)
+          .map((e) => e as String)
+          .toList(),
+    );
+  }
+
   Map<String, dynamic> toJson() => {
     ...denuncia.toJson(),
     'urls_arquivos': urlsArquivos,
@@ -33,6 +42,13 @@ class ListarMinhasDenunciasResponseDto implements WsMessage {
 
   @override
   TipoMensagem get tipo => TipoMensagem.listarMinhasDenunciasOk;
+
+  factory ListarMinhasDenunciasResponseDto.fromJson(Map<String, dynamic> json) {
+    final lista = JsonUtils.requireListaDeMapas(json, 'denuncias');
+    return ListarMinhasDenunciasResponseDto(
+      denuncias: lista.map(DenunciaComUrls.fromJson).toList(),
+    );
+  }
 
   @override
   Map<String, dynamic> toJson() => {

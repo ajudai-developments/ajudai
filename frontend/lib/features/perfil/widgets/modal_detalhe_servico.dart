@@ -119,7 +119,7 @@ class _ModalDetalheServicoState extends State<_ModalDetalheServico> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFE0E0E0),
+                  color: AppColors.outline, // era: const Color(0xFFE0E0E0)
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -169,7 +169,8 @@ class _ModalDetalheServicoState extends State<_ModalDetalheServico> {
       const SizedBox(height: 4),
       Text(
         dados.categoria.nome,
-        style: const TextStyle(fontSize: 13, color: Colors.black45),
+        style: AppTextStyles
+            .legenda, // era: TextStyle(fontSize: 13, color: Colors.black45)
       ),
       const SizedBox(height: 10),
       Row(
@@ -193,7 +194,8 @@ class _ModalDetalheServicoState extends State<_ModalDetalheServico> {
             const SizedBox(width: 4),
             Text(
               '(${dados.quantidadeAvaliacoesServico})',
-              style: const TextStyle(fontSize: 12.5, color: Colors.black45),
+              style: AppTextStyles
+                  .legenda, // era: TextStyle(fontSize: 12.5, color: Colors.black45)
             ),
           ],
         ],
@@ -202,7 +204,8 @@ class _ModalDetalheServicoState extends State<_ModalDetalheServico> {
         const SizedBox(height: 16),
         Text(
           dados.servicoOferecido.descricao,
-          style: TextStyle(color: Colors.black.withValues(alpha: 0.75)),
+          style: AppTextStyles
+              .corpo, // era: TextStyle(color: Colors.black.withValues(alpha: 0.75))
         ),
       ],
       if (dados.selos.isNotEmpty) ...[

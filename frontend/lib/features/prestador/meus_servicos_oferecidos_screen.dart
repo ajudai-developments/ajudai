@@ -1,3 +1,4 @@
+import 'package:ajudai/core/utils/categoria_visual.dart';
 import 'package:ajudai/core/widgets/cabecalho_com_abas.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
@@ -146,33 +147,6 @@ class _CartaoServicoOferecido extends StatelessWidget {
   String _formatarValor(double valor) =>
       'R\$ ${valor.toStringAsFixed(2).replaceAll('.', ',')}';
 
-  IconData _iconeParaCategoria(String categoria) {
-    switch (categoria.trim().toLowerCase()) {
-      case 'limpeza':
-        return Icons.cleaning_services_rounded;
-      case 'elétrica':
-        return Icons.electrical_services_rounded;
-      case 'hidráulica':
-        return Icons.plumbing_rounded;
-      case 'beleza e estética':
-        return Icons.content_cut_rounded;
-      case 'reformas e construção':
-        return Icons.handyman_rounded;
-      case 'jardinagem':
-        return Icons.yard_rounded;
-      case 'tecnologia':
-        return Icons.devices_rounded;
-      case 'aulas particulares':
-        return Icons.menu_book_rounded;
-      case 'pet care':
-        return Icons.pets_rounded;
-      case 'eventos':
-        return Icons.celebration_rounded;
-      default:
-        return Icons.miscellaneous_services_rounded;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return InkWell(
@@ -199,7 +173,7 @@ class _CartaoServicoOferecido extends StatelessWidget {
                     borderRadius: BorderRadius.circular(13),
                   ),
                   child: Icon(
-                    _iconeParaCategoria(item.categoriaNome),
+                    CategoriaVisual.icone(item.categoriaNome),
                     color: AppColors.primary,
                     size: 22,
                   ),

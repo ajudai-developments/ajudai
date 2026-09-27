@@ -24,4 +24,15 @@ class ContestacaoRepository {
     );
     return CriarContestacaoResponseDto.fromJson(json);
   }
+
+  Future<List<ContestacaoComUrls>> listarMinhasContestacoes() async {
+    await WsClient.instance.conectar();
+
+    WsClient.instance.enviar(const ListarMinhasContestacoesRequestDto());
+
+    final json = await WsMessageStream.instance.aguardar(
+      TipoMensagem.listarMinhasContestacoesOk,
+    );
+    return ListarMinhasContestacoesResponseDto.fromJson(json).contestacoes;
+  }
 }

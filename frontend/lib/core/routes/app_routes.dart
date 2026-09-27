@@ -64,4 +64,6 @@ class AppRoutes {
 
   static const denunciarUsuario = '/denuncia/usuario';
   static const contestarAgendamento = '/contestacao/agendamento';
+  static const minhasContestacoes = '/perfil/minhas-contestacoes';
+  static const minhasDenuncias = '/perfil/minhas-denuncias';
 }
