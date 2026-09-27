@@ -1,6 +1,8 @@
 import 'package:ajudai/features/agendamento/agendamento_detalhado_screen.dart';
+import 'package:ajudai/features/contestacao/contestacao_detalhe_screen.dart';
 import 'package:ajudai/features/contestacao/contestar_agendamento_screen.dart';
 import 'package:ajudai/features/contestacao/minhas_contestacoes_screen.dart';
+import 'package:ajudai/features/denuncia/denuncia_detalhe_screen.dart';
 import 'package:ajudai/features/denuncia/denunciar_usuario_screen.dart';
 import 'package:ajudai/features/denuncia/minhas_denuncias_screen.dart';
 import 'package:ajudai/features/notificacao/widgets/notificacao_snack_bar_content.dart';
@@ -165,6 +167,8 @@ class _AppRootState extends State<_AppRoot> {
 
       AppRoutes.minhasContestacoes: (_) => const MinhasContestacoesScreen(),
       AppRoutes.minhasDenuncias: (_) => const MinhasDenunciasScreen(),
+      AppRoutes.contestacaoDetalhe: (_) => const ContestacaoDetalheScreen(),
+      AppRoutes.denunciaDetalhe: (_) => const DenunciaDetalheScreen(),
     };
 
     final builder = builders[settings.name];

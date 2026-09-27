@@ -282,6 +282,12 @@ class AgendamentoService {
       );
     }
 
+    if (DateTime.now().toUtc().isBefore(agendamento.horaFim.toUtc())) {
+      throw ErroDto(
+        codigo: ErroCodigo.dadosInvalidos,
+        mensagem: 'Esse agendamento não pode ser iniciado',
+      );
+    }
     final atualizado = await repo.atualizarStatus(
       id: agendamento.id,
       status: StatusAgendamento.emAndamento,

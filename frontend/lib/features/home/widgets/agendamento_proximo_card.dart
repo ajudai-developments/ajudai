@@ -159,7 +159,7 @@ class _StatusInfo {
   static _StatusInfo de(String valor) {
     switch (valor) {
       case 'pendente':
-        return const _StatusInfo('Pendente', Colors.orange);
+        return const _StatusInfo('Aguardando resposta', Colors.orange);
       case 'aceito':
         return const _StatusInfo('Aceito', Colors.blue);
       case 'em_andamento':
