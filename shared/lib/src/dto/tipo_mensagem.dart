@@ -40,6 +40,12 @@ enum TipoMensagem {
   listarMeusServicosOferecidosDesativadosOk(
     'listar_meus_servicos_oferecidos_desativados_ok',
   ),
+  obterDetalheServicoOferecidoPrestador(
+    'obter_detalhe_servico_oferecido_prestador',
+  ),
+  obterDetalheServicoOferecidoPrestadorOk(
+    'obter_detalhe_servico_oferecido_prestador_ok',
+  ),
 
   solicitarPrestador('solicitar_prestador'),
   solicitarPrestadorOk('solicitar_prestador_ok'),

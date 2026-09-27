@@ -88,6 +88,7 @@ export 'src/dto/servico/listar_servico_dto.dart';
 export 'src/dto/servico/editar_servico_oferecido_dto.dart';
 export 'src/dto/servico/desativar_servico_oferecido_dto.dart';
 export 'src/dto/servico/ativar_servico_oferecido_dto.dart';
+export 'src/dto/prestador/obter_detalhe_servico_oferecido_prestador_dto.dart';
 
 export 'src/dto/prestador/criar_servico_oferecido_dto.dart';
 export 'src/dto/prestador/listar_meus_servicos_oferecidos_dto.dart';
