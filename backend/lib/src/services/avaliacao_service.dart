@@ -39,16 +39,11 @@ class AvaliacaoService {
         mensagem: 'Agendamento não encontrado',
       );
     }
+
     if (agendamento.usuarioId != userId && agendamento.prestadorId != userId) {
       throw ErroDto(
         codigo: ErroCodigo.naoPermitido,
         mensagem: 'Você não está autorizado a fazer isso',
-      );
-    }
-    if (agendamento.prestadorId == userId) {
-      throw ErroDto(
-        codigo: ErroCodigo.naoPermitido,
-        mensagem: 'Você não pode avaliar seu próprio serviço',
       );
     }
 

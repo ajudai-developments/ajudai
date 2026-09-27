@@ -453,8 +453,16 @@ class _AgendamentoDetalhadoScreenState
       jaAvaliado: a.avaliacaoFeitaPorMim != null,
     );
 
+    // `a.podeAvaliar` vem do backend e já cobre status, janela de 24h e
+    // as duas tabelas de avaliação (agendamento e usuário) — mais
+    // confiável que o `jaAvaliado` local, que só olha uma delas.
+    final podeAvaliar = a.podeAvaliar;
+
     final temAlgo =
-        acoes.temAcaoPrincipal || acoes.podeCancelar || acoes.instrucao != null;
+        acoes.temAcaoPrincipal ||
+        acoes.podeCancelar ||
+        acoes.instrucao != null ||
+        podeAvaliar;
     if (!temAlgo) return const SizedBox.shrink();
 
     final scheme = Theme.of(context).colorScheme;
@@ -465,7 +473,7 @@ class _AgendamentoDetalhadoScreenState
         children: [
           if (acoes.instrucao != null)
             Text(acoes.instrucao!, style: AppTextStyles.corpo),
-          if (acoes.temAcaoPrincipal || acoes.podeCancelar) ...[
+          if (acoes.temAcaoPrincipal || acoes.podeCancelar || podeAvaliar) ...[
             if (acoes.instrucao != null) const SizedBox(height: 12),
             Wrap(
               spacing: 8,
@@ -530,7 +538,7 @@ class _AgendamentoDetalhadoScreenState
                     ),
                     label: const Text('Confirmar conclusão'),
                   ),
-                if (acoes.podeAvaliar)
+                if (podeAvaliar)
                   OutlinedButton.icon(
                     onPressed: _executandoAcao ? null : _irParaAvaliacao,
                     icon: const Icon(Icons.star_border_rounded, size: 18),

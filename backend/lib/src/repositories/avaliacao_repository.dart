@@ -24,6 +24,7 @@ class AvaliacaoRepository {
         'descricao': descricao,
         'mensagem': mensagem,
         'denuncia': ?denuncia?.valor,
+        'pulada': pulada,
       });
     } on PostgrestException catch (e) {
       if (e.code == '23505') {
@@ -50,6 +51,7 @@ class AvaliacaoRepository {
         'avaliacao': avaliacao,
         'descricao': descricao,
         'mensagem': mensagem,
+        'pulada': pulada,
       });
     } on PostgrestException catch (e) {
       if (e.code == '23505') {

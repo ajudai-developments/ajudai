@@ -1,3 +1,4 @@
+import 'package:ajudai/core/widgets/user_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -42,9 +43,18 @@ class ComentariosServicoList extends StatelessWidget {
                 Row(
                   children: [
                     Expanded(
-                      child: Text(
-                        comentario.avaliadorNome,
-                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      child: Row(
+                        children: [
+                          UserAvatar(
+                            avatarUrl: comentario.avaliadorAvatarUrl,
+                            radius: 20,
+                          ),
+                          SizedBox(width: 20),
+                          Text(
+                            comentario.avaliadorNome,
+                            style: const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                        ],
                       ),
                     ),
                     Container(

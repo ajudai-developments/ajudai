@@ -5,6 +5,7 @@ class AvaliacaoServico {
   final String agendamentoId;
   final String avaliadorId;
   final String avaliadorNome;
+  final String? avaliadorAvatarUrl;
   final String? mensagem;
   final double avaliacao;
   final DateTime criadoEm;
@@ -14,6 +15,7 @@ class AvaliacaoServico {
     required this.agendamentoId,
     required this.avaliadorId,
     required this.avaliadorNome,
+    required this.avaliadorAvatarUrl,
     this.mensagem,
     required this.avaliacao,
     required this.criadoEm,
@@ -25,6 +27,10 @@ class AvaliacaoServico {
       agendamentoId: JsonUtils.requireString(json, 'agendamento_id'),
       avaliadorId: JsonUtils.requireString(json, 'avaliador_id'),
       avaliadorNome: JsonUtils.requireString(json, 'avaliador_nome'),
+      avaliadorAvatarUrl: JsonUtils.optionalString(
+        json,
+        'avaliador_avatar_url',
+      ),
       mensagem: JsonUtils.optionalString(json, 'mensagem'),
       avaliacao: JsonUtils.requireDouble(json, 'avaliacao'),
       criadoEm: JsonUtils.requireDateTime(json, 'criado_em'),
@@ -36,6 +42,7 @@ class AvaliacaoServico {
     'agendamento_id': agendamentoId,
     'avaliador_id': avaliadorId,
     'avaliador_nome': avaliadorNome,
+    'avaliador_avatar_url': avaliadorAvatarUrl,
     'mensagem': mensagem,
     'avaliacao': avaliacao,
     'criado_em': criadoEm.toIso8601String(),

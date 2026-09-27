@@ -11,6 +11,7 @@ class AvaliacaoUsuario {
   final String avaliadorNome;
   final String? mensagem;
   final String? descricao;
+  final String? avaliadorAvatarUrl;
   final double avaliacao;
   final DateTime criadoEm;
 
@@ -22,6 +23,7 @@ class AvaliacaoUsuario {
     required this.avaliadorNome,
     this.mensagem,
     this.descricao,
+    required this.avaliadorAvatarUrl,
     required this.avaliacao,
     required this.criadoEm,
   });
@@ -32,7 +34,10 @@ class AvaliacaoUsuario {
       agendamentoId: JsonUtils.requireString(json, 'agendamento_id'),
       avaliadorId: JsonUtils.requireString(json, 'avaliador_id'),
       avaliadoId: JsonUtils.requireString(json, 'avaliado_id'),
-      // vem de um join com usuarios; não existe coluna direta na tabela
+      avaliadorAvatarUrl: JsonUtils.optionalString(
+        json,
+        'avaliador_avatar_url',
+      ),
       avaliadorNome: JsonUtils.requireString(json, 'avaliador_nome'),
       mensagem: JsonUtils.optionalString(json, 'mensagem'),
       descricao: JsonUtils.optionalString(json, 'descricao'),
@@ -47,6 +52,7 @@ class AvaliacaoUsuario {
     'avaliador_id': avaliadorId,
     'avaliado_id': avaliadoId,
     'avaliador_nome': avaliadorNome,
+    'avaliador_avatar_url': avaliadorAvatarUrl,
     'mensagem': mensagem,
     'descricao': descricao,
     'avaliacao': avaliacao,

@@ -10,7 +10,6 @@ class ListarMinhasNotificacoesResponseDto implements WsMessage {
   factory ListarMinhasNotificacoesResponseDto.fromJson(
     Map<String, dynamic> json,
   ) {
-    print('ListarMinhasNotificacoesResponseDto.fromJson: $json');
     return ListarMinhasNotificacoesResponseDto(
       notificacoes: JsonUtils.requireListaDeMapas(
         json,

@@ -1,13 +1,5 @@
 import 'package:shared/shared.dart';
 
-/// Detalhes completos de um agendamento, do ponto de vista de QUALQUER
-/// um dos dois lados (cliente ou prestador). É um model específico
-/// dessa tela — não reaproveita `Agendamento`, porque carrega dados que
-/// vão muito além dele (serviço, categoria, avaliações, contestação,
-/// solicitação de preço, timeline).
-///
-/// Quem consome decide, com [souCliente]/[souPrestador], quem é "eu" e
-/// quem é "a outra pessoa" na tela.
 class AgendamentoDetalhado {
   final String id;
   final String usuarioId;
@@ -48,6 +40,7 @@ class AgendamentoDetalhado {
 
   final AvaliacaoResumo? avaliacaoFeitaPorMim;
   final AvaliacaoResumo? avaliacaoRecebidaPorMim;
+  final bool podeAvaliar;
   final ContestacaoComDetalhes? contestacaoAberta;
   final SolicitacaoPrecoResumo? solicitacaoPrecoPendente;
   final List<TimelineItemAgendamento> timeline;
@@ -88,6 +81,7 @@ class AgendamentoDetalhado {
     this.prestadorTelefone,
     this.avaliacaoFeitaPorMim,
     this.avaliacaoRecebidaPorMim,
+    required this.podeAvaliar,
     this.contestacaoAberta,
     this.solicitacaoPrecoPendente,
     required this.timeline,
@@ -161,6 +155,7 @@ class AgendamentoDetalhado {
           : AvaliacaoResumo.fromJson(
               json['avaliacao_recebida_por_mim'] as Map<String, dynamic>,
             ),
+      podeAvaliar: json['pode_avaliar'] as bool? ?? false,
       contestacaoAberta: json['contestacao_aberta'] == null
           ? null
           : ContestacaoComDetalhes.fromJson(
@@ -215,6 +210,7 @@ class AgendamentoDetalhado {
     'prestador_telefone': prestadorTelefone,
     'avaliacao_feita_por_mim': avaliacaoFeitaPorMim?.toJson(),
     'avaliacao_recebida_por_mim': avaliacaoRecebidaPorMim?.toJson(),
+    'pode_avaliar': podeAvaliar,
     'contestacao_aberta': contestacaoAberta?.toJson(),
     'solicitacao_preco_pendente': solicitacaoPrecoPendente?.toJson(),
     'timeline': timeline.map((e) => e.toJson()).toList(),
