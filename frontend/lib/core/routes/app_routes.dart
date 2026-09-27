@@ -42,6 +42,8 @@ class AppRoutes {
   static const String solicitarPrestador = '/prestador/solicitar';
   static const String meusServicosOferecidos = '/prestador/meus-servicos';
   static const String formServicoOferecido = '/prestador/servico/form';
+  static const String servicoOferecidoDetalhe =
+      '/prestador/servico-oferecido-detalhe';
 
   // agendamento
   static const String criarAgendamento = '/agendamento/criar';

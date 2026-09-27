@@ -66,8 +66,11 @@ class _MeusServicosOferecidosScreenState
                             _prestadorRepository.listarMeusServicosOferecidos,
                         mensagemVazio:
                             'Você ainda não tem serviços cadastrados.',
-                        builder: (context, itens) =>
-                            _ListaServicos(itens: itens),
+                        builder: (context, itens) => _ListaServicos(
+                          itens: itens,
+                          onVoltarComAlteracao: () =>
+                              setState(() => _reloadTick++),
+                        ),
                       )
                     : const SizedBox.shrink(),
                 _abasVisitadas.contains(1)
@@ -76,8 +79,11 @@ class _MeusServicosOferecidosScreenState
                         carregar: _prestadorRepository
                             .listarMeusServicosOferecidosDesativados,
                         mensagemVazio: 'Nenhum serviço desativado.',
-                        builder: (context, itens) =>
-                            _ListaServicos(itens: itens),
+                        builder: (context, itens) => _ListaServicos(
+                          itens: itens,
+                          onVoltarComAlteracao: () =>
+                              setState(() => _reloadTick++),
+                        ),
                       )
                     : const SizedBox.shrink(),
               ],
@@ -103,16 +109,28 @@ class _MeusServicosOferecidosScreenState
 
 class _ListaServicos extends StatelessWidget {
   final List<ServicoOferecidoDoPrestador> itens;
-  const _ListaServicos({required this.itens});
+  final VoidCallback onVoltarComAlteracao;
+
+  const _ListaServicos({
+    required this.itens,
+    required this.onVoltarComAlteracao,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // Column simples — quem rola é o ListView do AsyncListView por fora,
-    // não precisa (e não deve) ter um segundo Scrollable aqui dentro.
     return Column(
       children: [
         for (final item in itens) ...[
-          _CartaoServicoOferecido(item: item),
+          _CartaoServicoOferecido(
+            item: item,
+            onTap: () async {
+              final alterou = await Navigator.of(context).pushNamed(
+                AppRoutes.servicoOferecidoDetalhe,
+                arguments: item.servicoOferecidoId,
+              );
+              if (alterou == true) onVoltarComAlteracao();
+            },
+          ),
           const SizedBox(height: 12),
         ],
       ],
@@ -122,97 +140,111 @@ class _ListaServicos extends StatelessWidget {
 
 class _CartaoServicoOferecido extends StatelessWidget {
   final ServicoOferecidoDoPrestador item;
-  const _CartaoServicoOferecido({required this.item});
+  final VoidCallback onTap;
+  const _CartaoServicoOferecido({required this.item, required this.onTap});
 
   String _formatarValor(double valor) =>
       'R\$ ${valor.toStringAsFixed(2).replaceAll('.', ',')}';
 
   IconData _iconeParaCategoria(String categoria) {
-    final nome = categoria.toLowerCase();
-    if (nome.contains('pet')) return Icons.pets_rounded;
-    if (nome.contains('aula') || nome.contains('educ')) {
-      return Icons.menu_book_rounded;
+    switch (categoria.trim().toLowerCase()) {
+      case 'limpeza':
+        return Icons.cleaning_services_rounded;
+      case 'elétrica':
+        return Icons.electrical_services_rounded;
+      case 'hidráulica':
+        return Icons.plumbing_rounded;
+      case 'beleza e estética':
+        return Icons.content_cut_rounded;
+      case 'reformas e construção':
+        return Icons.handyman_rounded;
+      case 'jardinagem':
+        return Icons.yard_rounded;
+      case 'tecnologia':
+        return Icons.devices_rounded;
+      case 'aulas particulares':
+        return Icons.menu_book_rounded;
+      case 'pet care':
+        return Icons.pets_rounded;
+      case 'eventos':
+        return Icons.celebration_rounded;
+      default:
+        return Icons.miscellaneous_services_rounded;
     }
-    if (nome.contains('limp') || nome.contains('faxina')) {
-      return Icons.cleaning_services_rounded;
-    }
-    if (nome.contains('beleza') || nome.contains('estét')) {
-      return Icons.content_cut_rounded;
-    }
-    if (nome.contains('reform') || nome.contains('manut')) {
-      return Icons.handyman_rounded;
-    }
-    return Icons.miscellaneous_services_rounded;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: AppColors.outline),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 44,
-                height: 44,
-                decoration: BoxDecoration(
-                  color: AppColors.primarySoft,
-                  borderRadius: BorderRadius.circular(13),
+    return InkWell(
+      borderRadius: BorderRadius.circular(18),
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(color: AppColors.outline),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: AppColors.primarySoft,
+                    borderRadius: BorderRadius.circular(13),
+                  ),
+                  child: Icon(
+                    _iconeParaCategoria(item.categoriaNome),
+                    color: AppColors.primary,
+                    size: 22,
+                  ),
                 ),
-                child: Icon(
-                  _iconeParaCategoria(item.categoriaNome),
-                  color: AppColors.primary,
-                  size: 22,
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.servicoNome,
+                        style: AppTextStyles.titulo,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(item.categoriaNome, style: AppTextStyles.legenda),
+                    ],
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.servicoNome,
-                      style: AppTextStyles.titulo,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(item.categoriaNome, style: AppTextStyles.legenda),
-                  ],
+                if (!item.ativo) const _ChipDesativado(),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              item.descricao,
+              style: AppTextStyles.corpo,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 14),
+            const Divider(height: 1, color: AppColors.outline),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                _AvaliacaoBadge(
+                  media: item.mediaAvaliacaoServico,
+                  quantidade: item.quantidadeAvaliacoesServico,
                 ),
-              ),
-              if (!item.ativo) const _ChipDesativado(),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Text(
-            item.descricao,
-            style: AppTextStyles.corpo,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 14),
-          const Divider(height: 1, color: AppColors.outline),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              _AvaliacaoBadge(
-                media: item.mediaAvaliacaoServico,
-                quantidade: item.quantidadeAvaliacoesServico,
-              ),
-              const Spacer(),
-              Text(_formatarValor(item.valor), style: AppTextStyles.preco),
-            ],
-          ),
-        ],
+                const Spacer(),
+                Text(_formatarValor(item.valor), style: AppTextStyles.preco),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

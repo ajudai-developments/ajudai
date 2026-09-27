@@ -141,4 +141,23 @@ class PrestadorRepository {
     );
     return AtivarServicoOferecidoResponseDto.fromJson(json).mensagem;
   }
+
+  Future<ServicoOferecidoDetalhePrestador> obterDetalheServicoOferecido({
+    required String servicoOferecidoId,
+  }) async {
+    await WsClient.instance.conectar();
+
+    WsClient.instance.enviar(
+      ObterDetalheServicoOferecidoPrestadorRequestDto(
+        servicoOferecidoId: servicoOferecidoId,
+      ),
+    );
+
+    final json = await WsMessageStream.instance.aguardar(
+      TipoMensagem.obterDetalheServicoOferecidoPrestadorOk,
+    );
+    return ObterDetalheServicoOferecidoPrestadorResponseDto.fromJson(
+      json,
+    ).detalhe;
+  }
 }

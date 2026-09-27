@@ -2,6 +2,7 @@ import 'package:ajudai/features/agendamento/agendamento_detalhado_screen.dart';
 import 'package:ajudai/features/contestacao/contestar_agendamento_screen.dart';
 import 'package:ajudai/features/denuncia/denunciar_usuario_screen.dart';
 import 'package:ajudai/features/notificacao/widgets/notificacao_snack_bar_content.dart';
+import 'package:ajudai/features/prestador/servico_oferecido_detalhe_screen.dart';
 import 'package:ajudai/features/splash/splash_screen.dart';
 import 'package:ajudai/features/usuario/meu_perfil_completo_screen.dart';
 import 'package:flutter/material.dart';
@@ -157,6 +158,8 @@ class _AppRootState extends State<_AppRoot> {
       AppRoutes.formServicoOferecido: (_) => const FormServicoOferecidoScreen(),
       AppRoutes.denunciarUsuario: (_) => const DenunciarUsuarioScreen(),
       AppRoutes.contestarAgendamento: (_) => const ContestarAgendamentoScreen(),
+      AppRoutes.servicoOferecidoDetalhe: (_) =>
+          const ServicoOferecidoDetalheScreen(),
     };
 
     final builder = builders[settings.name];

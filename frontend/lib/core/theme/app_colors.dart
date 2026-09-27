@@ -20,7 +20,7 @@ class AppColors {
   static const Color avaliacao = Color(0xFFF5A623);
 
   // Fundo e superfícies
-  static const Color background = Color(0xFFF7F6F4);
+  static const Color background = Color(0xFFFFFFFF);
   static const Color surface = Color(0xFFFFFFFF);
   static const Color surfaceAlt = Color(0xFFF1EFEC);
   static const Color outline = Color(0xFFEAE7E2);
