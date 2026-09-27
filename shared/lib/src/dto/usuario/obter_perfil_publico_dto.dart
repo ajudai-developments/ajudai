@@ -27,9 +27,13 @@ class ObterPerfilPublicoResponseDto implements WsMessage {
   final int quantidadeServicosConcluidos;
   final List<ServicoOferecidoResumo> servicosOferecidos;
   final List<ConquistaUsuario> selos;
-  final double? mediaAvaliacao;
-  final int quantidadeAvaliacoes;
-  final List<AvaliacaoUsuario> comentarios;
+
+  /// Média e quantidade das avaliações DO USUÁRIO em geral (avaliações
+  /// de conduta/comportamento, tabela `avaliacoes_usuario`) — diferente
+  /// das avaliações de um serviço específico.
+  final double? mediaAvaliacaoUsuario;
+  final int quantidadeAvaliacoesUsuario;
+  final List<AvaliacaoUsuario> comentariosUsuario;
 
   ObterPerfilPublicoResponseDto({
     required this.usuario,
@@ -37,9 +41,9 @@ class ObterPerfilPublicoResponseDto implements WsMessage {
     required this.quantidadeServicosConcluidos,
     required this.servicosOferecidos,
     required this.selos,
-    this.mediaAvaliacao,
-    required this.quantidadeAvaliacoes,
-    required this.comentarios,
+    this.mediaAvaliacaoUsuario,
+    required this.quantidadeAvaliacoesUsuario,
+    required this.comentariosUsuario,
   });
 
   @override
@@ -61,9 +65,15 @@ class ObterPerfilPublicoResponseDto implements WsMessage {
           .map(ServicoOferecidoResumo.fromJson)
           .toList(),
       selos: selos.map(ConquistaUsuario.fromJson).toList(),
-      mediaAvaliacao: JsonUtils.optionalDouble(json, 'media_avaliacao'),
-      quantidadeAvaliacoes: JsonUtils.requireInt(json, 'quantidade_avaliacoes'),
-      comentarios: comentarios.map(AvaliacaoUsuario.fromJson).toList(),
+      mediaAvaliacaoUsuario: JsonUtils.optionalDouble(
+        json,
+        'media_avaliacao_usuario',
+      ),
+      quantidadeAvaliacoesUsuario: JsonUtils.requireInt(
+        json,
+        'quantidade_avaliacoes',
+      ),
+      comentariosUsuario: comentarios.map(AvaliacaoUsuario.fromJson).toList(),
     );
   }
 
@@ -75,8 +85,8 @@ class ObterPerfilPublicoResponseDto implements WsMessage {
     'quantidade_servicos_concluidos': quantidadeServicosConcluidos,
     'servicos_oferecidos': servicosOferecidos.map((s) => s.toJson()).toList(),
     'selos': selos.map((s) => s.toJson()).toList(),
-    'media_avaliacao': mediaAvaliacao,
-    'quantidade_avaliacoes': quantidadeAvaliacoes,
-    'comentarios': comentarios.map((c) => c.toJson()).toList(),
+    'media_avaliacao_usuario': mediaAvaliacaoUsuario,
+    'quantidade_avaliacoes': quantidadeAvaliacoesUsuario,
+    'comentarios': comentariosUsuario.map((c) => c.toJson()).toList(),
   };
 }

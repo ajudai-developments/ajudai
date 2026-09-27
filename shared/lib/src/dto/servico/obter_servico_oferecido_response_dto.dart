@@ -7,9 +7,11 @@ class ObterServicoOferecidoResponseDto implements WsMessage {
   final UsuarioBasico prestador;
   final List<ConquistaUsuario> selos;
 
-  /// Média e quantidade das avaliações DESTE serviço oferecido.
-  final double? mediaAvaliacao;
-  final int quantidadeAvaliacoes;
+  /// Média e quantidade das avaliações DESTE serviço oferecido (tabela
+  /// `avaliacoes_agendamento`) — diferente das avaliações do usuário
+  /// em geral.
+  final double? mediaAvaliacaoServico;
+  final int quantidadeAvaliacoesServico;
   final List<AvaliacaoServico> comentariosServico;
 
   ObterServicoOferecidoResponseDto({
@@ -18,8 +20,8 @@ class ObterServicoOferecidoResponseDto implements WsMessage {
     required this.categoria,
     required this.prestador,
     required this.selos,
-    this.mediaAvaliacao,
-    required this.quantidadeAvaliacoes,
+    this.mediaAvaliacaoServico,
+    required this.quantidadeAvaliacoesServico,
     required this.comentariosServico,
   });
 
@@ -43,8 +45,14 @@ class ObterServicoOferecidoResponseDto implements WsMessage {
         json['prestador'] as Map<String, dynamic>,
       ),
       selos: selos.map(ConquistaUsuario.fromJson).toList(),
-      mediaAvaliacao: JsonUtils.optionalDouble(json, 'media_avaliacao'),
-      quantidadeAvaliacoes: JsonUtils.requireInt(json, 'quantidade_avaliacoes'),
+      mediaAvaliacaoServico: JsonUtils.optionalDouble(
+        json,
+        'media_avaliacao_servico',
+      ),
+      quantidadeAvaliacoesServico: JsonUtils.requireInt(
+        json,
+        'quantidade_avaliacoes',
+      ),
       comentariosServico: comentarios.map(AvaliacaoServico.fromJson).toList(),
     );
   }
@@ -57,8 +65,8 @@ class ObterServicoOferecidoResponseDto implements WsMessage {
     'categoria': categoria.toJson(),
     'prestador': prestador.toJson(),
     'selos': selos.map((s) => s.toJson()).toList(),
-    'media_avaliacao': mediaAvaliacao,
-    'quantidade_avaliacoes': quantidadeAvaliacoes,
+    'media_avaliacao_servico': mediaAvaliacaoServico,
+    'quantidade_avaliacoes': quantidadeAvaliacoesServico,
     'comentarios_servico': comentariosServico.map((c) => c.toJson()).toList(),
   };
 }

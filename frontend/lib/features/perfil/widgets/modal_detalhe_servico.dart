@@ -183,16 +183,16 @@ class _ModalDetalheServicoState extends State<_ModalDetalheServico> {
             ),
           ),
           const Spacer(),
-          if (dados.mediaAvaliacao != null) ...[
+          if (dados.mediaAvaliacaoServico != null) ...[
             const Icon(Icons.star, size: 16, color: Colors.amber),
             const SizedBox(width: 4),
             Text(
-              dados.mediaAvaliacao!.toStringAsFixed(1),
+              dados.mediaAvaliacaoServico!.toStringAsFixed(1),
               style: const TextStyle(fontWeight: FontWeight.w600),
             ),
             const SizedBox(width: 4),
             Text(
-              '(${dados.quantidadeAvaliacoes})',
+              '(${dados.quantidadeAvaliacoesServico})',
               style: const TextStyle(fontSize: 12.5, color: Colors.black45),
             ),
           ],

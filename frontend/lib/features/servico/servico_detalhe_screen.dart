@@ -142,9 +142,14 @@ class _ServicoDetalheScreenState extends State<ServicoDetalheScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(dados.prestador.nome, style: AppTextStyles.corpo),
+                  const SizedBox(height: 2),
                   RatingDisplay(
-                    media: dados.mediaAvaliacao,
-                    quantidadeAvaliacoes: dados.quantidadeAvaliacoes,
+                    media: dados.mediaAvaliacaoServico,
+                    quantidadeAvaliacoes: dados.quantidadeAvaliacoesServico,
+                  ),
+                  Text(
+                    'Avaliação deste serviço',
+                    style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
                   ),
                 ],
               ),

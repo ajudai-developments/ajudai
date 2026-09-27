@@ -178,7 +178,7 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
       const SizedBox(height: 28),
       _SecaoTitulo('Comentários'),
       const SizedBox(height: 10),
-      ComentariosList(comentarios: dados.comentarios),
+      ComentariosList(comentarios: dados.comentariosUsuario),
     ];
   }
 
@@ -270,8 +270,12 @@ class _Cabecalho extends StatelessWidget {
           if (dados.ehPrestador) ...[
             const SizedBox(height: 8),
             RatingDisplay(
-              media: dados.mediaAvaliacao,
-              quantidadeAvaliacoes: dados.quantidadeAvaliacoes,
+              media: dados.mediaAvaliacaoUsuario,
+              quantidadeAvaliacoes: dados.quantidadeAvaliacoesUsuario,
+            ),
+            Text(
+              'Avaliação como prestador',
+              style: const TextStyle(fontSize: 11.5, color: Colors.black38),
             ),
             const SizedBox(height: 4),
             Text(
