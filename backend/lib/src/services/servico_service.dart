@@ -72,6 +72,7 @@ class ServicoService {
     }
 
     final usuario = await UsuarioRepository(client).buscarPorId(userId);
+
     if (usuario == null) {
       throw ErroDto(
         codigo: ErroCodigo.naoAutenticado,
@@ -95,7 +96,7 @@ class ServicoService {
     );
   }
 
-  Future<ListarMeusServicosOferecidosResponseDto>
+  Future<ListarMeusServicosOferecidosDesativadosResponseDto>
   listarMeusServicosOferecidosDesativados(WsConnection conexao) async {
     final client = _sessaoService.clientDe(conexao);
     final userId = _sessaoService.userIdDe(conexao);
@@ -123,9 +124,9 @@ class ServicoService {
 
     final servicosOferecidos = await ServicoRepository(
       client,
-    ).listarOferecidosPorPrestador(userId);
+    ).listarServicosDesativadosDoPrestador(userId);
 
-    return ListarMeusServicosOferecidosResponseDto(
+    return ListarMeusServicosOferecidosDesativadosResponseDto(
       servicosOferecidos: servicosOferecidos,
     );
   }

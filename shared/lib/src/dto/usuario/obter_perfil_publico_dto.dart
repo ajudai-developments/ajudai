@@ -65,10 +65,7 @@ class ObterPerfilPublicoResponseDto implements WsMessage {
           .map(ServicoOferecidoResumo.fromJson)
           .toList(),
       selos: selos.map(ConquistaUsuario.fromJson).toList(),
-      mediaAvaliacaoUsuario: JsonUtils.optionalDouble(
-        json,
-        'media_avaliacao_usuario',
-      ),
+      mediaAvaliacaoUsuario: JsonUtils.optionalDouble(json, 'media_avaliacao'),
       quantidadeAvaliacoesUsuario: JsonUtils.requireInt(
         json,
         'quantidade_avaliacoes',
@@ -85,7 +82,7 @@ class ObterPerfilPublicoResponseDto implements WsMessage {
     'quantidade_servicos_concluidos': quantidadeServicosConcluidos,
     'servicos_oferecidos': servicosOferecidos.map((s) => s.toJson()).toList(),
     'selos': selos.map((s) => s.toJson()).toList(),
-    'media_avaliacao_usuario': mediaAvaliacaoUsuario,
+    'media_avaliacao': mediaAvaliacaoUsuario,
     'quantidade_avaliacoes': quantidadeAvaliacoesUsuario,
     'comentarios': comentariosUsuario.map((c) => c.toJson()).toList(),
   };

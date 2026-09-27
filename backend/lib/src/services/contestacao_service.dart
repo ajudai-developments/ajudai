@@ -84,6 +84,15 @@ class ContestacaoService {
         agendamentoId: dto.agendamentoId,
         descricao: dto.descricao,
       );
+
+      await AgendamentoRepository(client).atualizarStatus(
+        id: agendamento.id,
+        status: StatusAgendamento.contestado,
+        alteradoPorUsuarioId: userId,
+        camposExtras: {
+          'hora_confirmacao_usuario': DateTime.now().toUtc().toIso8601String(),
+        },
+      );
     } catch (erro) {
       throw _mapearErro(erro);
     }

@@ -4,18 +4,28 @@ import 'package:url_launcher/url_launcher.dart';
 
 /// Par de metadado + url assinada, na mesma ordem em que vieram do
 /// backend (`contestacao.arquivos[i]` corresponde a `urls[i]`).
+///
+/// `url` pode ser `null` quando o arquivo não foi encontrado no
+/// storage (por exemplo, upload que falhou ou foi removido depois) —
+/// nesse caso mostramos um placeholder em vez de quebrar a tela.
 class ArquivoComUrl {
   final ArquivoAnexado arquivo;
-  final String url;
+  final String? url;
   const ArquivoComUrl({required this.arquivo, required this.url});
+
+  bool get disponivel => url != null;
 }
 
 /// Mostra os arquivos anexados a uma contestação (ou denúncia, etc.):
 /// imagens em grade com zoom em tela cheia; áudio, vídeo e documento
 /// como itens de lista que abrem no app/navegador padrão do aparelho.
+///
+/// Arquivos cuja URL não pôde ser gerada (ausentes no storage) são
+/// exibidos com um indicador de "indisponível", sem impedir a
+/// visualização dos demais.
 class ArquivosAnexadosGrid extends StatelessWidget {
   final List<ArquivoAnexado> arquivos;
-  final List<String> urls;
+  final List<String?> urls;
 
   const ArquivosAnexadosGrid({
     super.key,
@@ -55,12 +65,28 @@ class ArquivosAnexadosGrid extends StatelessWidget {
             ),
             itemBuilder: (context, index) {
               final par = imagens[index];
+
+              if (!par.disponivel) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Center(
+                    child: Icon(
+                      Icons.image_not_supported_outlined,
+                      color: Colors.grey,
+                    ),
+                  ),
+                );
+              }
+
               return GestureDetector(
                 onTap: () => _abrirImagens(context, imagens, index),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: Image.network(
-                    par.url,
+                    par.url!,
                     fit: BoxFit.cover,
                     errorBuilder: (_, _, _) => Container(
                       color: Colors.grey.shade200,
@@ -82,11 +108,19 @@ class ArquivosAnexadosGrid extends StatelessWidget {
     List<ArquivoComUrl> imagens,
     int indiceInicial,
   ) {
+    // Ao abrir o visualizador em tela cheia, considera só as imagens
+    // que têm URL disponível — evita tentar exibir uma imagem nula.
+    final disponiveis = imagens.where((p) => p.disponivel).toList();
+    if (disponiveis.isEmpty) return;
+
+    final tocada = imagens[indiceInicial];
+    final indiceAjustado = tocada.disponivel ? disponiveis.indexOf(tocada) : 0;
+
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) => _VisualizadorImagensScreen(
-          imagens: imagens,
-          indiceInicial: indiceInicial,
+          imagens: disponiveis,
+          indiceInicial: indiceAjustado.clamp(0, disponiveis.length - 1),
         ),
       ),
     );
@@ -112,6 +146,8 @@ class _ArquivoTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final disponivel = par.disponivel;
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Material(
@@ -119,23 +155,40 @@ class _ArquivoTile extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         child: InkWell(
           borderRadius: BorderRadius.circular(10),
-          onTap: () => launchUrl(
-            Uri.parse(par.url),
-            mode: LaunchMode.externalApplication,
-          ),
+          onTap: disponivel
+              ? () => launchUrl(
+                  Uri.parse(par.url!),
+                  mode: LaunchMode.externalApplication,
+                )
+              : null,
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Row(
               children: [
-                Icon(_icone, color: Colors.grey.shade700),
+                Icon(
+                  _icone,
+                  color: disponivel
+                      ? Colors.grey.shade700
+                      : Colors.grey.shade400,
+                ),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(
-                    par.arquivo.nomeOriginal,
+                    disponivel
+                        ? par.arquivo.nomeOriginal
+                        : '${par.arquivo.nomeOriginal} (indisponível)',
                     overflow: TextOverflow.ellipsis,
+                    style: disponivel
+                        ? null
+                        : TextStyle(color: Colors.grey.shade400),
                   ),
                 ),
-                Icon(Icons.open_in_new, size: 18, color: Colors.grey.shade500),
+                if (disponivel)
+                  Icon(
+                    Icons.open_in_new,
+                    size: 18,
+                    color: Colors.grey.shade500,
+                  ),
               ],
             ),
           ),
@@ -185,8 +238,10 @@ class _VisualizadorImagensScreenState
         itemCount: widget.imagens.length,
         onPageChanged: (i) => setState(() => _indiceAtual = i),
         itemBuilder: (context, index) {
+          // Essa tela só recebe imagens já filtradas como disponíveis
+          // (ver `_abrirImagens`), então `url` nunca é null aqui.
           return InteractiveViewer(
-            child: Center(child: Image.network(widget.imagens[index].url)),
+            child: Center(child: Image.network(widget.imagens[index].url!)),
           );
         },
       ),

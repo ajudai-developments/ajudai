@@ -9,7 +9,7 @@ class ListarMeusServicosOferecidosDesativadosRequestDto implements WsMessage {
 }
 
 class ListarMeusServicosOferecidosDesativadosResponseDto implements WsMessage {
-  final List<ServicoOferecidoResumo> servicosOferecidos;
+  final List<ServicoOferecidoDoPrestador> servicosOferecidos;
   ListarMeusServicosOferecidosDesativadosResponseDto({
     required this.servicosOferecidos,
   });
@@ -26,7 +26,9 @@ class ListarMeusServicosOferecidosDesativadosResponseDto implements WsMessage {
       'servicos_oferecidos_desativados',
     );
     return ListarMeusServicosOferecidosDesativadosResponseDto(
-      servicosOferecidos: lista.map(ServicoOferecidoResumo.fromJson).toList(),
+      servicosOferecidos: lista
+          .map(ServicoOferecidoDoPrestador.fromJson)
+          .toList(),
     );
   }
   @override

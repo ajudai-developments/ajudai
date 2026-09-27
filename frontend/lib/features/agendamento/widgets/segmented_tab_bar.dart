@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
-/// Seletor de duas (ou mais) opções em estilo segmentado — um "chip
-/// deslizante" por trás do rótulo selecionado. Usado pra separar
-/// "Ativos" de "Histórico" nas listagens de agendamento, mas é
-/// genérico o bastante pra qualquer par de abas simples.
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_text_styles.dart';
+
+/// Alternador de abas em formato de pílula, com indicador branco
+/// deslizante — usado em telas com 2-3 seções mutuamente exclusivas
+/// (ex: Ativos/Desativados).
 class SegmentedTabBar extends StatelessWidget {
   final List<String> labels;
   final int selectedIndex;
@@ -18,58 +20,59 @@ class SegmentedTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final larguraItem = constraints.maxWidth / labels.length;
 
-    return Container(
-      margin: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-      padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: scheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Row(
-        children: [
-          for (var i = 0; i < labels.length; i++)
-            Expanded(
-              child: GestureDetector(
-                onTap: () => onChanged(i),
-                behavior: HitTestBehavior.opaque,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 180),
-                  curve: Curves.easeOut,
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+        return Container(
+          height: 44,
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.18),
+            borderRadius: BorderRadius.circular(14),
+          ),
+          child: Stack(
+            children: [
+              AnimatedPositioned(
+                duration: const Duration(milliseconds: 220),
+                curve: Curves.easeOutCubic,
+                left: larguraItem * selectedIndex,
+                width: larguraItem,
+                top: 0,
+                bottom: 0,
+                child: Container(
                   decoration: BoxDecoration(
-                    color: i == selectedIndex
-                        ? scheme.surface
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(11),
-                    boxShadow: i == selectedIndex
-                        ? [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.08),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ]
-                        : null,
-                  ),
-                  alignment: Alignment.center,
-                  child: AnimatedDefaultTextStyle(
-                    duration: const Duration(milliseconds: 180),
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 13,
-                      color: i == selectedIndex
-                          ? scheme.primary
-                          : scheme.onSurfaceVariant,
-                    ),
-                    child: Text(labels[i]),
+                    color: AppColors.surface,
+                    borderRadius: BorderRadius.circular(10),
                   ),
                 ),
               ),
-            ),
-        ],
-      ),
+              Row(
+                children: [
+                  for (var i = 0; i < labels.length; i++)
+                    Expanded(
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(10),
+                        onTap: () => onChanged(i),
+                        child: Center(
+                          child: AnimatedDefaultTextStyle(
+                            duration: const Duration(milliseconds: 180),
+                            style: AppTextStyles.label.copyWith(
+                              color: i == selectedIndex
+                                  ? AppColors.primary
+                                  : Colors.white,
+                            ),
+                            child: Text(labels[i]),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

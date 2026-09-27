@@ -5,19 +5,21 @@ import '../../../core/theme/app_text_styles.dart';
 import 'agendamento_com_detalhes.dart';
 import 'agendamento_historico_card.dart';
 
-enum _FiltroHistorico { todos, concluidos, cancelados }
+enum _FiltroHistorico { todos, concluidos, cancelados, contestados }
 
 extension on _FiltroHistorico {
   String get rotulo => switch (this) {
     _FiltroHistorico.todos => 'Todos',
     _FiltroHistorico.concluidos => 'Concluídos',
     _FiltroHistorico.cancelados => 'Cancelados',
+    _FiltroHistorico.contestados => 'Contestados',
   };
 
   bool aceita(StatusAgendamento status) => switch (this) {
     _FiltroHistorico.todos => true,
     _FiltroHistorico.concluidos => status == StatusAgendamento.concluido,
     _FiltroHistorico.cancelados => status == StatusAgendamento.cancelado,
+    _FiltroHistorico.contestados => status == StatusAgendamento.contestado,
   };
 }
 
@@ -73,9 +75,12 @@ class _ListaComFiltroState extends State<_ListaComFiltro> {
 
   @override
   Widget build(BuildContext context) {
-    final filtrados = widget.itens
-        .where((i) => _filtro.aceita(i.agendamento.status))
-        .toList();
+    final filtrados =
+        widget.itens.where((i) => _filtro.aceita(i.agendamento.status)).toList()
+          ..sort(
+            (a, b) =>
+                b.agendamento.horaInicio.compareTo(a.agendamento.horaInicio),
+          );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

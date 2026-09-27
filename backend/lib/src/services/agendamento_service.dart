@@ -673,17 +673,24 @@ class AgendamentoService {
 
     ContestacaoComUrls? contestacaoComUrls;
     final contestacao = agendamento.contestacaoAberta;
-
     if (contestacao != null && contestacao.arquivos.isNotEmpty) {
-      final urls = <String>[];
+      final urls = <String?>[];
       for (final arquivo in contestacao.arquivos) {
-        final url = await ArquivoUploadService.urlAssinada(
-          client: client,
-          bucket: 'contestamentos',
-          prefixo: contestacao.id,
-          arquivo: arquivo,
-        );
-        urls.add(url);
+        try {
+          final url = await ArquivoUploadService.urlAssinada(
+            client: client,
+            bucket: 'contestamentos',
+            prefixo: contestacao.id,
+            arquivo: arquivo,
+          );
+          urls.add(url);
+        } on StorageException catch (e) {
+          print(
+            'Arquivo de contestação não encontrado no storage '
+            '(contestacao=${contestacao.id}, arquivo=${arquivo.id}): $e',
+          );
+          urls.add(null); // mantém o alinhamento posicional com `arquivos`
+        }
       }
       contestacaoComUrls = ContestacaoComUrls(
         contestacao: contestacao,

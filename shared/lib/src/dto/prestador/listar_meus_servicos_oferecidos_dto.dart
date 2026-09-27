@@ -9,7 +9,7 @@ class ListarMeusServicosOferecidosRequestDto implements WsMessage {
 }
 
 class ListarMeusServicosOferecidosResponseDto implements WsMessage {
-  final List<ServicoOferecidoResumo> servicosOferecidos;
+  final List<ServicoOferecidoDoPrestador> servicosOferecidos;
   ListarMeusServicosOferecidosResponseDto({required this.servicosOferecidos});
 
   @override
@@ -20,9 +20,12 @@ class ListarMeusServicosOferecidosResponseDto implements WsMessage {
   ) {
     final lista = JsonUtils.requireListaDeMapas(json, 'servicos_oferecidos');
     return ListarMeusServicosOferecidosResponseDto(
-      servicosOferecidos: lista.map(ServicoOferecidoResumo.fromJson).toList(),
+      servicosOferecidos: lista
+          .map(ServicoOferecidoDoPrestador.fromJson)
+          .toList(),
     );
   }
+
   @override
   Map<String, dynamic> toJson() => {
     'tipo': tipo.valor,

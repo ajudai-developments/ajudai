@@ -77,7 +77,7 @@ class ServicoRepository {
     return ServicoOferecido.fromJson(response);
   }
 
-  Future<List<ServicoOferecidoResumo>> listarOferecidosPorPrestador(
+  Future<List<ServicoOferecidoDoPrestador>> listarOferecidosPorPrestador(
     String usuarioId,
   ) async {
     final response = await _client.rpc(
@@ -86,20 +86,25 @@ class ServicoRepository {
     );
 
     return (response as List)
-        .map((r) => ServicoOferecidoResumo.fromJson(r as Map<String, dynamic>))
+        .map(
+          (r) =>
+              ServicoOferecidoDoPrestador.fromJson(r as Map<String, dynamic>),
+        )
         .toList();
   }
 
-  Future<List<ServicoOferecidoResumo>> listarServicosDesativadosDoPrestador(
-    String usuarioId,
-  ) async {
+  Future<List<ServicoOferecidoDoPrestador>>
+  listarServicosDesativadosDoPrestador(String usuarioId) async {
     final response = await _client.rpc(
       'listar_servicos_oferecidos_do_prestador_desativados',
       params: {'p_prestador_id': usuarioId},
     );
 
     return (response as List)
-        .map((r) => ServicoOferecidoResumo.fromJson(r as Map<String, dynamic>))
+        .map(
+          (r) =>
+              ServicoOferecidoDoPrestador.fromJson(r as Map<String, dynamic>),
+        )
         .toList();
   }
 

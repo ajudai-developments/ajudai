@@ -1,22 +1,20 @@
+import 'package:ajudai/core/widgets/cabecalho_com_abas.dart';
 import 'package:flutter/material.dart';
+import 'package:shared/shared.dart';
 
-import '../../core/errors/erro_mapper.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/async_list_view.dart';
-import '../../core/ws/ws_message_stream.dart';
-import '../servico/servico_repository.dart';
-import '../servico/editar_servico_screen.dart';
 import 'prestador_repository.dart';
-import 'servico_oferecido_com_detalhes.dart';
 
-/// Lista os serviços que o prestador logado oferece, com ação de
-/// desativar (soft delete — não existe "reativar" nem "editar" ainda).
+/// Lista os serviços que o prestador logado oferece — somente
+/// visualização (nome, categoria, descrição, valor e a avaliação
+/// específica daquela oferta). Duas abas: Ativos e Desativados.
 ///
-/// Toque no card (fora do botão de desativar) abre o detalhe público do
-/// serviço (mesma tela que um cliente veria), útil pra conferir como
-/// está aparecendo.
+/// Editar e (des)ativar um serviço são ações de outra tela
+/// (EditarServicoScreen) — esta aqui é só pra o prestador conferir o
+/// que tem cadastrado.
 class MeusServicosOferecidosScreen extends StatefulWidget {
   const MeusServicosOferecidosScreen({super.key});
 
@@ -28,132 +26,245 @@ class MeusServicosOferecidosScreen extends StatefulWidget {
 class _MeusServicosOferecidosScreenState
     extends State<MeusServicosOferecidosScreen> {
   final _prestadorRepository = PrestadorRepository();
-  final _servicoRepository = ServicoRepository();
-  final _listKey = GlobalKey<AsyncListViewState<ServicoOferecidoComDetalhes>>();
+  int _aba = 0;
+  int _reloadTick = 0;
 
-  Future<void> _confirmarEDesativar(ServicoOferecidoComDetalhes item) async {
-    final confirmou = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Desativar serviço'),
-        content: Text(
-          'Desativar "${item.nomeServico}"? Ele deixa de aparecer para '
-          'novos clientes. É possível reativar depois.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancelar'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Desativar'),
-          ),
-        ],
-      ),
-    );
+  /// Abas já abertas ao menos uma vez — a de Desativados só monta (e só
+  /// dispara request) na primeira vez que o usuário clica nela.
+  final Set<int> _abasVisitadas = {0};
 
-    if (confirmou != true) return;
-    if (!mounted) return;
-
-    try {
-      final mensagem = await _prestadorRepository.desativarServicoOferecido(
-        servicoOferecidoId: item.servicoOferecido.servicoOferecidoId,
-      );
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(mensagem)));
-      _listKey.currentState?.recarregar();
-    } on WsErroException catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            ErroMapper.paraMensagem(e.codigo, mensagemServidor: e.mensagem),
-          ),
-        ),
-      );
-    } on WsTimeoutException {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Não foi possível conectar ao servidor.')),
-      );
-    }
+  void _onTrocarAba(int i) {
+    setState(() {
+      _aba = i;
+      _abasVisitadas.add(i);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Meus serviços oferecidos')),
-      body: AsyncListView<ServicoOferecidoComDetalhes>(
-        key: _listKey,
-        carregar: () async {
-          final servicos = await _prestadorRepository
-              .listarMeusServicosOferecidos();
-          return carregarServicosOferecidosComDetalhes(
-            servicos,
-            _servicoRepository,
-          );
-        },
-        mensagemVazio: 'Você ainda não tem serviços cadastrados.',
-        builder: (context, itens) => Column(
-          children: [
-            for (final item in itens)
-              Card(
-                child: ListTile(
-                  onTap: () async {
-                    final resultado = await Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) =>
-                            EditarServicoScreen(servico: item.servicoOferecido),
-                      ),
-                    );
-                    if (resultado == true) {
-                      _listKey.currentState?.recarregar();
-                    }
-                  },
-                  title: Text(item.nomeServico, style: AppTextStyles.titulo),
-                  subtitle: Text(
-                    '${item.nomeCategoria}\n${item.servicoOferecido.descricao}',
-                    style: AppTextStyles.corpo,
-                  ),
-                  isThreeLine: true,
-                  trailing: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(
-                        'R\$ ${item.servicoOferecido.valor.toStringAsFixed(2)}',
-                        style: AppTextStyles.corpo,
-                      ),
-
-                      IconButton(
-                        icon: const Icon(
-                          Icons.delete_outline,
-                          color: AppColors.error,
-                        ),
-                        tooltip: 'Desativar',
-                        onPressed: () => _confirmarEDesativar(item),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
-        ),
+      body: Column(
+        children: [
+          CabecalhoComAbas(
+            titulo: 'Meus serviços',
+            subtitulo: 'Acompanhe e gerencie o que você oferece',
+            abas: const ['Ativos', 'Desativados'],
+            abaSelecionada: _aba,
+            onTrocarAba: _onTrocarAba,
+            // mostrarBotaoVoltar fica true (padrão) — essa tela é empilhada normal.
+          ),
+          Expanded(
+            child: IndexedStack(
+              index: _aba,
+              sizing: StackFit.expand,
+              children: [
+                _abasVisitadas.contains(0)
+                    ? AsyncListView<ServicoOferecidoDoPrestador>(
+                        key: ValueKey('ativos-$_reloadTick'),
+                        carregar:
+                            _prestadorRepository.listarMeusServicosOferecidos,
+                        mensagemVazio:
+                            'Você ainda não tem serviços cadastrados.',
+                        builder: (context, itens) =>
+                            _ListaServicos(itens: itens),
+                      )
+                    : const SizedBox.shrink(),
+                _abasVisitadas.contains(1)
+                    ? AsyncListView<ServicoOferecidoDoPrestador>(
+                        key: ValueKey('desativados-$_reloadTick'),
+                        carregar: _prestadorRepository
+                            .listarMeusServicosOferecidosDesativados,
+                        mensagemVazio: 'Nenhum serviço desativado.',
+                        builder: (context, itens) =>
+                            _ListaServicos(itens: itens),
+                      )
+                    : const SizedBox.shrink(),
+              ],
+            ),
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           final resultado = await Navigator.of(
             context,
           ).pushNamed(AppRoutes.formServicoOferecido);
-          if (resultado == true) _listKey.currentState?.recarregar();
+          if (resultado == true && mounted) {
+            setState(() => _reloadTick++);
+          }
         },
-        backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.add),
+        icon: const Icon(Icons.add_rounded),
         label: const Text('Adicionar serviço'),
+      ),
+    );
+  }
+}
+
+class _ListaServicos extends StatelessWidget {
+  final List<ServicoOferecidoDoPrestador> itens;
+  const _ListaServicos({required this.itens});
+
+  @override
+  Widget build(BuildContext context) {
+    // Column simples — quem rola é o ListView do AsyncListView por fora,
+    // não precisa (e não deve) ter um segundo Scrollable aqui dentro.
+    return Column(
+      children: [
+        for (final item in itens) ...[
+          _CartaoServicoOferecido(item: item),
+          const SizedBox(height: 12),
+        ],
+      ],
+    );
+  }
+}
+
+class _CartaoServicoOferecido extends StatelessWidget {
+  final ServicoOferecidoDoPrestador item;
+  const _CartaoServicoOferecido({required this.item});
+
+  String _formatarValor(double valor) =>
+      'R\$ ${valor.toStringAsFixed(2).replaceAll('.', ',')}';
+
+  IconData _iconeParaCategoria(String categoria) {
+    final nome = categoria.toLowerCase();
+    if (nome.contains('pet')) return Icons.pets_rounded;
+    if (nome.contains('aula') || nome.contains('educ')) {
+      return Icons.menu_book_rounded;
+    }
+    if (nome.contains('limp') || nome.contains('faxina')) {
+      return Icons.cleaning_services_rounded;
+    }
+    if (nome.contains('beleza') || nome.contains('estét')) {
+      return Icons.content_cut_rounded;
+    }
+    if (nome.contains('reform') || nome.contains('manut')) {
+      return Icons.handyman_rounded;
+    }
+    return Icons.miscellaneous_services_rounded;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.outline),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.primarySoft,
+                  borderRadius: BorderRadius.circular(13),
+                ),
+                child: Icon(
+                  _iconeParaCategoria(item.categoriaNome),
+                  color: AppColors.primary,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      item.servicoNome,
+                      style: AppTextStyles.titulo,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 2),
+                    Text(item.categoriaNome, style: AppTextStyles.legenda),
+                  ],
+                ),
+              ),
+              if (!item.ativo) const _ChipDesativado(),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            item.descricao,
+            style: AppTextStyles.corpo,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 14),
+          const Divider(height: 1, color: AppColors.outline),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              _AvaliacaoBadge(
+                media: item.mediaAvaliacaoServico,
+                quantidade: item.quantidadeAvaliacoesServico,
+              ),
+              const Spacer(),
+              Text(_formatarValor(item.valor), style: AppTextStyles.preco),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChipDesativado extends StatelessWidget {
+  const _ChipDesativado();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceAlt,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        'Desativado',
+        style: AppTextStyles.label.copyWith(
+          color: AppColors.textoSecundario,
+          fontSize: 11,
+        ),
+      ),
+    );
+  }
+}
+
+class _AvaliacaoBadge extends StatelessWidget {
+  final double? media;
+  final int quantidade;
+  const _AvaliacaoBadge({required this.media, required this.quantidade});
+
+  @override
+  Widget build(BuildContext context) {
+    if (media == null || quantidade == 0) {
+      return Text('Sem avaliações', style: AppTextStyles.legenda);
+    }
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.avaliacao.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(Icons.star_rounded, size: 15, color: AppColors.avaliacao),
+          const SizedBox(width: 4),
+          Text(media!.toStringAsFixed(1), style: AppTextStyles.label),
+          const SizedBox(width: 3),
+          Text('($quantidade)', style: AppTextStyles.legenda),
+        ],
       ),
     );
   }

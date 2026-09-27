@@ -45,10 +45,7 @@ class ObterServicoOferecidoResponseDto implements WsMessage {
         json['prestador'] as Map<String, dynamic>,
       ),
       selos: selos.map(ConquistaUsuario.fromJson).toList(),
-      mediaAvaliacaoServico: JsonUtils.optionalDouble(
-        json,
-        'media_avaliacao_servico',
-      ),
+      mediaAvaliacaoServico: JsonUtils.optionalDouble(json, 'media_avaliacao'),
       quantidadeAvaliacoesServico: JsonUtils.requireInt(
         json,
         'quantidade_avaliacoes',
@@ -65,7 +62,7 @@ class ObterServicoOferecidoResponseDto implements WsMessage {
     'categoria': categoria.toJson(),
     'prestador': prestador.toJson(),
     'selos': selos.map((s) => s.toJson()).toList(),
-    'media_avaliacao_servico': mediaAvaliacaoServico,
+    'media_avaliacao': mediaAvaliacaoServico,
     'quantidade_avaliacoes': quantidadeAvaliacoesServico,
     'comentarios_servico': comentariosServico.map((c) => c.toJson()).toList(),
   };

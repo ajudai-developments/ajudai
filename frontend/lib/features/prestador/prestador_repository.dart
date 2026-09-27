@@ -48,7 +48,10 @@ class PrestadorRepository {
     return CriarServicoOferecidoResponseDto.fromJson(json).servicoOferecido;
   }
 
-  Future<List<ServicoOferecidoResumo>> listarMeusServicosOferecidos() async {
+  /// Serviços oferecidos ATIVOS do prestador logado — já vem com nome
+  /// do serviço, categoria e avaliação específica de cada oferta.
+  Future<List<ServicoOferecidoDoPrestador>>
+  listarMeusServicosOferecidos() async {
     await WsClient.instance.conectar();
 
     WsClient.instance.enviar(ListarMeusServicosOferecidosRequestDto());
@@ -56,7 +59,26 @@ class PrestadorRepository {
     final json = await WsMessageStream.instance.aguardar(
       TipoMensagem.listarMeusServicosOferecidosOk,
     );
+
     return ListarMeusServicosOferecidosResponseDto.fromJson(
+      json,
+    ).servicosOferecidos;
+  }
+
+  /// Serviços oferecidos DESATIVADOS do prestador logado.
+  Future<List<ServicoOferecidoDoPrestador>>
+  listarMeusServicosOferecidosDesativados() async {
+    await WsClient.instance.conectar();
+
+    WsClient.instance.enviar(
+      ListarMeusServicosOferecidosDesativadosRequestDto(),
+    );
+
+    final json = await WsMessageStream.instance.aguardar(
+      TipoMensagem.listarMeusServicosOferecidosDesativadosOk,
+    );
+
+    return ListarMeusServicosOferecidosDesativadosResponseDto.fromJson(
       json,
     ).servicosOferecidos;
   }
@@ -102,5 +124,21 @@ class PrestadorRepository {
       TipoMensagem.desativarServicoOferecidoOk,
     );
     return DesativarServicoOferecidoResponseDto.fromJson(json).mensagem;
+  }
+
+  /// Reativa um serviço oferecido previamente desativado.
+  Future<String> ativarServicoOferecido({
+    required String servicoOferecidoId,
+  }) async {
+    await WsClient.instance.conectar();
+
+    WsClient.instance.enviar(
+      AtivarServicoOferecidoRequestDto(servicoOferecidoId: servicoOferecidoId),
+    );
+
+    final json = await WsMessageStream.instance.aguardar(
+      TipoMensagem.ativarServicoOferecidoOk,
+    );
+    return AtivarServicoOferecidoResponseDto.fromJson(json).mensagem;
   }
 }

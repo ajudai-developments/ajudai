@@ -1,5 +1,5 @@
+import 'package:ajudai/core/widgets/cabecalho_com_abas.dart';
 import 'package:ajudai/features/agendamento/widgets/lista_agendamento_historico.dart';
-import 'package:ajudai/features/agendamento/widgets/segmented_tab_bar.dart';
 import 'package:ajudai/features/avaliacao/avaliar_agendamento_args.dart';
 import 'package:ajudai/features/denuncia/denunciar_usuario_args.dart';
 import 'package:flutter/material.dart';
@@ -28,10 +28,11 @@ class _MeusAgendamentosScreenState extends State<MeusAgendamentosScreen> {
   int _aba = 0;
   int _reloadTick = 0;
 
-  void _abrirDetalhe(AgendamentoComDetalhes item) {
-    Navigator.of(
+  Future<void> _abrirDetalhe(AgendamentoComDetalhes item) async {
+    await Navigator.of(
       context,
     ).pushNamed(AppRoutes.agendamentoDetalhe, arguments: item.agendamento.id);
+    if (mounted) setState(() => _reloadTick++);
   }
 
   Future<void> _abrirAvaliacao(AgendamentoComDetalhes item) async {
@@ -50,20 +51,22 @@ class _MeusAgendamentosScreenState extends State<MeusAgendamentosScreen> {
     if (mounted) setState(() => _reloadTick++);
   }
 
-  void _abrirDenuncia(AgendamentoComDetalhes item) {
-    Navigator.of(context).pushNamed(
+  Future<void> _abrirDenuncia(AgendamentoComDetalhes item) async {
+    await Navigator.of(context).pushNamed(
       AppRoutes.denunciarUsuario,
       arguments: DenunciarUsuarioArgs(
         usuarioId: item.contraParteId,
         nomeUsuario: item.nomeContraparte,
       ),
     );
+    if (mounted) setState(() => _reloadTick++);
   }
 
-  void _abrirContestacao(AgendamentoComDetalhes item) {
-    Navigator.of(
+  Future<void> _abrirContestacao(AgendamentoComDetalhes item) async {
+    await Navigator.of(
       context,
     ).pushNamed(AppRoutes.contestarAgendamento, arguments: item.agendamento.id);
+    if (mounted) setState(() => _reloadTick++);
   }
 
   Future<Agendamento> _executarAcao(
@@ -81,13 +84,15 @@ class _MeusAgendamentosScreenState extends State<MeusAgendamentosScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Meus agendamentos')),
       body: Column(
         children: [
-          SegmentedTabBar(
-            labels: const ['Ativos', 'Histórico'],
-            selectedIndex: _aba,
-            onChanged: (i) => setState(() => _aba = i),
+          CabecalhoComAbas(
+            titulo: 'Meus agendamentos',
+            subtitulo: 'Acompanhe os serviços que você contratou',
+            abas: const ['Ativos', 'Histórico'],
+            abaSelecionada: _aba,
+            onTrocarAba: (i) => setState(() => _aba = i),
+            mostrarBotaoVoltar: false,
           ),
           Expanded(
             child: IndexedStack(

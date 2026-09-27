@@ -98,9 +98,15 @@ class AvaliacaoService {
       dto.agendamentoId,
       userId,
     );
-    final avaliadoId = userId == agendamento.usuarioId
-        ? agendamento.prestadorId
-        : agendamento.usuarioId;
+
+    if (userId != agendamento.usuarioId) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoPermitido,
+        mensagem: 'Somente o cliente pode avaliar o serviço',
+      );
+    }
+
+    final avaliadoId = agendamento.prestadorId;
 
     try {
       await AvaliacaoRepository(client).criarAvaliacaoAgendamento(

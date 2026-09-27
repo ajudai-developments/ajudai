@@ -18,7 +18,7 @@ class ListarMinhasContestacoesRequestDto implements WsMessage {
 
 class ContestacaoComUrls {
   final ContestacaoComDetalhes contestacao;
-  final List<String> urlsArquivos;
+  final List<String?> urlsArquivos;
 
   ContestacaoComUrls({required this.contestacao, required this.urlsArquivos});
 
@@ -30,7 +30,9 @@ class ContestacaoComUrls {
   factory ContestacaoComUrls.fromJson(Map<String, dynamic> json) {
     return ContestacaoComUrls(
       contestacao: ContestacaoComDetalhes.fromJson(json),
-      urlsArquivos: (json['urls_arquivos'] as List).cast<String>(),
+      urlsArquivos: (json['urls_arquivos'] as List)
+          .map((e) => e as String?)
+          .toList(),
     );
   }
 }

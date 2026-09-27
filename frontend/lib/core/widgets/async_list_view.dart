@@ -1,3 +1,5 @@
+import 'package:ajudai/core/theme/app_colors.dart';
+import 'package:ajudai/core/theme/app_text_styles.dart';
 import 'package:flutter/material.dart';
 
 import '../errors/erro_mapper.dart';
@@ -63,7 +65,10 @@ class AsyncListViewState<T> extends State<AsyncListView<T>> {
     } on WsErroException catch (e) {
       if (mounted) {
         setState(() {
-          _erro = ErroMapper.paraMensagem(e.codigo, mensagemServidor: e.mensagem);
+          _erro = ErroMapper.paraMensagem(
+            e.codigo,
+            mensagemServidor: e.mensagem,
+          );
         });
       }
     } on WsTimeoutException {
@@ -80,22 +85,57 @@ class AsyncListViewState<T> extends State<AsyncListView<T>> {
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
+      color: AppColors.primary,
       onRefresh: recarregar,
       child: _carregando
-          ? const Center(child: CircularProgressIndicator())
+          ? const Center(
+              child: CircularProgressIndicator(color: AppColors.primary),
+            )
           : ListView(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
               children: [
                 ErrorBanner(mensagem: _erro),
                 if (_dados.isEmpty && _erro == null)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 32),
-                    child: Text(widget.mensagemVazio, textAlign: TextAlign.center),
-                  )
+                  _EstadoVazio(mensagem: widget.mensagemVazio)
                 else
                   widget.builder(context, _dados),
               ],
             ),
+    );
+  }
+}
+
+class _EstadoVazio extends StatelessWidget {
+  final String mensagem;
+  const _EstadoVazio({required this.mensagem});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 48),
+      child: Column(
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: const BoxDecoration(
+              color: AppColors.surfaceAlt,
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.inbox_rounded,
+              color: AppColors.textoSecundario,
+              size: 28,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            mensagem,
+            textAlign: TextAlign.center,
+            style: AppTextStyles.corpo,
+          ),
+        ],
+      ),
     );
   }
 }

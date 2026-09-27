@@ -196,8 +196,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 8),
               _buildCategorias(),
-
-              // TODO: "Serviços recentes" — sem endpoint no backend ainda.
             ],
           ),
         ),
