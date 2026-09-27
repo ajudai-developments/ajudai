@@ -1,4 +1,4 @@
-import 'package:ajudai/core/widgets/cabbecalho_simples.dart';
+import 'package:ajudai/core/widgets/cabecalho_simples.dart';
 import 'package:ajudai/core/widgets/tipo_denuncia_label.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
