@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:ajudai/core/layout/responsivo.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -74,6 +76,10 @@ class _CadastroFotoStepState extends State<CadastroFotoStep> {
   }
 
   Future<void> _mostrarOpcoes() async {
+    if (kIsWeb) {
+      await _escolher(ImageSource.gallery);
+      return;
+    }
     final origem = await showModalBottomSheet<ImageSource>(
       context: context,
       backgroundColor: AppColors.surface,
@@ -154,63 +160,67 @@ class _CadastroFotoStepState extends State<CadastroFotoStep> {
   Widget build(BuildContext context) {
     final temFoto = _bytes != null;
 
+    final corpo = Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const SizedBox(height: 16),
+        ErrorBanner(mensagem: _erro),
+        const SizedBox(height: 8),
+        _PreviewFoto(bytes: _bytes, onTap: _enviando ? null : _mostrarOpcoes),
+        const SizedBox(height: 28),
+        Text(
+          'Adicione uma foto',
+          textAlign: TextAlign.center,
+          style: AppTextStyles.display.copyWith(fontSize: 24),
+        ),
+        const SizedBox(height: 10),
+        Text(
+          'Uma foto ajuda clientes e prestadores a se reconhecerem '
+          'e passa mais confiança.',
+          textAlign: TextAlign.center,
+          style: AppTextStyles.corpo,
+        ),
+      ],
+    );
+
+    final acoes = <Widget>[
+      if (temFoto) ...[
+        AppButton(label: 'Concluir', loading: _enviando, onPressed: _concluir),
+        const SizedBox(height: 10),
+        AppOutlinedButton(
+          label: 'Trocar foto',
+          icone: Icons.photo_camera_outlined,
+          onPressed: _enviando ? null : _mostrarOpcoes,
+        ),
+      ] else ...[
+        AppButton(label: 'Escolher foto', onPressed: _mostrarOpcoes),
+        const SizedBox(height: 8),
+        TextButton(
+          onPressed: widget.onConcluir,
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.textoSecundario,
+          ),
+          child: const Text('Agora não'),
+        ),
+      ],
+    ];
+
+    if (context.usaLayoutWeb) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [corpo, const SizedBox(height: 24), ...acoes],
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  const SizedBox(height: 16),
-                  ErrorBanner(mensagem: _erro),
-                  const SizedBox(height: 8),
-                  _PreviewFoto(
-                    bytes: _bytes,
-                    onTap: _enviando ? null : _mostrarOpcoes,
-                  ),
-                  const SizedBox(height: 28),
-                  Text(
-                    'Adicione uma foto',
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.display.copyWith(fontSize: 24),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Uma foto ajuda clientes e prestadores a se reconhecerem '
-                    'e passa mais confiança.',
-                    textAlign: TextAlign.center,
-                    style: AppTextStyles.corpo,
-                  ),
-                ],
-              ),
-            ),
-          ),
+          Expanded(child: SingleChildScrollView(child: corpo)),
           const SizedBox(height: 16),
-          if (temFoto) ...[
-            AppButton(
-              label: 'Concluir',
-              loading: _enviando,
-              onPressed: _concluir,
-            ),
-            const SizedBox(height: 10),
-            AppOutlinedButton(
-              label: 'Trocar foto',
-              icone: Icons.photo_camera_outlined,
-              onPressed: _enviando ? null : _mostrarOpcoes,
-            ),
-          ] else ...[
-            AppButton(label: 'Escolher foto', onPressed: _mostrarOpcoes),
-            const SizedBox(height: 8),
-            TextButton(
-              onPressed: widget.onConcluir,
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.textoSecundario,
-              ),
-              child: const Text('Agora não'),
-            ),
-          ],
+          ...acoes,
         ],
       ),
     );

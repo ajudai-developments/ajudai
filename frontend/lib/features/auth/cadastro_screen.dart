@@ -1,3 +1,5 @@
+import 'package:ajudai/core/layout/responsivo.dart';
+import 'package:ajudai/features/auth/widgets/auth_shell_web.dart';
 import 'package:ajudai/features/auth/widgets/cadastro_endereco_step.dart';
 import 'package:ajudai/features/auth/widgets/passos_indicator.dart';
 import 'package:flutter/material.dart';
@@ -69,42 +71,67 @@ class _CadastroScreenState extends State<CadastroScreen> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      // Só dá pra sair pelo voltar no passo 1 (conta ainda não criada).
       canPop: _passo == 0,
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        body: SafeArea(
-          child: Column(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
-                child: Row(
-                  children: [
-                    SizedBox(
-                      width: 48,
-                      child: _passo == 0
-                          ? IconButton(
-                              onPressed: () => Navigator.of(context).maybePop(),
-                              icon: const Icon(Icons.arrow_back_rounded),
-                            )
-                          : null,
-                    ),
-                    const Expanded(
-                      child: Center(child: AjudaiLogo(altura: 56)),
-                    ),
-                    const SizedBox(width: 48),
-                  ],
-                ),
-              ),
-              PassosIndicador(total: _totalPassos, atual: _passo),
-              Expanded(
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 250),
-                  child: _buildPasso(),
-                ),
-              ),
-            ],
+      child: context.usaLayoutWeb ? _buildWeb() : _buildMobile(),
+    );
+  }
+
+  Widget _buildWeb() {
+    return AuthShellWeb(
+      titulo: 'Criar conta',
+      larguraForm: 560,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          PassosIndicador(
+            total: _totalPassos,
+            atual: _passo,
+            padding: EdgeInsets.zero,
           ),
+          const SizedBox(height: 24),
+          AnimatedSwitcher(
+            duration: const Duration(milliseconds: 250),
+            child: _buildPasso(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobile() {
+    // exatamente o Scaffold que você já tem hoje (sem o PopScope)
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
+              child: Row(
+                children: [
+                  SizedBox(
+                    width: 48,
+                    child: _passo == 0
+                        ? IconButton(
+                            onPressed: () => Navigator.of(context).maybePop(),
+                            icon: const Icon(Icons.arrow_back_rounded),
+                          )
+                        : null,
+                  ),
+                  const Expanded(child: Center(child: AjudaiLogo(altura: 56))),
+                  const SizedBox(width: 48),
+                ],
+              ),
+            ),
+            PassosIndicador(total: _totalPassos, atual: _passo),
+            Expanded(
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 250),
+                child: _buildPasso(),
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -1,3 +1,5 @@
+import 'package:ajudai/core/layout/responsivo.dart';
+import 'package:ajudai/core/widgets/campos_em_linha.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -121,92 +123,105 @@ class _CadastroDadosStepState extends State<CadastroDadosStep> {
 
   @override
   Widget build(BuildContext context) {
+    final web = context.usaLayoutWeb;
+
+    final conteudo = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Na web o título "Crie sua conta" já vem do AuthShellWeb.
+        if (!web) ...[
+          Text('Crie sua conta', style: AppTextStyles.display),
+          const SizedBox(height: 6),
+        ],
+        Text(
+          'Comece com seus dados básicos. Leva menos de um minuto.',
+          style: AppTextStyles.corpo,
+        ),
+        const SizedBox(height: 24),
+        ErrorBanner(mensagem: _erroGeral),
+
+        const _Secao('Dados pessoais'),
+        AppTextField(
+          label: 'Nome completo',
+          controller: _nomeController,
+          icone: Icons.person_outline_rounded,
+          textCapitalization: TextCapitalization.words,
+          textInputAction: TextInputAction.next,
+          autofillHints: const [AutofillHints.name],
+          erro: _erroNome,
+        ),
+        const SizedBox(height: 12),
+        AppTextField(
+          label: 'CPF',
+          controller: _cpfController,
+          icone: Icons.badge_outlined,
+          keyboardType: TextInputType.number,
+          textInputAction: TextInputAction.next,
+          inputFormatters: [MascaraFormatter.cpf],
+          erro: _erroCpf,
+        ),
+        const SizedBox(height: 24),
+
+        const _Secao('Contato'),
+        CamposEmLinha(
+          filhos: [
+            AppTextField(
+              label: 'E-mail',
+              controller: _emailController,
+              icone: Icons.mail_outline_rounded,
+              keyboardType: TextInputType.emailAddress,
+              textInputAction: TextInputAction.next,
+              autofillHints: const [AutofillHints.email],
+              erro: _erroEmail,
+            ),
+            AppTextField(
+              label: 'Telefone (opcional)',
+              controller: _telefoneController,
+              icone: Icons.phone_outlined,
+              keyboardType: TextInputType.phone,
+              textInputAction: TextInputAction.next,
+              autofillHints: const [AutofillHints.telephoneNumber],
+              erro: _erroTelefone,
+            ),
+          ],
+        ),
+        const SizedBox(height: 24),
+
+        const _Secao('Acesso'),
+        AppTextField(
+          label: 'Senha',
+          controller: _senhaController,
+          icone: Icons.lock_outline_rounded,
+          obscureText: true,
+          textInputAction: TextInputAction.done,
+          autofillHints: const [AutofillHints.newPassword],
+          onSubmitted: (_) {
+            if (!_carregando) _continuar();
+          },
+          erro: _erroSenha,
+        ),
+        const SizedBox(height: 28),
+
+        AppButton(
+          label: 'Continuar',
+          loading: _carregando,
+          onPressed: _continuar,
+        ),
+        const SizedBox(height: 8),
+        TextButton(
+          onPressed: _carregando ? null : () => Navigator.of(context).pop(),
+          child: const Text('Já tem conta? Entrar'),
+        ),
+      ],
+    );
+
+    if (web) return AutofillGroup(child: conteudo);
+
     return SingleChildScrollView(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text('Crie sua conta', style: AppTextStyles.display),
-          const SizedBox(height: 6),
-          Text(
-            'Comece com seus dados básicos. Leva menos de um minuto.',
-            style: AppTextStyles.corpo,
-          ),
-          const SizedBox(height: 24),
-          ErrorBanner(mensagem: _erroGeral),
-
-          const _Secao('Dados pessoais'),
-          AppTextField(
-            label: 'Nome completo',
-            controller: _nomeController,
-            icone: Icons.person_outline_rounded,
-            textCapitalization: TextCapitalization.words,
-            textInputAction: TextInputAction.next,
-            autofillHints: const [AutofillHints.name],
-            erro: _erroNome,
-          ),
-          const SizedBox(height: 12),
-          AppTextField(
-            label: 'CPF',
-            controller: _cpfController,
-            icone: Icons.badge_outlined,
-            keyboardType: TextInputType.number,
-            textInputAction: TextInputAction.next,
-            inputFormatters: [MascaraFormatter.cpf],
-            erro: _erroCpf,
-          ),
-          const SizedBox(height: 24),
-
-          const _Secao('Contato'),
-          AppTextField(
-            label: 'E-mail',
-            controller: _emailController,
-            icone: Icons.mail_outline_rounded,
-            keyboardType: TextInputType.emailAddress,
-            textInputAction: TextInputAction.next,
-            autofillHints: const [AutofillHints.email],
-            erro: _erroEmail,
-          ),
-          const SizedBox(height: 12),
-          AppTextField(
-            label: 'Telefone (opcional)',
-            controller: _telefoneController,
-            icone: Icons.phone_outlined,
-            keyboardType: TextInputType.phone,
-            textInputAction: TextInputAction.next,
-            autofillHints: const [AutofillHints.telephoneNumber],
-            erro: _erroTelefone,
-          ),
-          const SizedBox(height: 24),
-
-          const _Secao('Acesso'),
-          AppTextField(
-            label: 'Senha',
-            controller: _senhaController,
-            icone: Icons.lock_outline_rounded,
-            obscureText: true,
-            textInputAction: TextInputAction.done,
-            autofillHints: const [AutofillHints.newPassword],
-            onSubmitted: (_) {
-              if (!_carregando) _continuar();
-            },
-            erro: _erroSenha,
-          ),
-          const SizedBox(height: 28),
-
-          AppButton(
-            label: 'Continuar',
-            loading: _carregando,
-            onPressed: _continuar,
-          ),
-          const SizedBox(height: 8),
-          TextButton(
-            onPressed: _carregando ? null : () => Navigator.of(context).pop(),
-            child: const Text('Já tem conta? Entrar'),
-          ),
-        ],
-      ),
+      child: AutofillGroup(child: conteudo),
     );
   }
 }

@@ -120,10 +120,16 @@ flutter_launcher_icons:
   background_color: "#FFFFFF"
   adaptive_icon_background: "#FFFFFF"
   adaptive_icon_foreground: "assets/images/ajudai_splash_1024_transparente.png"
-
+  web:
+    generate: true
+    image_path: "assets/images/ajudai_splash_1024_transparente.png"
+    background_color: "#FFFFFF"
+    theme_color: "#E53935"
+    
 flutter_native_splash:
   color: "#FFFFFF"
   image: assets/images/ajudai_splash_1024_transparente_margem.png
+  web: false   
   android_12:
     color: "#FFFFFF"
     image: assets/images/ajudai_splash_1024_transparente_margem.png

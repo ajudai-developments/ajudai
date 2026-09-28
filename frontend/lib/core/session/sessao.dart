@@ -1,3 +1,4 @@
+import 'package:ajudai/core/session/permissoes.dart';
 import 'package:shared/shared.dart';
 
 /// Guarda o usuário autenticado na sessão atual do app.
@@ -22,6 +23,7 @@ class Sessao {
   bool get ehPrestador => _usuario?.userRole == UserRole.prestador;
 
   bool get ehAdmin => _usuario?.userRole == UserRole.admin;
+  Permissoes get permissoes => Permissoes(papel: usuario?.userRole);
 
   void definirUsuario(Usuario u) => _usuario = u;
 

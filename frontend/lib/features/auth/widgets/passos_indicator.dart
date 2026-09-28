@@ -9,13 +9,19 @@ import '../../../core/theme/app_text_styles.dart';
 class PassosIndicador extends StatelessWidget {
   final int total;
   final int atual;
+  final EdgeInsetsGeometry padding;
 
-  const PassosIndicador({super.key, required this.total, required this.atual});
+  const PassosIndicador({
+    super.key,
+    required this.total,
+    required this.atual,
+    this.padding = const EdgeInsets.symmetric(horizontal: 24),
+  });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24),
+      padding: padding,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

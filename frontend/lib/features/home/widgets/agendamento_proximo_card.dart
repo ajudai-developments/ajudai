@@ -12,6 +12,7 @@ class AgendamentoProximoCard extends StatelessWidget {
   final bool verificado;
   final Agendamento agendamento;
   final String subtitulo;
+  final VoidCallback? onTap;
 
   const AgendamentoProximoCard({
     super.key,
@@ -20,6 +21,7 @@ class AgendamentoProximoCard extends StatelessWidget {
     required this.verificado,
     required this.agendamento,
     required this.subtitulo,
+    this.onTap,
   });
 
   @override
@@ -41,85 +43,97 @@ class AgendamentoProximoCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+      clipBehavior: Clip.antiAlias,
+      child: Material(
+        color: Colors.transparent,
+
+        child: InkWell(
+          onTap: onTap,
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              CircleAvatar(
-                radius: 24,
-                backgroundColor: Colors.grey.shade200,
-                backgroundImage: avatarUrl != null
-                    ? NetworkImage(avatarUrl!)
-                    : null,
-                child: avatarUrl == null
-                    ? const Icon(Icons.person, color: Colors.grey)
-                    : null,
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundColor: Colors.grey.shade200,
+                    backgroundImage: avatarUrl != null
+                        ? NetworkImage(avatarUrl!)
+                        : null,
+                    child: avatarUrl == null
+                        ? const Icon(Icons.person, color: Colors.grey)
+                        : null,
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Flexible(
-                          child: Text(
-                            nome,
-                            style: AppTextStyles.corpo.copyWith(
-                              fontWeight: FontWeight.w600,
+                        Row(
+                          children: [
+                            Flexible(
+                              child: Text(
+                                nome,
+                                style: AppTextStyles.corpo.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                            overflow: TextOverflow.ellipsis,
+                            if (verificado) ...[
+                              const SizedBox(width: 4),
+                              Icon(
+                                Icons.verified,
+                                size: 16,
+                                color: corDestaque,
+                              ),
+                            ],
+                          ],
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          subtitulo,
+                          style: AppTextStyles.corpo.copyWith(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
                           ),
                         ),
-                        if (verificado) ...[
-                          const SizedBox(width: 4),
-                          Icon(Icons.verified, size: 16, color: corDestaque),
-                        ],
                       ],
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      subtitulo,
-                      style: AppTextStyles.corpo.copyWith(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
-                      ),
+                  ),
+                  const SizedBox(width: 8),
+                  _StatusChip(status: status),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Divider(height: 1, color: Colors.black.withValues(alpha: 0.06)),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Icon(
+                    Icons.calendar_today_outlined,
+                    size: 16,
+                    color: Colors.grey.shade600,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    _formatarDataHora(agendamento.horaInicio),
+                    style: AppTextStyles.corpo.copyWith(fontSize: 13),
+                  ),
+                  const Spacer(),
+                  Text(
+                    _formatarValor(agendamento.valor),
+                    style: AppTextStyles.corpo.copyWith(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
-              _StatusChip(status: status),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Divider(height: 1, color: Colors.black.withValues(alpha: 0.06)),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Icon(
-                Icons.calendar_today_outlined,
-                size: 16,
-                color: Colors.grey.shade600,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                _formatarDataHora(agendamento.horaInicio),
-                style: AppTextStyles.corpo.copyWith(fontSize: 13),
-              ),
-              const Spacer(),
-              Text(
-                _formatarValor(agendamento.valor),
-                style: AppTextStyles.corpo.copyWith(
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
+                  ),
+                ],
               ),
             ],
           ),
-        ],
+        ),
       ),
     );
   }

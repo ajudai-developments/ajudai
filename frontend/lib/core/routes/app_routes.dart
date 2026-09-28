@@ -69,4 +69,6 @@ class AppRoutes {
   static const contestacaoDetalhe = '/contestacao/detalhe';
   static const minhasContestacoes = '/perfil/minhas-contestacoes';
   static const minhasDenuncias = '/perfil/minhas-denuncias';
+
+  static const adminDashboard = '/admin-dashboard';
 }

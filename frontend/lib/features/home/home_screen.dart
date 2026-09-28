@@ -1,3 +1,6 @@
+import 'package:ajudai/core/layout/responsivo.dart';
+import 'package:ajudai/core/session/permissoes.dart';
+import 'package:ajudai/core/widgets/shell_web.dart';
 import 'package:ajudai/core/ws/ws_message_stream.dart';
 import 'package:ajudai/features/usuario/usuario_repository.dart';
 import 'package:flutter/material.dart';
@@ -16,41 +19,24 @@ import 'widgets/agendamento_proximo_card.dart';
 import 'widgets/prestador_recente_card.dart';
 import 'widgets/servico_recente_card.dart';
 
-/// Quantidade de categorias mostradas na grade da Home antes de precisar
-/// tocar em "Ver mais" (que leva pra categorias_screen, com a lista
-/// completa). Puramente de exibição, não é um limite de paginação real
-/// vindo do backend — listarCategorias já devolve tudo de uma vez.
-const _maxCategoriasNaHome = 6;
+/// Categorias mostradas na grade da Home antes de "Ver mais".
+/// Puramente de exibição (listarCategorias já devolve tudo).
+const _maxCategoriasMobile = 6;
+const _maxCategoriasWeb = 8;
 
-/// Tela inicial do app (ver protótipo compartilhado).
+/// Tela inicial do app.
 ///
-/// Estrutura da tela, de cima pra baixo:
-/// 1. Cabeçalho — fundo vermelho arredondado embaixo (mesmo padrão visual
-///    de CabecalhoComAbas), com saudação e notificações.
-/// 2. Agendamentos próximos — só aparece se houver usuário logado.
-///    Mostra o agendamento mais próximo como cliente e, se o usuário
-///    também for prestador, o mais próximo como prestador. Seção fica
-///    oculta se não houver nada a mostrar (sem sessão, sem agendamento
-///    próximo, etc).
-/// 3. Categorias de serviço — grade com as primeiras
-///    [_maxCategoriasNaHome], "Ver mais" abre categorias_screen com a
-///    lista completa.
-/// 4. Serviços recentes — só logado. Lista horizontal dos serviços que o
-///    usuário contratou por último; tocar abre a lista de prestadores
-///    daquele serviço (servicos_lista_screen). Oculta se não houver nada.
-/// 5. Prestadores recentes — só logado. Lista horizontal dos prestadores
-///    contratados por último; tocar abre o detalhe do serviço que o
-///    usuário contratou com ele. Oculta se não houver nada.
+/// Dois layouts, mesma lógica de dados:
+/// - Mobile: cabeçalho vermelho + lista rolável + bottom nav.
+/// - Web/desktop: [ShellWeb] (sidebar + topbar), banner de boas-vindas
+///   e seções em painéis. No desktop largo, duas colunas: principal
+///   (categorias, serviços recentes) e lateral (agendamentos próximos,
+///   prestadores recentes). Em telas médias, coluna única.
 ///
 /// As seções de recentes são secundárias: se a chamada falhar, elas
-/// simplesmente não aparecem (não vale mostrar erro na Home por causa
-/// delas).
+/// simplesmente não aparecem.
 ///
-/// Categorias e agendamentos são buscados com estado próprio (não usa
-/// AsyncListView) porque esta tela tem várias seções na mesma lista
-/// rolável — encaixar o ListView interno do AsyncListView aqui dentro
-/// criaria conflito de scroll. AsyncListView é pra telas onde a lista É
-/// o body inteiro.
+/// Não usa AsyncListView porque há várias seções na mesma área rolável.
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -83,6 +69,10 @@ class _HomeScreenState extends State<HomeScreen> {
     _carregarRecentes();
   }
 
+  // ---------------------------------------------------------------
+  // Dados
+  // ---------------------------------------------------------------
+
   Future<void> _atualizarTudo() async {
     await Future.wait([
       _carregarCategorias(),
@@ -99,8 +89,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
     try {
       final categorias = await _servicoRepository.listarCategorias();
+      if (!mounted) return;
       setState(() => _categorias = categorias);
     } on WsErroException catch (e) {
+      if (!mounted) return;
       setState(() {
         _erroCategorias = ErroMapper.paraMensagem(
           e.codigo,
@@ -108,6 +100,7 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       });
     } on WsTimeoutException {
+      if (!mounted) return;
       setState(
         () => _erroCategorias = 'Não foi possível carregar as categorias.',
       );
@@ -140,6 +133,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (ehPrestador) _homeRepository.buscarAgendamentoProximoPrestador(),
       ]);
 
+      if (!mounted) return;
       setState(() {
         _agendamentoCliente = resultados[0] as AgendamentoDetalhadoCliente?;
         _agendamentoPrestador = ehPrestador
@@ -147,6 +141,7 @@ class _HomeScreenState extends State<HomeScreen> {
             : null;
       });
     } on WsErroException catch (e) {
+      if (!mounted) return;
       setState(() {
         _erroAgendamentos = ErroMapper.paraMensagem(
           e.codigo,
@@ -154,6 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       });
     } on WsTimeoutException {
+      if (!mounted) return;
       setState(
         () =>
             _erroAgendamentos = 'Não foi possível carregar seus agendamentos.',
@@ -163,10 +159,8 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  /// Serviços e prestadores recentes. As duas chamadas são feitas uma de
-  /// cada vez (o protocolo WS não tem id de correlação — ver
-  /// WsMessageStream.aguardar) e falhas são silenciosas: a seção só
-  /// não aparece.
+  /// Serviços e prestadores recentes. Falhas são silenciosas: a seção
+  /// só não aparece.
   Future<void> _carregarRecentes() async {
     if (!Sessao.instance.estaLogado) {
       setState(() {
@@ -182,17 +176,17 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       servicos = await _servicoRepository.listarServicosRecentes();
     } on WsErroException {
-      // seção opcional: sem erro na tela
+      // seção opcional
     } on WsTimeoutException {
-      // seção opcional: sem erro na tela
+      // seção opcional
     }
 
     try {
       prestadores = await _usuarioRepository.listarPrestadoresRecentes();
     } on WsErroException {
-      // seção opcional: sem erro na tela
+      // seção opcional
     } on WsTimeoutException {
-      // seção opcional: sem erro na tela
+      // seção opcional
     }
 
     if (!mounted) return;
@@ -201,6 +195,10 @@ class _HomeScreenState extends State<HomeScreen> {
       _prestadoresRecentes = prestadores;
     });
   }
+
+  // ---------------------------------------------------------------
+  // Navegação
+  // ---------------------------------------------------------------
 
   void _abrirCategoria(Categoria categoria) {
     Navigator.of(
@@ -214,7 +212,7 @@ class _HomeScreenState extends State<HomeScreen> {
     ).pushNamed(AppRoutes.servicosLista, arguments: servico);
   }
 
-  void _abrirPrestadorRecente(PrestadorRecente prestador) async {
+  Future<void> _abrirPrestadorRecente(PrestadorRecente prestador) async {
     await Navigator.of(context).pushNamed(
       AppRoutes.servicoDetalhe,
       arguments: prestador.servicoOferecidoId,
@@ -222,9 +220,30 @@ class _HomeScreenState extends State<HomeScreen> {
     await _carregarAgendamentos();
   }
 
+  void _abrirAgendamento(String id) {
+    Navigator.of(
+      context,
+    ).pushNamed(AppRoutes.agendamentoDetalhe, arguments: id);
+  }
+
+  // ---------------------------------------------------------------
+  // Build
+  // ---------------------------------------------------------------
+
   @override
   Widget build(BuildContext context) {
+    return context.ehMobile ? _buildMobile() : _buildWeb();
+  }
+
+  Widget _buildMobile() {
     final nome = Sessao.instance.usuario?.nome.split(' ').first;
+
+    final secoes = _empilhar([
+      _secaoAgendamentos(web: false),
+      _secaoCategorias(web: false),
+      _secaoServicosRecentes(web: false),
+      _secaoPrestadoresRecentes(web: false),
+    ], 28);
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -237,23 +256,7 @@ class _HomeScreenState extends State<HomeScreen> {
               onRefresh: _atualizarTudo,
               child: ListView(
                 padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
-                children: [
-                  _buildAgendamentosSection(),
-
-                  _buildSectionHeader(
-                    titulo: 'Serviços disponíveis',
-                    aoTocarAcao: _categorias.length > _maxCategoriasNaHome
-                        ? () => Navigator.of(
-                            context,
-                          ).pushNamed(AppRoutes.categorias)
-                        : null,
-                  ),
-                  const SizedBox(height: 12),
-                  _buildCategorias(),
-
-                  _buildServicosRecentesSection(),
-                  _buildPrestadoresRecentesSection(),
-                ],
+                children: secoes,
               ),
             ),
           ),
@@ -263,7 +266,96 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildSectionHeader({
+  Widget _buildWeb() {
+    final nome = Sessao.instance.usuario?.nome.split(' ').first;
+    final logado = Sessao.instance.estaLogado;
+    final desktop = context.ehDesktop;
+
+    final principal = _empilhar([
+      _secaoCategorias(web: true),
+      _secaoServicosRecentes(web: true),
+    ], 24);
+
+    final lateral = _empilhar([
+      _secaoAgendamentos(web: true),
+      _secaoPrestadoresRecentes(web: true),
+    ], 24);
+
+    final Widget corpo;
+    if (desktop && lateral.isNotEmpty) {
+      corpo = Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(child: Column(children: principal)),
+          const SizedBox(width: 24),
+          SizedBox(width: 380, child: Column(children: lateral)),
+        ],
+      );
+    } else {
+      // Coluna única, na mesma ordem do mobile.
+      corpo = Column(
+        children: _empilhar([
+          _secaoAgendamentos(web: true),
+          _secaoCategorias(web: true),
+          _secaoServicosRecentes(web: true),
+          _secaoPrestadoresRecentes(web: true),
+        ], 24),
+      );
+    }
+
+    return ShellWeb(
+      titulo: 'Início',
+      rotaAtual: AppRoutes.home,
+      acoes: [
+        IconButton(
+          tooltip: 'Atualizar',
+          onPressed: _atualizarTudo,
+          icon: const Icon(Icons.refresh),
+        ),
+        if (logado)
+          IconButton(
+            tooltip: 'Notificações',
+            onPressed: () =>
+                Navigator.of(context).pushNamed(AppRoutes.notificacoes),
+            icon: const Icon(Icons.notifications_none_rounded),
+          ),
+      ],
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(32),
+        child: ConteudoCentralizado(
+          larguraMax: 1200,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _BannerBoasVindas(nome: nome),
+              const SizedBox(height: 24),
+              corpo,
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ---------------------------------------------------------------
+  // Seções (devolvem null quando não há o que mostrar)
+  // ---------------------------------------------------------------
+
+  /// Remove os nulls e coloca [espaco] entre as seções visíveis.
+  List<Widget> _empilhar(Iterable<Widget?> secoes, double espaco) {
+    final visiveis = secoes.whereType<Widget>().toList();
+    return [
+      for (var i = 0; i < visiveis.length; i++) ...[
+        if (i > 0) SizedBox(height: espaco),
+        visiveis[i],
+      ],
+    ];
+  }
+
+  Widget _envolver(bool web, Widget conteudo) =>
+      web ? _Painel(child: conteudo) : conteudo;
+
+  Widget _cabecalhoSecao({
     required String titulo,
     VoidCallback? aoTocarAcao,
     String rotuloAcao = 'Ver mais',
@@ -278,23 +370,22 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildAgendamentosSection() {
-    if (!Sessao.instance.estaLogado) return const SizedBox.shrink();
+  Widget? _secaoAgendamentos({required bool web}) {
+    if (!Sessao.instance.estaLogado) return null;
 
     final semConteudo =
         !_carregandoAgendamentos &&
         _erroAgendamentos == null &&
         _agendamentoCliente == null &&
         _agendamentoPrestador == null;
+    if (semConteudo) return null;
 
-    if (semConteudo) return const SizedBox.shrink();
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 28),
-      child: Column(
+    return _envolver(
+      web,
+      Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionHeader(
+          _cabecalhoSecao(
             titulo: 'Seus agendamentos',
             aoTocarAcao: () =>
                 Navigator.of(context).pushNamed(AppRoutes.meusAgendamentos),
@@ -323,46 +414,50 @@ class _HomeScreenState extends State<HomeScreen> {
 
     final cards = <Widget>[
       if (_agendamentoCliente != null)
-        GestureDetector(
-          onTap: () => Navigator.of(context).pushNamed(
-            AppRoutes.agendamentoDetalhe,
-            arguments: _agendamentoCliente!.agendamento.id,
-          ),
-          child: AgendamentoProximoCard(
-            nome: _agendamentoCliente!.prestadorNome,
-            avatarUrl: _agendamentoCliente!.prestadorAvatarUrl,
-            verificado: _agendamentoCliente!.prestadorVerificado,
-            agendamento: _agendamentoCliente!.agendamento,
-            subtitulo: 'Você contratou',
-          ),
+        AgendamentoProximoCard(
+          nome: _agendamentoCliente!.prestadorNome,
+          avatarUrl: _agendamentoCliente!.prestadorAvatarUrl,
+          verificado: _agendamentoCliente!.prestadorVerificado,
+          agendamento: _agendamentoCliente!.agendamento,
+          subtitulo: 'Você contratou',
+          onTap: () => _abrirAgendamento(_agendamentoCliente!.agendamento.id),
         ),
       if (_agendamentoPrestador != null)
-        GestureDetector(
-          onTap: () => Navigator.of(context).pushNamed(
-            AppRoutes.agendamentoDetalhe,
-            arguments: _agendamentoPrestador!.agendamento.id,
-          ),
-          child: AgendamentoProximoCard(
-            nome: _agendamentoPrestador!.clienteNome,
-            avatarUrl: _agendamentoPrestador!.clienteAvatarUrl,
-            verificado: _agendamentoPrestador!.clienteVerificado,
-            agendamento: _agendamentoPrestador!.agendamento,
-            subtitulo: 'Cliente agendou com você',
-          ),
+        AgendamentoProximoCard(
+          nome: _agendamentoPrestador!.clienteNome,
+          avatarUrl: _agendamentoPrestador!.clienteAvatarUrl,
+          verificado: _agendamentoPrestador!.clienteVerificado,
+          agendamento: _agendamentoPrestador!.agendamento,
+          subtitulo: 'Cliente agendou com você',
+          onTap: () => _abrirAgendamento(_agendamentoPrestador!.agendamento.id),
         ),
     ];
 
-    return Column(
-      children: [
-        for (var i = 0; i < cards.length; i++) ...[
-          cards[i],
-          if (i != cards.length - 1) const SizedBox(height: 12),
+    return Column(children: _empilhar(cards, 12));
+  }
+
+  Widget? _secaoCategorias({required bool web}) {
+    final limite = web ? _maxCategoriasWeb : _maxCategoriasMobile;
+
+    return _envolver(
+      web,
+      Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _cabecalhoSecao(
+            titulo: 'Serviços disponíveis',
+            aoTocarAcao: _categorias.length > limite
+                ? () => Navigator.of(context).pushNamed(AppRoutes.categorias)
+                : null,
+          ),
+          const SizedBox(height: 12),
+          _buildCategorias(web: web, limite: limite),
         ],
-      ],
+      ),
     );
   }
 
-  Widget _buildCategorias() {
+  Widget _buildCategorias({required bool web, required int limite}) {
     if (_carregandoCategorias) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 24),
@@ -389,15 +484,24 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
 
-    final exibidas = _categorias.take(_maxCategoriasNaHome).toList();
+    final exibidas = _categorias.take(limite).toList();
 
-    return GridView.count(
-      crossAxisCount: 2,
+    return GridView(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      mainAxisSpacing: 12,
-      crossAxisSpacing: 12,
-      childAspectRatio: 0.95,
+      gridDelegate: web
+          ? const SliverGridDelegateWithMaxCrossAxisExtent(
+              maxCrossAxisExtent: 200,
+              mainAxisSpacing: 16,
+              crossAxisSpacing: 16,
+              childAspectRatio: 0.95,
+            )
+          : const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              mainAxisSpacing: 12,
+              crossAxisSpacing: 12,
+              childAspectRatio: 0.95,
+            ),
       children: [
         for (final categoria in exibidas)
           CategoriaCard(
@@ -408,73 +512,154 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildServicosRecentesSection() {
-    if (!Sessao.instance.estaLogado || _servicosRecentes.isEmpty) {
-      return const SizedBox.shrink();
-    }
+  Widget? _secaoServicosRecentes({required bool web}) {
+    if (!Sessao.instance.estaLogado || _servicosRecentes.isEmpty) return null;
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 28),
-      child: Column(
+    final cards = [
+      for (final servico in _servicosRecentes)
+        ServicoRecenteCard(
+          servico: servico,
+          onTap: () => _abrirServicoRecente(servico),
+        ),
+    ];
+
+    return _envolver(
+      web,
+      Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionHeader(titulo: 'Serviços recentes'),
+          _cabecalhoSecao(titulo: 'Serviços recentes'),
           const SizedBox(height: 12),
-          SizedBox(
-            height: 120,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: _servicosRecentes.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 12),
-              itemBuilder: (context, i) {
-                final servico = _servicosRecentes[i];
-                return ServicoRecenteCard(
-                  servico: servico,
-                  onTap: () => _abrirServicoRecente(servico),
-                );
-              },
+          if (web)
+            // ListView horizontal não rola com mouse na web: usa Wrap.
+            Wrap(spacing: 12, runSpacing: 12, children: cards)
+          else
+            SizedBox(
+              height: 120,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: cards.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 12),
+                itemBuilder: (_, i) => cards[i],
+              ),
             ),
-          ),
         ],
       ),
     );
   }
 
-  Widget _buildPrestadoresRecentesSection() {
+  Widget? _secaoPrestadoresRecentes({required bool web}) {
     if (!Sessao.instance.estaLogado || _prestadoresRecentes.isEmpty) {
-      return const SizedBox.shrink();
+      return null;
     }
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 28),
-      child: Column(
+    final cards = [
+      for (final prestador in _prestadoresRecentes)
+        PrestadorRecenteCard(
+          prestador: prestador,
+          onTap: () => _abrirPrestadorRecente(prestador),
+        ),
+    ];
+
+    return _envolver(
+      web,
+      Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildSectionHeader(titulo: 'Prestadores recentes'),
+          _cabecalhoSecao(titulo: 'Prestadores recentes'),
           const SizedBox(height: 12),
-          SizedBox(
-            height: 112,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemCount: _prestadoresRecentes.length,
-              separatorBuilder: (_, _) => const SizedBox(width: 8),
-              itemBuilder: (context, i) {
-                final prestador = _prestadoresRecentes[i];
-                return PrestadorRecenteCard(
-                  prestador: prestador,
-                  onTap: () => _abrirPrestadorRecente(prestador),
-                );
-              },
+          if (web)
+            Wrap(spacing: 8, runSpacing: 12, children: cards)
+          else
+            SizedBox(
+              height: 112,
+              child: ListView.separated(
+                scrollDirection: Axis.horizontal,
+                itemCount: cards.length,
+                separatorBuilder: (_, _) => const SizedBox(width: 8),
+                itemBuilder: (_, i) => cards[i],
+              ),
             ),
-          ),
         ],
       ),
     );
   }
 }
 
-/// Cabeçalho da Home — mesmo padrão visual de [CabecalhoComAbas] (fundo
-/// vermelho, cantos arredondados embaixo), mas sem abas: aqui é só
+/// Painel branco com borda fina, usado para agrupar seções no web.
+class _Painel extends StatelessWidget {
+  final Widget child;
+  const _Painel({required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
+      ),
+      child: child,
+    );
+  }
+}
+
+/// Banner de boas-vindas do layout web.
+class _BannerBoasVindas extends StatelessWidget {
+  final String? nome;
+  const _BannerBoasVindas({required this.nome});
+
+  @override
+  Widget build(BuildContext context) {
+    final saudacao = nome != null ? 'Olá, $nome' : 'Bem-vindo';
+    final semAgendamentoNaWeb = !Sessao.instance.permissoes.pode(
+      Capacidade.criarAgendamento,
+    );
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            saudacao,
+            style: AppTextStyles.display.copyWith(color: Colors.white),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Do que você precisa hoje?',
+            style: AppTextStyles.corpo.copyWith(
+              color: Colors.white.withValues(alpha: 0.85),
+            ),
+          ),
+          if (semAgendamentoNaWeb) ...[
+            const SizedBox(height: 16),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.smartphone, size: 18, color: Colors.white),
+                const SizedBox(width: 8),
+                Text(
+                  'Para agendar um serviço, use o app Ajudaí.',
+                  style: AppTextStyles.corpo.copyWith(color: Colors.white),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+/// Cabeçalho mobile — fundo vermelho, cantos arredondados embaixo,
 /// saudação + botão de notificações.
 class _HomeHeader extends StatelessWidget {
   final String? nome;

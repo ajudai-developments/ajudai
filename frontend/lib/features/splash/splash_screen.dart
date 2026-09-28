@@ -1,26 +1,22 @@
+import 'package:ajudai/core/session/sessao.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:shared/shared.dart';
 import 'package:video_player/video_player.dart';
 
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../auth/auth_repository.dart';
 
-/// Tela exibida na abertura do app, antes de qualquer outra tela.
+/// Tela de abertura. Responsabilidades:
+/// 1. Restaurar a sessão anterior (refresh_token salvo).
+/// 2. Mobile: tocar a animação de abertura enquanto isso acontece.
+///    Web: sem animação, só um indicador de carregamento.
+/// 3. Decidir o destino quando tudo estiver pronto:
+///    - admin (só web) -> painel de admin;
+///    - qualquer outro (logado ou não) -> Home.
 ///
-/// Responsabilidades:
-/// 1. Tocar a animação de abertura (assets/videos/animacao_ajudai.mp4).
-/// 2. Em paralelo, tentar restaurar uma sessão anterior a partir do
-///    refresh_token salvo no dispositivo (AuthRepository.restaurarSessao)
-///    — se der certo, Sessao.instance já fica populada.
-/// 3. Navegar pra Home quando o vídeo terminar — SEMPRE pra Home, com
-///    ou sem sessão restaurada. Não fica esperando a checagem de sessão
-///    além disso: ela deve ser bem mais rápida que a duração do vídeo.
-///    Quem está deslogado só não consegue tocar em Agenda/Perfil (ver
-///    LoginNecessarioDialog).
-///
-/// Se o vídeo falhar ao carregar (asset ausente, formato não suportado
-/// no aparelho, etc.), navega pra Home imediatamente em vez de travar o
-/// usuário numa tela em branco.
+/// Se o vídeo falhar, segue direto pro destino em vez de travar.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -29,70 +25,101 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
-  late final VideoPlayerController _controller;
+  static const _timeoutSessao = Duration(seconds: 8);
+
+  VideoPlayerController? _controller;
+  late final Future<void> _sessao;
   bool _navegou = false;
 
   @override
   void initState() {
     super.initState();
+    _sessao = _restaurarSessao();
 
-    AuthRepository().restaurarSessao();
+    if (kIsWeb) {
+      _finalizar();
+    } else {
+      _iniciarVideo();
+    }
+  }
 
-    _controller = VideoPlayerController.asset(
-      'assets/videos/animacao_ajudai.mp4',
-      videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
-    );
-
-    _controller.addListener(_verificarFim);
-    _controller.setLooping(false);
-    _controller.setVolume(0);
-
-    _iniciarVideo();
+  Future<void> _restaurarSessao() async {
+    try {
+      await AuthRepository().restaurarSessao().timeout(_timeoutSessao);
+    } catch (_) {
+      // Sem sessão / sem rede: segue deslogado.
+    }
   }
 
   Future<void> _iniciarVideo() async {
+    final controller = VideoPlayerController.asset(
+      'assets/videos/animacao_ajudai.mp4',
+      videoPlayerOptions: VideoPlayerOptions(mixWithOthers: true),
+    );
+    _controller = controller;
+
+    controller
+      ..addListener(_verificarFim)
+      ..setLooping(false)
+      ..setVolume(0);
+
     try {
-      await _controller.initialize();
+      await controller.initialize();
       if (!mounted) return;
       setState(() {});
-      await _controller.play();
+      await controller.play();
     } catch (_) {
-      _irParaHome();
+      _finalizar();
     }
   }
 
   void _verificarFim() {
-    final valor = _controller.value;
-
-    if (!valor.isInitialized || _navegou) return;
-
-    if (valor.isCompleted) {
-      _irParaHome();
-    }
+    final valor = _controller?.value;
+    if (valor == null || !valor.isInitialized || _navegou) return;
+    if (valor.isCompleted) _finalizar();
   }
 
-  void _irParaHome() {
+  /// Espera a sessão (se ainda não terminou) e navega.
+  Future<void> _finalizar() async {
+    if (_navegou) return;
+    await _sessao;
     if (_navegou || !mounted) return;
     _navegou = true;
-    Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+    Navigator.of(context).pushReplacementNamed(_destino());
+  }
+
+  String _destino() {
+    final papel = Sessao.instance.permissoes.papel;
+
+    if (papel == UserRole.admin) {
+      // Admin é só web. No mobile, manda pro login (TODO: fazer logout
+      // e avisar "use a versão web").
+      return kIsWeb ? AppRoutes.adminDashboard : AppRoutes.login;
+    }
+    return AppRoutes.home;
   }
 
   @override
   void dispose() {
-    _controller.removeListener(_verificarFim);
-    _controller.dispose();
+    _controller?.removeListener(_verificarFim);
+    _controller?.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final controller = _controller;
+    final videoPronto = controller != null && controller.value.isInitialized;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: Center(
-        child: _controller.value.isInitialized
+        child: kIsWeb
+            ? const CircularProgressIndicator()
+            : videoPronto
             ? AspectRatio(
-                aspectRatio: _controller.value.aspectRatio,
-                child: VideoPlayer(_controller),
+                aspectRatio: controller.value.aspectRatio,
+                child: VideoPlayer(controller),
               )
             : const SizedBox.shrink(),
       ),

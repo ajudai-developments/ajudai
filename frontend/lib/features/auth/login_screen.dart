@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/errors/erro_mapper.dart';
+import '../../core/layout/responsivo.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
@@ -10,6 +11,7 @@ import '../../core/widgets/app_text_field.dart';
 import '../../core/widgets/error_banner.dart';
 import '../../core/ws/ws_message_stream.dart';
 import 'auth_repository.dart';
+import 'widgets/auth_shell_web.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -54,6 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       Navigator.of(context).pushReplacementNamed(AppRoutes.meuPerfil);
     } on WsErroException catch (e) {
+      if (!mounted) return;
       setState(() {
         _erroGeral = ErroMapper.paraMensagem(
           e.codigo,
@@ -61,6 +64,7 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       });
     } on WsTimeoutException {
+      if (!mounted) return;
       setState(() {
         _erroGeral = 'Não foi possível conectar ao servidor. Tente novamente.';
       });
@@ -73,10 +77,77 @@ class _LoginScreenState extends State<LoginScreen> {
     Navigator.of(context).pushNamed(AppRoutes.cadastro);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final podeVoltar = Navigator.of(context).canPop();
+  /// Campos e botões — idêntico nos dois layouts.
+  Widget _formulario() {
+    return AutofillGroup(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ErrorBanner(mensagem: _erroGeral),
+          AppTextField(
+            label: 'E-mail',
+            controller: _emailController,
+            icone: Icons.mail_outline_rounded,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.next,
+            autofillHints: const [AutofillHints.email],
+          ),
+          const SizedBox(height: 12),
+          AppTextField(
+            label: 'Senha',
+            controller: _senhaController,
+            icone: Icons.lock_outline_rounded,
+            obscureText: true,
+            textInputAction: TextInputAction.done,
+            autofillHints: const [AutofillHints.password],
+            onSubmitted: (_) {
+              if (!_carregando) _entrar();
+            },
+          ),
+          const SizedBox(height: 24),
+          AppButton(label: 'Entrar', loading: _carregando, onPressed: _entrar),
+          const SizedBox(height: 20),
+          const _DivisorOu(),
+          const SizedBox(height: 20),
+          AppOutlinedButton(
+            label: 'Criar conta',
+            onPressed: _carregando ? null : _irParaCadastro,
+          ),
+        ],
+      ),
+    );
+  }
 
+  Widget _buildWeb(bool podeVoltar) {
+    return AuthShellWeb(
+      titulo: 'Bem-vindo de volta',
+      subtitulo: 'Entre para agendar e acompanhar seus serviços.',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _formulario(),
+          const SizedBox(height: 8),
+          TextButton(
+            onPressed: _carregando
+                ? null
+                : () => podeVoltar
+                      ? Navigator.of(context).maybePop()
+                      : Navigator.of(
+                          context,
+                        ).pushReplacementNamed(AppRoutes.home),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.textoSecundario,
+            ),
+            child: Text(podeVoltar ? 'Voltar' : 'Continuar sem entrar'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobile(bool podeVoltar) {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
@@ -118,40 +189,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         style: AppTextStyles.corpo,
                       ),
                       const SizedBox(height: 28),
-                      ErrorBanner(mensagem: _erroGeral),
-                      AppTextField(
-                        label: 'E-mail',
-                        controller: _emailController,
-                        icone: Icons.mail_outline_rounded,
-                        keyboardType: TextInputType.emailAddress,
-                        textInputAction: TextInputAction.next,
-                        autofillHints: const [AutofillHints.email],
-                      ),
-                      const SizedBox(height: 12),
-                      AppTextField(
-                        label: 'Senha',
-                        controller: _senhaController,
-                        icone: Icons.lock_outline_rounded,
-                        obscureText: true,
-                        textInputAction: TextInputAction.done,
-                        autofillHints: const [AutofillHints.password],
-                        onSubmitted: (_) {
-                          if (!_carregando) _entrar();
-                        },
-                      ),
-                      const SizedBox(height: 24),
-                      AppButton(
-                        label: 'Entrar',
-                        loading: _carregando,
-                        onPressed: _entrar,
-                      ),
-                      const SizedBox(height: 20),
-                      const _DivisorOu(),
-                      const SizedBox(height: 20),
-                      AppOutlinedButton(
-                        label: 'Criar conta',
-                        onPressed: _carregando ? null : _irParaCadastro,
-                      ),
+                      _formulario(),
                     ],
                   ),
                 ),
@@ -161,6 +199,14 @@ class _LoginScreenState extends State<LoginScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final podeVoltar = Navigator.of(context).canPop();
+    return context.usaLayoutWeb
+        ? _buildWeb(podeVoltar)
+        : _buildMobile(podeVoltar);
   }
 }
 

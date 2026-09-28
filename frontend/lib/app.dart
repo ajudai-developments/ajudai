@@ -1,3 +1,6 @@
+import 'package:ajudai/core/session/sessao.dart';
+import 'package:ajudai/core/widgets/tela_sem_acesso.dart';
+import 'package:ajudai/features/admin/admin_dashboard_screen.dart';
 import 'package:ajudai/features/agendamento/agendamento_detalhado_screen.dart';
 import 'package:ajudai/features/contestacao/contestacao_detalhe_screen.dart';
 import 'package:ajudai/features/contestacao/contestar_agendamento_screen.dart';
@@ -10,6 +13,7 @@ import 'package:ajudai/features/prestador/minha_solicitacao_prestador_screen.dar
 import 'package:ajudai/features/prestador/servico_oferecido_detalhe_screen.dart';
 import 'package:ajudai/features/splash/splash_screen.dart';
 import 'package:ajudai/features/usuario/meu_perfil_completo_screen.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -125,13 +129,36 @@ class _AppRootState extends State<_AppRoot> {
     navigator.pushNamed(AppRoutes.notificacoes);
   }
 
+  static const _rotasSomenteMobile = {
+    AppRoutes.criarAgendamento,
+    AppRoutes.confirmarPagamento,
+  };
+
+  static const _rotasAdmin = <String>{AppRoutes.adminDashboard};
+
+  Route<dynamic> _rotaBloqueada(RouteSettings settings, String mensagem) {
+    return MaterialPageRoute(
+      settings: settings,
+      builder: (_) => TelaSemAcesso(mensagem: mensagem),
+    );
+  }
+
   Route<dynamic> _onGenerateRoute(RouteSettings settings) {
-    if (settings.name == AppRoutes.conversa) {
+    final nome = settings.name;
+    final perm = Sessao.instance.permissoes;
+    if (nome == AppRoutes.conversa) {
       final conversa = settings.arguments as ConversaResumo;
       return MaterialPageRoute(
         settings: settings,
         builder: (_) => ConversaScreen(conversa: conversa),
       );
+    }
+
+    if (_rotasSomenteMobile.contains(nome) && kIsWeb) {
+      return _rotaBloqueada(settings, 'Disponível apenas no app.');
+    }
+    if (_rotasAdmin.contains(nome) && perm.papel != UserRole.admin) {
+      return _rotaBloqueada(settings, 'Acesso restrito.');
     }
 
     final builders = <String, WidgetBuilder>{
@@ -172,6 +199,7 @@ class _AppRootState extends State<_AppRoot> {
       AppRoutes.minhasDenuncias: (_) => const MinhasDenunciasScreen(),
       AppRoutes.contestacaoDetalhe: (_) => const ContestacaoDetalheScreen(),
       AppRoutes.denunciaDetalhe: (_) => const DenunciaDetalheScreen(),
+      AppRoutes.adminDashboard: (_) => const AdminDashboardScreen(),
     };
 
     final builder = builders[settings.name];

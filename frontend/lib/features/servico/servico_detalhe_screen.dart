@@ -1,3 +1,5 @@
+import 'package:ajudai/core/session/permissoes.dart';
+import 'package:ajudai/core/session/sessao.dart';
 import 'package:ajudai/core/widgets/login_necessario_dialog.dart';
 import 'package:ajudai/core/widgets/user_avatar.dart';
 import 'package:ajudai/features/servico/widgets/comentarios_servico_list.dart';
@@ -117,12 +119,22 @@ class _ServicoDetalheScreenState extends State<ServicoDetalheScreen> {
       ),
       bottomNavigationBar: dados == null
           ? null
-          : SafeArea(
+          : Sessao.instance.permissoes.pode(Capacidade.criarAgendamento)
+          ? SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(16),
                 child: ElevatedButton(
                   onPressed: _agendar,
                   child: const Text('Agendar'),
+                ),
+              ),
+            )
+          : SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Text(
+                  'Utilize o app do ajudaí para criar um agendamento com este prestador',
+                  style: AppTextStyles.display,
                 ),
               ),
             ),
