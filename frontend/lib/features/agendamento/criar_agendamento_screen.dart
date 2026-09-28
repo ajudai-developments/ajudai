@@ -1,3 +1,4 @@
+import 'package:ajudai/core/widgets/login_necessario_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -146,6 +147,13 @@ class _CriarAgendamentoScreenState extends State<CriarAgendamentoScreen> {
   }
 
   Future<void> _continuar() async {
+    if (!LoginNecessarioDialog.exigir(
+      context,
+      mensagem: 'Entre na sua conta para agendar este serviço.',
+    )) {
+      return;
+    }
+
     final endereco = _enderecoSelecionado;
     final inicioLocal = _horaInicio;
     final fimLocal = _horaFim;

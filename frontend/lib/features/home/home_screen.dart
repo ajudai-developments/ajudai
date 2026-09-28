@@ -519,14 +519,15 @@ class _HomeHeader extends StatelessWidget {
                 ],
               ),
             ),
-            IconButton(
-              onPressed: () =>
-                  Navigator.of(context).pushNamed(AppRoutes.notificacoes),
-              icon: const Icon(
-                Icons.notifications_none_rounded,
-                color: Colors.white,
+            if (Sessao.instance.estaLogado)
+              IconButton(
+                onPressed: () =>
+                    Navigator.of(context).pushNamed(AppRoutes.notificacoes),
+                icon: const Icon(
+                  Icons.notifications_none_rounded,
+                  color: Colors.white,
+                ),
               ),
-            ),
           ],
         ),
       ),

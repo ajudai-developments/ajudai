@@ -1,3 +1,4 @@
+import 'package:ajudai/core/widgets/login_necessario_dialog.dart';
 import 'package:ajudai/core/widgets/user_avatar.dart';
 import 'package:ajudai/features/servico/widgets/comentarios_servico_list.dart';
 import 'package:flutter/material.dart';
@@ -79,6 +80,13 @@ class _ServicoDetalheScreenState extends State<ServicoDetalheScreen> {
   }
 
   void _agendar() {
+    if (!LoginNecessarioDialog.exigir(
+      context,
+      mensagem: 'Entre na sua conta para agendar este serviço.',
+    )) {
+      return;
+    }
+
     Navigator.of(context).pushNamed(
       AppRoutes.criarAgendamento,
       arguments: CriarAgendamentoArgs(
