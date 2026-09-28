@@ -5,13 +5,12 @@ class AdminRepository {
   final SupabaseClient _client;
 
   AdminRepository(this._client);
-
   Future<List<VerificacaoComDetalhes>> obterVerificacoes(
-    StatusVerificacao status,
+    StatusVerificacao? status,
   ) async {
     final response = await _client.rpc(
       'admin_listar_verificacoes',
-      params: {'p_status': status.name},
+      params: {'p_status': status?.name},
     );
 
     return (response as List)
@@ -20,7 +19,7 @@ class AdminRepository {
   }
 
   Future<Verificacao> aprovarPrestador({
-    required String verificacoId,
+    required String verificacaoId,
     required String adminId,
   }) async {
     final response = await _client
@@ -30,7 +29,7 @@ class AdminRepository {
           "alterado_por_admin_id": adminId,
           "status": StatusVerificacao.aprovado.name,
         })
-        .eq('id', verificacoId)
+        .eq('id', verificacaoId)
         .select()
         .single();
 

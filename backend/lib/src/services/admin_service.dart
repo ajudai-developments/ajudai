@@ -97,7 +97,7 @@ class AdminService {
       SupabaseClientFactory.criarSecret(),
     );
     final verificacao = await adminRepository.aprovarPrestador(
-      verificacoId: dto.verificacaoId,
+      verificacaoId: dto.verificacaoId,
       adminId: adminId,
     );
 
@@ -112,9 +112,16 @@ class AdminService {
       );
     }
 
-    _sessaoService.enviarParaUsuario(
+    await _sessaoService.enviarParaUsuario(
       usuarioPrestador.id,
-      AprovarPrestadorResponseDto(usuario: usuarioPrestador),
+      NotificacaoDto(
+        titulo: 'Verificação aprovada',
+        mensagem: 'Você agora é um prestador! Já pode oferecer seus serviços.',
+        dados: {
+          'verificacao_id': verificacao.id,
+          'status': verificacao.status.name,
+        },
+      ),
     );
 
     return AprovarPrestadorResponseDto(
@@ -123,7 +130,7 @@ class AdminService {
     );
   }
 
-  Future<void> rejeitarPrestador(
+  Future<RejeitarPrestadorResponseDto> rejeitarPrestador(
     WsConnection conexao,
     RejeitarPrestadorRequestDto dto,
   ) async {
@@ -152,9 +159,6 @@ class AdminService {
       );
     }
 
-    final adminRepository = AdminRepository(
-      SupabaseClientFactory.criarSecret(),
-    );
     final motivo = dto.motivo.trim();
     if (motivo.isEmpty) {
       throw ErroDto(
@@ -162,6 +166,10 @@ class AdminService {
         mensagem: 'Informe o motivo da rejeição.',
       );
     }
+
+    final adminRepository = AdminRepository(
+      SupabaseClientFactory.criarSecret(),
+    );
     final verificacao = await adminRepository.rejeitarPrestador(
       verificacoId: dto.verificacaoId,
       adminId: adminId,
@@ -179,10 +187,19 @@ class AdminService {
       );
     }
 
-    _sessaoService.enviarParaUsuario(
+    await _sessaoService.enviarParaUsuario(
       usuarioPrestador.id,
-      RejeitarPrestadorResponseDto(motivo: 'Sua solicitação foi rejeitada.'),
+      NotificacaoDto(
+        titulo: 'Solicitação rejeitada',
+        mensagem: motivo,
+        dados: {
+          'verificacao_id': verificacao.id,
+          'status': verificacao.status.name,
+        },
+      ),
     );
+
+    return RejeitarPrestadorResponseDto(verificacao: verificacao);
   }
 
   Future<AdminListarContestacoesResponseDto> listarContestacoes(

@@ -228,6 +228,17 @@ class AgendamentoService {
     final novoStatus = dto.aceitar
         ? StatusAgendamento.aceito
         : StatusAgendamento.recusado;
+
+    final aceitou = novoStatus == StatusAgendamento.aceito;
+    final agora = DateTime.now().toUtc();
+    final horaFim = agendamento.horaFim.toUtc();
+
+    if (!agora.isBefore(horaFim) && aceitou) {
+      throw ErroDto(
+        codigo: ErroCodigo.dadosInvalidos,
+        mensagem: 'Esse agendamento não pode ser iniciado',
+      );
+    }
     final atualizado = await repo.atualizarStatus(
       id: agendamento.id,
       status: novoStatus,

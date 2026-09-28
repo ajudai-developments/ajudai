@@ -76,8 +76,8 @@ export 'src/dto/prestador/solicitar_prestador_request_dto.dart';
 export 'src/dto/prestador/solicitar_prestador_response_dto.dart';
 export 'src/dto/admin/aprovar_prestador_request_dto.dart';
 export 'src/dto/admin/aprovar_prestador_response_dto.dart';
-export 'src/dto/prestador/rejeitar_prestador_request_dto.dart';
-export 'src/dto/prestador/rejeitar_prestador_response_dto.dart';
+export 'src/dto/admin/rejeitar_prestador_request_dto.dart';
+export 'src/dto/admin/rejeitar_prestador_response_dto.dart';
 export 'src/dto/admin/listar_verificacoes_request_dto.dart';
 export 'src/dto/prestador/listar_minhas_verificacoes_request.dart';
 
