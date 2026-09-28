@@ -281,4 +281,32 @@ class UsuarioService {
     ).obterPerfilEstatisticas(userId);
     return BuscarPerfilEstatisticasResponseDto(estatisticas: estatisticas);
   }
+
+  Future<ListarPrestadoresRecentesResponseDto> listarPrestadoresRecentes(
+    WsConnection conexao,
+    ListarPrestadoresRecentesRequestDto dto,
+  ) async {
+    final client = _sessaoService.clientDe(conexao);
+    final userId = _sessaoService.userIdDe(conexao);
+    if (client == null || userId == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final limite = dto.limite;
+    if (limite != null && (limite < 1 || limite > 50)) {
+      throw ErroDto(
+        codigo: ErroCodigo.dadosInvalidos,
+        mensagem: 'Limite inválido',
+      );
+    }
+
+    final prestadores = await UsuarioRepository(
+      client,
+    ).listarPrestadoresRecentes(userId, limite: limite);
+
+    return ListarPrestadoresRecentesResponseDto(prestadores: prestadores);
+  }
 }

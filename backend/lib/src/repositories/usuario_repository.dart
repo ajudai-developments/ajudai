@@ -130,4 +130,17 @@ class UsuarioRepository {
 
     return PerfilEstatisticas.fromJson(dados);
   }
+
+  Future<List<PrestadorRecente>> listarPrestadoresRecentes(
+    String usuarioAtualId, {
+    int? limite,
+  }) async {
+    final response = await _client.rpc(
+      'listar_prestadores_recentes',
+      params: {'p_usuario_atual_id': usuarioAtualId, 'p_limite': ?limite},
+    );
+
+    final lista = (response as List).cast<Map<String, dynamic>>();
+    return lista.map(PrestadorRecente.fromJson).toList();
+  }
 }

@@ -364,4 +364,32 @@ class ServicoService {
 
     return ObterDetalheServicoOferecidoPrestadorResponseDto(detalhe: detalhe);
   }
+
+  Future<ListarServicosRecentesResponseDto> listarServicosRecentes(
+    WsConnection conexao,
+    ListarServicosRecentesRequestDto dto,
+  ) async {
+    final client = _sessaoService.clientDe(conexao);
+    final userId = _sessaoService.userIdDe(conexao);
+    if (client == null || userId == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final limite = dto.limite;
+    if (limite != null && (limite < 1 || limite > 50)) {
+      throw ErroDto(
+        codigo: ErroCodigo.dadosInvalidos,
+        mensagem: 'Limite inválido',
+      );
+    }
+
+    final servicos = await ServicoRepository(
+      client,
+    ).listarServicosRecentes(userId, limite: limite);
+
+    return ListarServicosRecentesResponseDto(servicos: servicos);
+  }
 }

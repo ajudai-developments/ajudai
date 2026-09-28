@@ -216,4 +216,17 @@ class ServicoRepository {
       response as Map<String, dynamic>,
     );
   }
+
+  Future<List<ServicoRecente>> listarServicosRecentes(
+    String usuarioAtualId, {
+    int? limite,
+  }) async {
+    final response = await _client.rpc(
+      'listar_servicos_recentes',
+      params: {'p_usuario_atual_id': usuarioAtualId, 'p_limite': ?limite},
+    );
+
+    final lista = (response as List).cast<Map<String, dynamic>>();
+    return lista.map(ServicoRecente.fromJson).toList();
+  }
 }

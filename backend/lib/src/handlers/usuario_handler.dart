@@ -130,4 +130,28 @@ class UsuarioHandler {
       );
     }
   }
+
+  Future<void> handleListarPrestadoresRecentes(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final dto = ListarPrestadoresRecentesRequestDto.fromJson(msg);
+      final resposta = await _usuarioService.listarPrestadoresRecentes(
+        conexao,
+        dto,
+      );
+      conexao.enviar(resposta);
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
+    } catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.erroInterno, mensagem: e.toString()),
+      );
+    }
+  }
 }

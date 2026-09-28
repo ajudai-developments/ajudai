@@ -130,7 +130,12 @@ class WsRouter {
       TipoMensagem.ativarServicoOferecido:
           h.servico.handleAtivarServicoOferecido,
 
+      TipoMensagem.listarServicosRecente:
+          h.servico.handleListarServicosRecentes,
+
       TipoMensagem.obterPerfilPublico: h.usuario.obterPerfilPublico,
+      TipoMensagem.listarPrestadoresRecente:
+          h.usuario.handleListarPrestadoresRecentes,
 
       TipoMensagem.obterPerfilCompleto: h.usuario.handleObterPerfilCompleto,
 

@@ -318,4 +318,33 @@ class ServicoHandler {
       );
     }
   }
+
+  Future<void> handleListarServicosRecentes(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final dto = ListarServicosRecentesRequestDto.fromJson(msg);
+      final resposta = await _servicoService.listarServicosRecentes(
+        conexao,
+        dto,
+      );
+      conexao.enviar(resposta);
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } catch (e, stackTrace) {
+      print('Erro ao listar serviços recentes: $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao listar serviços recentes',
+        ),
+      );
+    }
+  }
 }
