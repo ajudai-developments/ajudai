@@ -50,6 +50,7 @@ class AdminRepository {
   Future<Verificacao> rejeitarPrestador({
     required String verificacoId,
     required String adminId,
+    required String motivo,
   }) async {
     final response = await _client
         .from('verificacoes')
@@ -57,6 +58,7 @@ class AdminRepository {
           "alterado_em": DateTime.now().toUtc().toIso8601String(),
           "alterado_por_admin_id": adminId,
           "status": StatusVerificacao.rejeitado.name,
+          "motivo_rejeicao": motivo,
         })
         .eq('id', verificacoId)
         .select()
@@ -68,11 +70,11 @@ class AdminRepository {
         .from('usuarios')
         .update({
           "user_role": UserRole.cliente.name,
-          "status_prestador": StatusPrestador.naoSolicitado.toDbValue(),
+          "status_prestador": StatusPrestador.rejeitado.toDbValue(),
         })
         .eq('id', verificacao.usuarioId);
 
-    return Verificacao.fromJson(response);
+    return verificacao;
   }
 
   Future<List<ContestacaoComDetalhes>> listarContestacoes(

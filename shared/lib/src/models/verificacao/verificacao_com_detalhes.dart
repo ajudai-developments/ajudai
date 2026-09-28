@@ -12,6 +12,7 @@ class VerificacaoComDetalhes {
   final String usuarioNome;
   final String usuarioCpf;
   final String? usuarioTelefone;
+  final String? motivoRejeicao;
   final List<ArquivoAnexado> arquivos;
 
   VerificacaoComDetalhes({
@@ -25,6 +26,7 @@ class VerificacaoComDetalhes {
     required this.usuarioCpf,
     this.usuarioTelefone,
     required this.arquivos,
+    this.motivoRejeicao,
   });
 
   factory VerificacaoComDetalhes.fromJson(Map<String, dynamic> json) {
@@ -44,6 +46,8 @@ class VerificacaoComDetalhes {
       usuarioNome: JsonUtils.requireString(json, 'usuario_nome'),
       usuarioCpf: JsonUtils.requireString(json, 'usuario_cpf'),
       usuarioTelefone: JsonUtils.optionalString(json, 'usuario_telefone'),
+      motivoRejeicao: JsonUtils.optionalString(json, 'motivo_rejeicao'),
+
       arquivos: arquivos.map(ArquivoAnexado.fromJson).toList(),
     );
   }
@@ -59,5 +63,6 @@ class VerificacaoComDetalhes {
     'usuario_cpf': usuarioCpf,
     'usuario_telefone': usuarioTelefone,
     'arquivos': arquivos.map((a) => a.toJson()).toList(),
+    'motivo_rejeicao': motivoRejeicao,
   };
 }

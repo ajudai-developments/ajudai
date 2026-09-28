@@ -49,6 +49,8 @@ enum TipoMensagem {
 
   solicitarPrestador('solicitar_prestador'),
   solicitarPrestadorOk('solicitar_prestador_ok'),
+  listarMinhasVerificacoes('listar_minhas_verificacoes'),
+  listarMinhasVerificacoesOk('listar_minhas_verificacoes_ok'),
 
   listarVerificacoes('listar_verificacoes'),
   listarVerificacoesOk('listar_verificacoesOk'),

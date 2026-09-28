@@ -8,6 +8,7 @@ class Verificacao {
   final DateTime? alteradoEm;
   final String? alteradoPorAdminId;
   final StatusVerificacao status;
+  final String? motivoRejeicao;
 
   Verificacao({
     required this.id,
@@ -16,6 +17,7 @@ class Verificacao {
     this.alteradoEm,
     this.alteradoPorAdminId,
     required this.status,
+    this.motivoRejeicao,
   });
 
   factory Verificacao.fromJson(Map<String, dynamic> json) {
@@ -28,7 +30,7 @@ class Verificacao {
         json,
         'alterado_por_admin_id',
       ),
-
+      motivoRejeicao: JsonUtils.optionalString(json, 'motivo_rejeicao'),
       status: StatusVerificacao.values.byName(
         JsonUtils.requireString(json, 'status'),
       ),
@@ -42,5 +44,6 @@ class Verificacao {
     'alterado_em': alteradoEm?.toIso8601String(),
     'alterado_por_admin_id': alteradoPorAdminId,
     'status': status.name,
+    'motivo_rejeicao': motivoRejeicao,
   };
 }

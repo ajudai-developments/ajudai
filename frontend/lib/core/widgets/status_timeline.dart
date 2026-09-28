@@ -20,8 +20,13 @@ import '../theme/app_text_styles.dart';
 class StatusTimeline extends StatefulWidget {
   final String status;
 
-  const StatusTimeline({super.key, required this.status});
+  final TimelineTextos textos;
 
+  const StatusTimeline({
+    super.key,
+    required this.status,
+    this.textos = const TimelineTextos(),
+  });
   @override
   State<StatusTimeline> createState() => _StatusTimelineState();
 }
@@ -74,16 +79,16 @@ class _StatusTimelineState extends State<StatusTimeline>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _EtapaVertical(
-          titulo: 'Aberta',
-          subtitulo: 'Recebemos sua solicitação',
+          titulo: widget.textos.etapa1Titulo,
+          subtitulo: widget.textos.etapa1Subtitulo,
           concluida: abertaConcluida,
           atual: abertaAtual,
           pulso: abertaAtual ? _pulso : null,
           corLinha: abertaConcluida ? AppColors.primary : AppColors.outline,
         ),
         _EtapaVertical(
-          titulo: 'Em análise',
-          subtitulo: 'Nossa equipe está avaliando',
+          titulo: widget.textos.etapa1Titulo,
+          subtitulo: widget.textos.etapa1Subtitulo,
           concluida: decidido,
           atual: analiseAtual,
           pulso: analiseAtual ? _pulso : null,
@@ -93,6 +98,7 @@ class _StatusTimelineState extends State<StatusTimeline>
         ),
         _GarfoDesfecho(
           decidido: decidido,
+          textos: widget.textos,
           resolvidaEscolhida: status == 'resolvida',
           rejeitadaEscolhida: status == 'rejeitada',
         ),
@@ -260,13 +266,14 @@ class _GarfoDesfecho extends StatelessWidget {
   final bool decidido;
   final bool resolvidaEscolhida;
   final bool rejeitadaEscolhida;
+  final TimelineTextos textos;
 
   const _GarfoDesfecho({
+    required this.textos,
     required this.decidido,
     required this.resolvidaEscolhida,
     required this.rejeitadaEscolhida,
   });
-
   @override
   Widget build(BuildContext context) {
     final corTronco = decidido ? AppColors.primary : AppColors.outline;
@@ -296,8 +303,8 @@ class _GarfoDesfecho extends StatelessWidget {
           children: [
             Expanded(
               child: _CartaoDesfecho(
-                titulo: 'Resolvida',
-                subtitulo: 'Caso encerrado a seu favor',
+                titulo: textos.positivoTitulo,
+                subtitulo: textos.positivoSubtitulo,
                 icone: Icons.check_circle_rounded,
                 cor: AppColors.primary,
                 escolhida: resolvidaEscolhida,
@@ -307,8 +314,8 @@ class _GarfoDesfecho extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: _CartaoDesfecho(
-                titulo: 'Rejeitada',
-                subtitulo: 'Solicitação não atendida',
+                titulo: textos.positivoTitulo,
+                subtitulo: textos.positivoSubtitulo,
                 icone: Icons.cancel_rounded,
                 cor: AppColors.primary,
                 escolhida: rejeitadaEscolhida,
@@ -320,6 +327,41 @@ class _GarfoDesfecho extends StatelessWidget {
       ],
     );
   }
+}
+
+/// Textos das etapas e dos dois desfechos da [StatusTimeline]. O padrão é
+/// o de denúncias/contestações; outras telas passam o seu próprio.
+class TimelineTextos {
+  final String etapa1Titulo;
+  final String etapa1Subtitulo;
+  final String etapa2Titulo;
+  final String etapa2Subtitulo;
+  final String positivoTitulo;
+  final String positivoSubtitulo;
+  final String negativoTitulo;
+  final String negativoSubtitulo;
+
+  const TimelineTextos({
+    this.etapa1Titulo = 'Aberta',
+    this.etapa1Subtitulo = 'Recebemos sua solicitação',
+    this.etapa2Titulo = 'Em análise',
+    this.etapa2Subtitulo = 'Nossa equipe está avaliando',
+    this.positivoTitulo = 'Resolvida',
+    this.positivoSubtitulo = 'Caso encerrado a seu favor',
+    this.negativoTitulo = 'Rejeitada',
+    this.negativoSubtitulo = 'Solicitação não atendida',
+  });
+
+  static const verificacao = TimelineTextos(
+    etapa1Titulo: 'Solicitação enviada',
+    etapa1Subtitulo: 'Recebemos seus documentos',
+    etapa2Titulo: 'Em análise',
+    etapa2Subtitulo: 'Nossa equipe está verificando',
+    positivoTitulo: 'Aprovada',
+    positivoSubtitulo: 'Você já pode oferecer serviços',
+    negativoTitulo: 'Rejeitada',
+    negativoSubtitulo: 'Veja o motivo abaixo',
+  );
 }
 
 /// Desenha o "garfo": um tronco vertical curto (continuação da linha da
@@ -335,7 +377,7 @@ class _GarfoDesfecho extends StatelessWidget {
 ///
 /// Atenção: o trecho horizontal centerX -> leftX é compartilhado pelos dois
 /// caminhos, então o garfo é desenhado em segmentos que NÃO se sobrepõem
-/// (cada pedaço tem uma única cor). A espessura (2px) é igual à das linhas
+/// (cada pedaço tem uma única cor). A espessura (2px) é igual à das l  inhas
 /// das etapas, pra tronco e linha anterior ficarem alinhados.
 class _GarfoPainter extends CustomPainter {
   final Color corTronco;

@@ -155,9 +155,17 @@ class AdminService {
     final adminRepository = AdminRepository(
       SupabaseClientFactory.criarSecret(),
     );
+    final motivo = dto.motivo.trim();
+    if (motivo.isEmpty) {
+      throw ErroDto(
+        codigo: ErroCodigo.dadosInvalidos,
+        mensagem: 'Informe o motivo da rejeição.',
+      );
+    }
     final verificacao = await adminRepository.rejeitarPrestador(
       verificacoId: dto.verificacaoId,
       adminId: adminId,
+      motivo: motivo,
     );
 
     final usuarioPrestador = await UsuarioRepository(

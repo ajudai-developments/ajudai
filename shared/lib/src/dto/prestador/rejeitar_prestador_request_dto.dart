@@ -4,8 +4,12 @@ import 'package:shared/src/dto/ws_message.dart';
 
 class RejeitarPrestadorRequestDto implements WsMessage {
   final String verificacaoId;
+  final String motivo;
 
-  RejeitarPrestadorRequestDto({required this.verificacaoId});
+  RejeitarPrestadorRequestDto({
+    required this.verificacaoId,
+    required this.motivo,
+  });
 
   @override
   TipoMensagem get tipo => TipoMensagem.rejeitarPrestador;
@@ -13,6 +17,7 @@ class RejeitarPrestadorRequestDto implements WsMessage {
   factory RejeitarPrestadorRequestDto.fromJson(Map<String, dynamic> json) {
     return RejeitarPrestadorRequestDto(
       verificacaoId: JsonUtils.requireString(json, 'verificacao_id'),
+      motivo: JsonUtils.requireString(json, 'motivo'),
     );
   }
 
@@ -20,5 +25,6 @@ class RejeitarPrestadorRequestDto implements WsMessage {
   Map<String, dynamic> toJson() => {
     'tipo': tipo.valor,
     'verificacao_id': verificacaoId,
+    'motivo': motivo,
   };
 }

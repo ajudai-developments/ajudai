@@ -76,6 +76,11 @@ class _MeuPerfilScreenState extends State<MeuPerfilScreen> {
     ).pushNamedAndRemoveUntil(AppRoutes.home, (route) => false);
   }
 
+  Future<void> _abrirMinhaSolicitacao() async {
+    await Navigator.of(context).pushNamed(AppRoutes.minhaSolicitacaoPrestador);
+    if (mounted) setState(() {});
+  }
+
   @override
   Widget build(BuildContext context) {
     final usuario = Sessao.instance.usuario;
@@ -235,7 +240,32 @@ class _MeuPerfilScreenState extends State<MeuPerfilScreen> {
         ];
       case StatusPrestador.pendente:
         return [
-          _avisoStatus('Sua solicitação para ser prestador está em análise.'),
+          _SecaoCard(
+            children: [
+              _AcaoItem(
+                icone: Icons.hourglass_top_rounded,
+                cor: AppColors.warning,
+                titulo: 'Solicitação em análise',
+                subtitulo: 'Toque para acompanhar',
+                onTap: _abrirMinhaSolicitacao,
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+        ];
+      case StatusPrestador.rejeitado:
+        return [
+          _SecaoCard(
+            children: [
+              _AcaoItem(
+                icone: Icons.cancel_rounded,
+                cor: AppColors.error,
+                titulo: 'Solicitação rejeitada',
+                subtitulo: 'Veja o motivo e tente novamente',
+                onTap: _abrirMinhaSolicitacao,
+              ),
+            ],
+          ),
           const SizedBox(height: 20),
         ];
       case StatusPrestador.aprovado:

@@ -2,6 +2,7 @@ enum StatusPrestador {
   naoSolicitado,
   pendente,
   aprovado,
+  rejeitado,
   suspenso;
 
   static StatusPrestador fromString(String value) {

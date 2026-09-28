@@ -160,6 +160,9 @@ class WsRouter {
 
       TipoMensagem.listarMinhasContestacoes:
           h.contestacao.handleListarMinhasContestacoes,
+
+      TipoMensagem.listarMinhasVerificacoes:
+          h.usuario.handleListarMinhasVerificacoes,
     };
   }
 

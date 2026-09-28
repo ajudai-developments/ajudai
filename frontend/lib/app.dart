@@ -6,6 +6,7 @@ import 'package:ajudai/features/denuncia/denuncia_detalhe_screen.dart';
 import 'package:ajudai/features/denuncia/denunciar_usuario_screen.dart';
 import 'package:ajudai/features/denuncia/minhas_denuncias_screen.dart';
 import 'package:ajudai/features/notificacao/widgets/notificacao_snack_bar_content.dart';
+import 'package:ajudai/features/prestador/minha_solicitacao_prestador_screen.dart';
 import 'package:ajudai/features/prestador/servico_oferecido_detalhe_screen.dart';
 import 'package:ajudai/features/splash/splash_screen.dart';
 import 'package:ajudai/features/usuario/meu_perfil_completo_screen.dart';
@@ -157,6 +158,8 @@ class _AppRootState extends State<_AppRoot> {
       AppRoutes.agendamentoDetalhe: (_) => const AgendamentoDetalhadoScreen(),
       AppRoutes.avaliarAgendamento: (_) => const AvaliarAgendamentoScreen(),
       AppRoutes.solicitarPrestador: (_) => const SolicitarPrestadorScreen(),
+      AppRoutes.minhaSolicitacaoPrestador: (_) =>
+          const MinhaSolicitacaoPrestadorScreen(),
       AppRoutes.meusServicosOferecidos: (_) =>
           const MeusServicosOferecidosScreen(),
       AppRoutes.formServicoOferecido: (_) => const FormServicoOferecidoScreen(),

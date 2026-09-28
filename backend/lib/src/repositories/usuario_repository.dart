@@ -143,4 +143,17 @@ class UsuarioRepository {
     final lista = (response as List).cast<Map<String, dynamic>>();
     return lista.map(PrestadorRecente.fromJson).toList();
   }
+
+  Future<List<VerificacaoComDetalhes>> listarMinhasVerificacoes(
+    String userId,
+  ) async {
+    final resposta = await _client.rpc(
+      'listar_minhas_verificacoes',
+      params: {'p_usuario_id': userId},
+    );
+
+    return (resposta as List)
+        .map((e) => VerificacaoComDetalhes.fromJson(e as Map<String, dynamic>))
+        .toList();
+  }
 }

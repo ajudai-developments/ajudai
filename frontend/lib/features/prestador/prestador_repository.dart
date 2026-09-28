@@ -160,4 +160,15 @@ class PrestadorRepository {
       json,
     ).detalhe;
   }
+
+  Future<List<VerificacaoComUrls>> listarMinhasVerificacoes() async {
+    await WsClient.instance.conectar();
+
+    WsClient.instance.enviar(const ListarMinhasVerificacoesRequestDto());
+
+    final json = await WsMessageStream.instance.aguardar(
+      TipoMensagem.listarMinhasVerificacoesOk,
+    );
+    return ListarMinhasVerificacoesResponseDto.fromJson(json).verificacoes;
+  }
 }

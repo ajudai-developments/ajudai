@@ -309,4 +309,39 @@ class UsuarioService {
 
     return ListarPrestadoresRecentesResponseDto(prestadores: prestadores);
   }
+
+  Future<ListarMinhasVerificacoesResponseDto> listarMinhasVerificacoes(
+    WsConnection conexao,
+  ) async {
+    final client = _sessaoService.clientDe(conexao);
+    final userId = _sessaoService.userIdDe(conexao);
+    if (client == null || userId == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final repositorio = UsuarioRepository(client);
+    final verificacoes = await repositorio.listarMinhasVerificacoes(userId);
+
+    final comUrls = <VerificacaoComUrls>[];
+    for (final verificacao in verificacoes) {
+      final urls = <String>[];
+      for (final arquivo in verificacao.arquivos) {
+        final url = await ArquivoUploadService.urlAssinada(
+          client: client,
+          bucket: 'verificacoes',
+          prefixo: verificacao.id,
+          arquivo: arquivo,
+        );
+        urls.add(url);
+      }
+      comUrls.add(
+        VerificacaoComUrls(verificacao: verificacao, urlsArquivos: urls),
+      );
+    }
+
+    return ListarMinhasVerificacoesResponseDto(verificacoes: comUrls);
+  }
 }
