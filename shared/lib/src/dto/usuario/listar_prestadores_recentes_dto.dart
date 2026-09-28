@@ -15,7 +15,10 @@ class ListarPrestadoresRecentesRequestDto implements WsMessage {
   }
 
   @override
-  Map<String, dynamic> toJson() => {if (limite != null) 'limite': limite};
+  Map<String, dynamic> toJson() => {
+    'tipo': tipo.valor,
+    if (limite != null) 'limite': limite,
+  };
 }
 
 class ListarPrestadoresRecentesResponseDto implements WsMessage {
@@ -39,6 +42,7 @@ class ListarPrestadoresRecentesResponseDto implements WsMessage {
 
   @override
   Map<String, dynamic> toJson() => {
+    'tipo': tipo.valor,
     'prestadores': prestadores.map((p) => p.toJson()).toList(),
   };
 }
