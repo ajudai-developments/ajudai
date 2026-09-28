@@ -25,8 +25,15 @@ import 'widgets/composer.dart';
 
 class ConversaScreen extends StatefulWidget {
   final ConversaResumo conversa;
+  final bool embutida;
+  final VoidCallback? onAtualizou;
 
-  const ConversaScreen({required this.conversa, super.key});
+  const ConversaScreen({
+    required this.conversa,
+    this.embutida = false,
+    this.onAtualizou,
+    super.key,
+  });
 
   @override
   State<ConversaScreen> createState() => _ConversaScreenState();
@@ -177,6 +184,7 @@ class _ConversaScreenState extends State<ConversaScreen> {
     }
     setState(() => _mensagens.add(mensagem));
     _rolarParaBaixo();
+    widget.onAtualizou?.call();
   }
 
   Future<void> _enviar() async {
@@ -422,10 +430,11 @@ class _ConversaScreenState extends State<ConversaScreen> {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
+        automaticallyImplyLeading: !widget.embutida,
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
         centerTitle: false,
-        titleSpacing: 0,
+        titleSpacing: widget.embutida ? 16 : 0,
         bottom: const PreferredSize(
           preferredSize: Size.fromHeight(1),
           child: Divider(height: 1, color: AppColors.outline),

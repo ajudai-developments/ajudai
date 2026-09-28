@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+import 'package:ajudai/core/layout/responsivo.dart';
+import 'package:ajudai/core/routes/app_routes.dart';
+import 'package:ajudai/core/widgets/tela_adaptativa.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared/shared.dart';
@@ -172,116 +175,152 @@ class _EditarPerfilScreenState extends State<EditarPerfilScreen> {
     }
   }
 
+  Widget _formulario(bool ocupado) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ErrorBanner(mensagem: _erroGeral),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ErrorBanner(mensagem: _erroGeral),
+
+            // Foto
+            Center(
+              child: _AvatarEditavel(
+                avatarUrl: Sessao.instance.usuario?.avatarUrl,
+                carregando: _salvandoAvatar,
+                onTap: ocupado ? null : _atualizarFoto,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: TextButton(
+                onPressed: ocupado ? null : _atualizarFoto,
+                child: const Text('Alterar foto'),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Dados
+            const Text('Seus dados', style: AppTextStyles.titulo),
+            const SizedBox(height: 12),
+            AppTextField(
+              label: 'Nome',
+              icone: Icons.person_outline_rounded,
+              controller: _nomeController,
+              textInputAction: TextInputAction.next,
+              textCapitalization: TextCapitalization.words,
+              autofillHints: const [AutofillHints.name],
+            ),
+            const SizedBox(height: 16),
+            AppTextField(
+              label: 'Telefone',
+              icone: Icons.phone_outlined,
+              controller: _telefoneController,
+              keyboardType: TextInputType.phone,
+              erro: _erroTelefone,
+              autofillHints: const [AutofillHints.telephoneNumber],
+            ),
+            const SizedBox(height: 24),
+
+            // Aviso
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceAlt,
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: const Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(
+                    Icons.lock_outline_rounded,
+                    size: 18,
+                    color: AppColors.textoSecundario,
+                  ),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      'CPF e e-mail não podem ser alterados.',
+                      style: AppTextStyles.legenda,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final web = context.usaLayoutWeb;
     final ocupado = _salvando || _salvandoAvatar;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
+    final botaoSalvar = AppButton(
+      label: 'Salvar alterações',
+      loading: _salvando,
+      onPressed: (_houveMudanca && !_salvandoAvatar) ? _salvar : null,
+    );
+
+    return TelaAdaptativa(
+      titulo: 'Editar perfil',
+      rotaAtual: AppRoutes.meuPerfil,
+      appBarMobile: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
         centerTitle: false,
         titleSpacing: 0,
         title: const Text('Editar perfil', style: AppTextStyles.titulo),
       ),
-      body: SafeArea(
+      rodapeMobile: web
+          ? null
+          : Container(
+              decoration: const BoxDecoration(
+                color: AppColors.surface,
+                border: Border(top: BorderSide(color: AppColors.outline)),
+              ),
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                  child: botaoSalvar,
+                ),
+              ),
+            ),
+      child: SafeArea(
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
           onTap: () => FocusScope.of(context).unfocus(),
           child: SingleChildScrollView(
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-            padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                ErrorBanner(mensagem: _erroGeral),
-
-                // Foto
-                Center(
-                  child: _AvatarEditavel(
-                    avatarUrl: Sessao.instance.usuario?.avatarUrl,
-                    carregando: _salvandoAvatar,
-                    onTap: ocupado ? null : _atualizarFoto,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Center(
-                  child: TextButton(
-                    onPressed: ocupado ? null : _atualizarFoto,
-                    child: const Text('Alterar foto'),
-                  ),
-                ),
-                const SizedBox(height: 20),
-
-                // Dados
-                const Text('Seus dados', style: AppTextStyles.titulo),
-                const SizedBox(height: 12),
-                AppTextField(
-                  label: 'Nome',
-                  icone: Icons.person_outline_rounded,
-                  controller: _nomeController,
-                  textInputAction: TextInputAction.next,
-                  textCapitalization: TextCapitalization.words,
-                  autofillHints: const [AutofillHints.name],
-                ),
-                const SizedBox(height: 16),
-                AppTextField(
-                  label: 'Telefone',
-                  icone: Icons.phone_outlined,
-                  controller: _telefoneController,
-                  keyboardType: TextInputType.phone,
-                  erro: _erroTelefone,
-                  autofillHints: const [AutofillHints.telephoneNumber],
-                ),
-                const SizedBox(height: 24),
-
-                // Aviso
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: AppColors.surfaceAlt,
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: const Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(
-                        Icons.lock_outline_rounded,
-                        size: 18,
-                        color: AppColors.textoSecundario,
+            padding: web
+                ? const EdgeInsets.all(32)
+                : const EdgeInsets.fromLTRB(20, 8, 20, 24),
+            child: web
+                ? ConteudoCentralizado(
+                    larguraMax: 560,
+                    child: Container(
+                      padding: const EdgeInsets.all(28),
+                      decoration: BoxDecoration(
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.outline),
                       ),
-                      SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          'CPF e e-mail não podem ser alterados.',
-                          style: AppTextStyles.legenda,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          _formulario(ocupado),
+                          const SizedBox(height: 24),
+                          botaoSalvar,
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-
-      // Botão fixo no rodapé — só habilita quando algo mudou.
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          border: Border(top: BorderSide(color: AppColors.outline)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-            child: AppButton(
-              label: 'Salvar alterações',
-              loading: _salvando,
-              onPressed: (_houveMudanca && !_salvandoAvatar) ? _salvar : null,
-            ),
+                    ),
+                  )
+                : _formulario(ocupado),
           ),
         ),
       ),

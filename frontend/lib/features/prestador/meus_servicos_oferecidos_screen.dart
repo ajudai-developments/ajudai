@@ -1,5 +1,8 @@
+import 'package:ajudai/core/layout/responsivo.dart';
 import 'package:ajudai/core/utils/categoria_visual.dart';
 import 'package:ajudai/core/widgets/cabecalho_com_abas.dart';
+import 'package:ajudai/core/widgets/grade_adaptativa.dart';
+import 'package:ajudai/core/widgets/tela_adaptativa.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -41,20 +44,48 @@ class _MeusServicosOferecidosScreenState
     });
   }
 
+  Future<void> _adicionar() async {
+    final resultado = await Navigator.of(
+      context,
+    ).pushNamed(AppRoutes.formServicoOferecido);
+    if (resultado == true && mounted) setState(() => _reloadTick++);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Column(
+    final web = context.usaLayoutWeb;
+    return TelaAdaptativa(
+      titulo: 'Meus serviços',
+      rotaAtual: AppRoutes.meusServicosOferecidos,
+      semAppBarMobile: true,
+      acoes: [
+        FilledButton.icon(
+          onPressed: _adicionar,
+          icon: const Icon(Icons.add_rounded),
+          label: const Text('Adicionar serviço'),
+        ),
+      ],
+      fabMobile: FloatingActionButton.extended(
+        onPressed: _adicionar,
+        icon: const Icon(Icons.add_rounded),
+        label: const Text('Adicionar serviço'),
+      ),
+      child: Column(
         children: [
-          CabecalhoComAbas(
-            titulo: 'Meus serviços',
-            subtitulo: 'Acompanhe e gerencie o que você oferece',
-            abas: const ['Ativos', 'Desativados'],
-            abaSelecionada: _aba,
-            onTrocarAba: _onTrocarAba,
-            // mostrarBotaoVoltar fica true (padrão) — essa tela é empilhada normal.
-          ),
+          if (web)
+            _AbasWeb(
+              abas: const ['Ativos', 'Desativados'],
+              selecionada: _aba,
+              onTrocar: _onTrocarAba,
+            )
+          else
+            CabecalhoComAbas(
+              titulo: 'Meus serviços',
+              subtitulo: 'Acompanhe e gerencie o que você oferece',
+              abas: const ['Ativos', 'Desativados'],
+              abaSelecionada: _aba,
+              onTrocarAba: _onTrocarAba,
+            ),
           Expanded(
             child: IndexedStack(
               index: _aba,
@@ -92,18 +123,6 @@ class _MeusServicosOferecidosScreenState
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final resultado = await Navigator.of(
-            context,
-          ).pushNamed(AppRoutes.formServicoOferecido);
-          if (resultado == true && mounted) {
-            setState(() => _reloadTick++);
-          }
-        },
-        icon: const Icon(Icons.add_rounded),
-        label: const Text('Adicionar serviço'),
-      ),
     );
   }
 }
@@ -119,9 +138,11 @@ class _ListaServicos extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return GradeAdaptativa(
+      larguraMinItem: 360,
+      espaco: 16,
       children: [
-        for (final item in itens) ...[
+        for (final item in itens)
           _CartaoServicoOferecido(
             item: item,
             onTap: () async {
@@ -132,8 +153,6 @@ class _ListaServicos extends StatelessWidget {
               if (alterou == true) onVoltarComAlteracao();
             },
           ),
-          const SizedBox(height: 12),
-        ],
       ],
     );
   }
@@ -271,6 +290,35 @@ class _AvaliacaoBadge extends StatelessWidget {
           const SizedBox(width: 3),
           Text('($quantidade)', style: AppTextStyles.legenda),
         ],
+      ),
+    );
+  }
+}
+
+class _AbasWeb extends StatelessWidget {
+  final List<String> abas;
+  final int selecionada;
+  final ValueChanged<int> onTrocar;
+  const _AbasWeb({
+    required this.abas,
+    required this.selecionada,
+    required this.onTrocar,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(32, 20, 32, 4),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: SegmentedButton<int>(
+          segments: [
+            for (var i = 0; i < abas.length; i++)
+              ButtonSegment(value: i, label: Text(abas[i])),
+          ],
+          selected: {selecionada},
+          onSelectionChanged: (s) => onTrocar(s.first),
+        ),
       ),
     );
   }

@@ -1,3 +1,5 @@
+import 'package:ajudai/core/session/permissoes.dart';
+import 'package:ajudai/core/session/sessao.dart';
 import 'package:ajudai/features/servico/widgets/comentarios_servico_list.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
@@ -30,6 +32,7 @@ Future<void> abrirModalDetalheServico({
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
+    constraints: const BoxConstraints(maxWidth: 720),
     builder: (_) => _ModalDetalheServico(
       servicoOferecidoId: servicoOferecidoId,
       prestadorId: prestadorId,
@@ -140,26 +143,38 @@ class _ModalDetalheServicoState extends State<_ModalDetalheServico> {
                   top: false,
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 12),
-                    child: SizedBox(
-                      width: double.infinity,
-                      child: FilledButton(
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppColors.primary,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        onPressed: _agendar,
-                        child: const Text('Agendar este serviço'),
-                      ),
-                    ),
+                    child: _acaoAgendar(),
                   ),
                 ),
             ],
           ),
         );
       },
+    );
+  }
+
+  Widget _acaoAgendar() {
+    if (!Sessao.instance.permissoes.pode(Capacidade.criarAgendamento)) {
+      return Text(
+        'Utilize o app do ajudaí para criar um agendamento com este prestador',
+        style: AppTextStyles.corpo,
+        textAlign: TextAlign.center,
+      );
+    }
+
+    return SizedBox(
+      width: double.infinity,
+      child: FilledButton(
+        style: FilledButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        onPressed: _agendar,
+        child: const Text('Agendar este serviço'),
+      ),
     );
   }
 

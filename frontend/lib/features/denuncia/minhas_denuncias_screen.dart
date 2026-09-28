@@ -1,3 +1,6 @@
+import 'package:ajudai/core/layout/responsivo.dart';
+import 'package:ajudai/core/widgets/grade_adaptativa.dart';
+import 'package:ajudai/core/widgets/tela_adaptativa.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -18,30 +21,38 @@ class MinhasDenunciasScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Column(
+    final web = context.usaLayoutWeb;
+
+    return TelaAdaptativa(
+      titulo: 'Minhas denúncias',
+      rotaAtual: AppRoutes.meuPerfil,
+      semAppBarMobile: true,
+      child: Column(
         children: [
-          const CabecalhoSimples(
-            titulo: 'Minhas denúncias',
-            subtitulo: 'Acompanhe o andamento dos seus casos',
-          ),
+          if (!web)
+            const CabecalhoSimples(
+              titulo: 'Minhas denúncias',
+              subtitulo: 'Acompanhe o andamento dos seus casos',
+            ),
           Expanded(
-            child: AsyncListView<DenunciaComUrls>(
-              carregar: DenunciaRepository().listarMinhasDenuncias,
-              mensagemVazio: 'Você ainda não abriu nenhuma denúncia.',
-              builder: (context, itens) => Column(
-                children: [
-                  for (final item in itens) ...[
-                    _CartaoDenuncia(
-                      item: item,
-                      onTap: () => Navigator.of(
-                        context,
-                      ).pushNamed(AppRoutes.denunciaDetalhe, arguments: item),
-                    ),
-                    const SizedBox(height: 12),
+            child: ConteudoCentralizado(
+              child: AsyncListView<DenunciaComUrls>(
+                carregar: DenunciaRepository().listarMinhasDenuncias,
+                mensagemVazio: 'Você ainda não abriu nenhuma denúncia.',
+                builder: (context, itens) => GradeAdaptativa(
+                  larguraMinItem: 420,
+                  maxColunas: 2,
+                  espaco: 16,
+                  children: [
+                    for (final item in itens)
+                      _CartaoDenuncia(
+                        item: item,
+                        onTap: () => Navigator.of(
+                          context,
+                        ).pushNamed(AppRoutes.denunciaDetalhe, arguments: item),
+                      ),
                   ],
-                ],
+                ),
               ),
             ),
           ),

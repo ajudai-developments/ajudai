@@ -1,3 +1,6 @@
+import 'package:ajudai/core/layout/responsivo.dart';
+import 'package:ajudai/core/widgets/grade_adaptativa.dart';
+import 'package:ajudai/core/widgets/tela_adaptativa.dart';
 import 'package:ajudai/features/perfil/widgets/modal_detalhe_servico.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
@@ -108,82 +111,107 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
   @override
   Widget build(BuildContext context) {
     final dados = _dados;
+    final web = context.usaLayoutWeb;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Column(
-        children: [
-          _Cabecalho(dados: dados, carregando: _carregando),
-          Expanded(
-            child: RefreshIndicator(
-              color: AppColors.primary,
-              onRefresh: _carregar,
-              child: _carregando
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primary,
-                      ),
-                    )
-                  : ListView(
-                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+    return TelaAdaptativa(
+      titulo: dados?.usuario.nome ?? 'Perfil',
+      rotaAtual: AppRoutes.perfilPublico,
+      semAppBarMobile: true,
+      child: web ? _corpoWeb(dados) : _corpoMobile(dados),
+    );
+  }
+
+  Widget _corpoWeb(ObterPerfilPublicoResponseDto? dados) {
+    if (_carregando) {
+      return const Center(
+        child: CircularProgressIndicator(color: AppColors.primary),
+      );
+    }
+
+    Widget conteudo(ObterPerfilPublicoResponseDto d) => Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [..._secaoServicos(d, web: true), ..._secaoComentarios(d)],
+    );
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(32),
+      child: ConteudoCentralizado(
+        larguraMax: 1100,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ErrorBanner(mensagem: _erro),
+            if (dados != null)
+              context.ehDesktop
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        ErrorBanner(mensagem: _erro),
-                        if (dados != null) ..._buildConteudo(dados),
+                        SizedBox(
+                          width: 340,
+                          child: Column(
+                            children: [
+                              _Cabecalho(
+                                dados: dados,
+                                carregando: false,
+                                comoCartao: true,
+                              ),
+                              const SizedBox(height: 16),
+                              _botaoConversar(),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(width: 32),
+                        Expanded(child: conteudo(dados)),
+                      ],
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _Cabecalho(
+                          dados: dados,
+                          carregando: false,
+                          comoCartao: true,
+                        ),
+                        const SizedBox(height: 16),
+                        _botaoConversar(),
+                        const SizedBox(height: 28),
+                        conteudo(dados),
                       ],
                     ),
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  List<Widget> _buildConteudo(ObterPerfilPublicoResponseDto dados) {
-    return [
-      if (dados.ehPrestador) ...[
-        _SecaoTitulo('Serviços oferecidos'),
-        const SizedBox(height: 10),
-        if (dados.servicosOferecidos.isEmpty)
-          _mensagemVazia('Nenhum serviço oferecido cadastrado.')
-        else
-          Column(
-            children: [
-              for (final servico in dados.servicosOferecidos)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: CartaoServicoOferecido(
-                    servico: servico,
-                    onTap: () => abrirModalDetalheServico(
-                      context: context,
-                      servicoOferecidoId: servico.servicoOferecidoId,
-                      prestadorId: dados.usuario.id,
-                    ),
+  Widget _corpoMobile(ObterPerfilPublicoResponseDto? dados) {
+    return Column(
+      children: [
+        _Cabecalho(dados: dados, carregando: _carregando),
+        Expanded(
+          child: RefreshIndicator(
+            color: AppColors.primary,
+            onRefresh: _carregar,
+            child: _carregando
+                ? const Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  )
+                : ListView(
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                    children: [
+                      ErrorBanner(mensagem: _erro),
+                      if (dados != null) ...[
+                        ..._secaoServicos(dados, web: false),
+                        _botaoConversar(),
+                        const SizedBox(height: 28),
+                        ..._secaoComentarios(dados),
+                      ],
+                    ],
                   ),
-                ),
-            ],
           ),
-        const SizedBox(height: 20),
-      ],
-      SizedBox(
-        width: double.infinity,
-        child: FilledButton.icon(
-          style: FilledButton.styleFrom(
-            backgroundColor: AppColors.primary,
-            padding: const EdgeInsets.symmetric(vertical: 13),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-          onPressed: _conversar,
-          icon: const Icon(Icons.chat_bubble_rounded, size: 18),
-          label: const Text('Conversar'),
         ),
-      ),
-      const SizedBox(height: 28),
-      _SecaoTitulo('Comentários'),
-      const SizedBox(height: 10),
-      ComentariosList(comentarios: dados.comentariosUsuario),
-    ];
+      ],
+    );
   }
 
   Widget _mensagemVazia(String texto) {
@@ -199,6 +227,71 @@ class _PerfilPublicoScreenState extends State<PerfilPublicoScreen> {
         texto,
         style: AppTextStyles.corpo,
         textAlign: TextAlign.center,
+      ),
+    );
+  }
+
+  List<Widget> _secaoServicos(
+    ObterPerfilPublicoResponseDto dados, {
+    required bool web,
+  }) {
+    if (!dados.ehPrestador) return const [];
+
+    final cartoes = [
+      for (final servico in dados.servicosOferecidos)
+        CartaoServicoOferecido(
+          servico: servico,
+          onTap: () => abrirModalDetalheServico(
+            context: context,
+            servicoOferecidoId: servico.servicoOferecidoId,
+            prestadorId: dados.usuario.id,
+          ),
+        ),
+    ];
+
+    return [
+      _SecaoTitulo('Serviços oferecidos'),
+      const SizedBox(height: 10),
+      if (cartoes.isEmpty)
+        _mensagemVazia('Nenhum serviço oferecido cadastrado.')
+      else if (web)
+        GradeAdaptativa(
+          larguraMinItem: 300,
+          maxColunas: 2,
+          espaco: 12,
+          children: cartoes,
+        )
+      else
+        Column(
+          children: [
+            for (final c in cartoes)
+              Padding(padding: const EdgeInsets.only(bottom: 10), child: c),
+          ],
+        ),
+      const SizedBox(height: 20),
+    ];
+  }
+
+  List<Widget> _secaoComentarios(ObterPerfilPublicoResponseDto dados) => [
+    _SecaoTitulo('Comentários'),
+    const SizedBox(height: 10),
+    ComentariosList(comentarios: dados.comentariosUsuario),
+  ];
+
+  Widget _botaoConversar() {
+    return SizedBox(
+      width: double.infinity,
+      child: FilledButton.icon(
+        style: FilledButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          padding: const EdgeInsets.symmetric(vertical: 13),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+        onPressed: _conversar,
+        icon: const Icon(Icons.chat_bubble_rounded, size: 18),
+        label: const Text('Conversar'),
       ),
     );
   }
@@ -225,8 +318,13 @@ class _SecaoTitulo extends StatelessWidget {
 class _Cabecalho extends StatelessWidget {
   final ObterPerfilPublicoResponseDto? dados;
   final bool carregando;
+  final bool comoCartao;
 
-  const _Cabecalho({required this.dados, required this.carregando});
+  const _Cabecalho({
+    required this.dados,
+    required this.carregando,
+    this.comoCartao = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -234,25 +332,33 @@ class _Cabecalho extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.primary,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(28),
-          bottomRight: Radius.circular(28),
-        ),
+        borderRadius: comoCartao
+            ? BorderRadius.circular(20)
+            : const BorderRadius.only(
+                bottomLeft: Radius.circular(28),
+                bottomRight: Radius.circular(28),
+              ),
       ),
-      padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+      padding: EdgeInsets.only(
+        top: comoCartao ? 0 : MediaQuery.of(context).padding.top,
+      ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(12, 4, 12, 24),
+        padding: EdgeInsets.fromLTRB(12, comoCartao ? 24 : 4, 12, 24),
         child: Column(
           children: [
-            Align(
-              alignment: Alignment.topLeft,
-              child: IconButton(
-                onPressed: () => Navigator.of(context).maybePop(),
-                icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+            if (!comoCartao)
+              Align(
+                alignment: Alignment.topLeft,
+                child: IconButton(
+                  onPressed: () => Navigator.of(context).maybePop(),
+                  icon: const Icon(
+                    Icons.arrow_back_rounded,
+                    color: Colors.white,
+                  ),
+                ),
               ),
-            ),
             Container(
               padding: const EdgeInsets.all(3),
               decoration: const BoxDecoration(

@@ -1,3 +1,6 @@
+import 'package:ajudai/core/layout/responsivo.dart';
+import 'package:ajudai/core/routes/app_routes.dart';
+import 'package:ajudai/core/widgets/tela_adaptativa.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -53,16 +56,17 @@ class _MeuPerfilCompletoScreenState extends State<MeuPerfilCompletoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
+    return TelaAdaptativa(
+      titulo: 'Meu perfil completo',
+      rotaAtual: AppRoutes.meuPerfil,
+      appBarMobile: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
         centerTitle: false,
         titleSpacing: 0,
         title: const Text('Meu perfil completo', style: AppTextStyles.titulo),
       ),
-      body: SafeArea(child: _corpo()),
+      child: SafeArea(child: _corpo()),
     );
   }
 
@@ -81,7 +85,81 @@ class _MeuPerfilCompletoScreenState extends State<MeuPerfilCompletoScreen> {
     }
 
     final d = _dados!;
+    return context.usaLayoutWeb ? _corpoWeb(d) : _corpoMobile(d);
+  }
 
+  Widget _corpoWeb(PerfilEstatisticas d) {
+    final verificacao = _CartaoVerificacao(dados: d);
+    final agendamentos = _CartaoAgendamentos(dados: d);
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(32),
+      child: ConteudoCentralizado(
+        larguraMax: 1000,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(child: _DestaqueAvaliacao(dados: d)),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: _Destaque(
+                      icone: Icons.emoji_events_rounded,
+                      valor:
+                          '${d.totalConquistas}/${d.totalConquistasDisponiveis}',
+                      legenda: 'conquistas',
+                    ),
+                  ),
+                  if (d.tempoMedioRespostaSegundos != null) ...[
+                    const SizedBox(width: 20),
+                    Expanded(
+                      child: _Destaque(
+                        icone: Icons.timer_outlined,
+                        valor: _formatarTempo(d.tempoMedioRespostaSegundos!),
+                        legenda: 'tempo médio de resposta',
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(height: 20),
+            context.ehDesktop
+                ? IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        Expanded(child: verificacao),
+                        const SizedBox(width: 20),
+                        Expanded(child: agendamentos),
+                      ],
+                    ),
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      verificacao,
+                      const SizedBox(height: 20),
+                      agendamentos,
+                    ],
+                  ),
+            const SizedBox(height: 24),
+            Center(
+              child: Text(
+                'Membro desde ${_formatarData(d.membroDesde)}',
+                style: AppTextStyles.legenda,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _corpoMobile(PerfilEstatisticas d) {
     return RefreshIndicator(
       color: AppColors.primary,
       onRefresh: _carregar,

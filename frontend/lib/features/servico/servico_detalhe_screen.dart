@@ -1,6 +1,8 @@
+import 'package:ajudai/core/layout/responsivo.dart';
 import 'package:ajudai/core/session/permissoes.dart';
 import 'package:ajudai/core/session/sessao.dart';
 import 'package:ajudai/core/widgets/login_necessario_dialog.dart';
+import 'package:ajudai/core/widgets/tela_adaptativa.dart';
 import 'package:ajudai/core/widgets/user_avatar.dart';
 import 'package:ajudai/features/servico/widgets/comentarios_servico_list.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +11,6 @@ import 'package:shared/shared.dart';
 import '../../core/errors/erro_mapper.dart';
 import '../../core/ws/ws_message_stream.dart';
 import '../../core/routes/app_routes.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/error_banner.dart';
 import '../../core/widgets/rating_display.dart';
@@ -50,6 +51,12 @@ class _ServicoDetalheScreenState extends State<ServicoDetalheScreen> {
     _servicoOferecidoId = ModalRoute.of(context)!.settings.arguments as String;
     _carregar();
   }
+
+  static final _decoracaoCard = BoxDecoration(
+    color: Colors.white,
+    borderRadius: BorderRadius.circular(14),
+    border: Border.all(color: const Color(0xFFEDEDED)),
+  );
 
   Future<void> _carregar() async {
     setState(() {
@@ -101,56 +108,156 @@ class _ServicoDetalheScreenState extends State<ServicoDetalheScreen> {
   @override
   Widget build(BuildContext context) {
     final dados = _dados;
+    final web = context.usaLayoutWeb;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(title: Text(dados?.servico.nome ?? 'Serviço')),
-      body: RefreshIndicator(
-        onRefresh: _carregar,
-        child: _carregando
-            ? const Center(child: CircularProgressIndicator())
-            : ListView(
-                padding: const EdgeInsets.all(16),
-                children: [
-                  ErrorBanner(mensagem: _erro),
-                  if (dados != null) ..._buildConteudo(dados),
-                ],
-              ),
-      ),
-      bottomNavigationBar: dados == null
+    return TelaAdaptativa(
+      titulo: dados?.servico.nome ?? 'Serviço',
+      rotaAtual: AppRoutes.categorias,
+      rodapeMobile: dados == null
           ? null
-          : Sessao.instance.permissoes.pode(Capacidade.criarAgendamento)
-          ? SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: ElevatedButton(
-                  onPressed: _agendar,
-                  child: const Text('Agendar'),
-                ),
-              ),
-            )
           : SafeArea(
               child: Padding(
                 padding: const EdgeInsets.all(16),
-                child: Text(
-                  'Utilize o app do ajudaí para criar um agendamento com este prestador',
-                  style: AppTextStyles.display,
-                ),
+                child: _acaoAgendar(),
               ),
             ),
+      child: _carregando
+          ? const Center(child: CircularProgressIndicator())
+          : web
+          ? _corpoWeb(dados)
+          : _corpoMobile(dados),
     );
   }
 
-  List<Widget> _buildConteudo(ObterServicoOferecidoResponseDto dados) {
-    return [
-      Text(dados.servico.nome, style: AppTextStyles.titulo),
-      Text(dados.categoria.nome, style: AppTextStyles.legenda),
-      const SizedBox(height: 8),
-      Text(
-        'R\$ ${dados.servicoOferecido.valor.toStringAsFixed(2)}',
-        style: AppTextStyles.titulo,
+  Widget _acaoAgendar() {
+    final pode = Sessao.instance.permissoes.pode(Capacidade.criarAgendamento);
+
+    if (pode) {
+      return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: _agendar,
+          child: const Text('Agendar'),
+        ),
+      );
+    }
+
+    return Text(
+      'Utilize o app do ajudaí para criar um agendamento com este prestador',
+      style: AppTextStyles.corpo,
+    );
+  }
+
+  Widget _corpoMobile(ObterServicoOferecidoResponseDto? dados) {
+    return ConteudoCentralizado(
+      larguraMax: 720, // tablet nativo
+      child: RefreshIndicator(
+        onRefresh: _carregar,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            ErrorBanner(mensagem: _erro),
+            if (dados != null) ...[
+              _cabecalho(dados, comPreco: true),
+              const SizedBox(height: 16),
+              ..._blocosPrincipais(dados),
+              const SizedBox(height: 80), // espaço pro botão fixo
+            ],
+          ],
+        ),
       ),
-      const SizedBox(height: 16),
+    );
+  }
+
+  Widget _corpoWeb(ObterServicoOferecidoResponseDto? dados) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(32),
+      child: ConteudoCentralizado(
+        larguraMax: 1100,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ErrorBanner(mensagem: _erro),
+            if (dados != null)
+              context.ehDesktop
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(child: _colunaPrincipalWeb(dados)),
+                        const SizedBox(width: 32),
+                        SizedBox(width: 340, child: _cardLateral(dados)),
+                      ],
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        _cardLateral(dados),
+                        const SizedBox(height: 24),
+                        _colunaPrincipalWeb(dados),
+                      ],
+                    ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _colunaPrincipalWeb(ObterServicoOferecidoResponseDto dados) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _cabecalho(dados, comPreco: false),
+        const SizedBox(height: 24),
+        ..._blocosPrincipais(dados),
+      ],
+    );
+  }
+
+  Widget _cardLateral(ObterServicoOferecidoResponseDto dados) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: _decoracaoCard,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'R\$ ${dados.servicoOferecido.valor.toStringAsFixed(2)}',
+            style: AppTextStyles.titulo,
+          ),
+          const SizedBox(height: 4),
+          Text('Valor do serviço', style: AppTextStyles.legenda),
+          const SizedBox(height: 16),
+          _acaoAgendar(),
+        ],
+      ),
+    );
+  }
+
+  // ---------- blocos reaproveitados nos dois layouts ----------
+
+  Widget _cabecalho(
+    ObterServicoOferecidoResponseDto dados, {
+    required bool comPreco,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(dados.servico.nome, style: AppTextStyles.titulo),
+        Text(dados.categoria.nome, style: AppTextStyles.legenda),
+        if (comPreco) ...[
+          const SizedBox(height: 8),
+          Text(
+            'R\$ ${dados.servicoOferecido.valor.toStringAsFixed(2)}',
+            style: AppTextStyles.titulo,
+          ),
+        ],
+      ],
+    );
+  }
+
+  List<Widget> _blocosPrincipais(ObterServicoOferecidoResponseDto dados) {
+    return [
       InkWell(
         onTap: _abrirPerfilPrestador,
         child: Row(
@@ -192,7 +299,6 @@ class _ServicoDetalheScreenState extends State<ServicoDetalheScreen> {
       Text('Comentários', style: AppTextStyles.titulo),
       const SizedBox(height: 8),
       ComentariosServicoList(comentarios: dados.comentariosServico),
-      const SizedBox(height: 80), // espaço pro botão fixo de agendar
     ];
   }
 }

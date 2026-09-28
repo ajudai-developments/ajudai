@@ -1,3 +1,6 @@
+import 'package:ajudai/core/layout/responsivo.dart';
+import 'package:ajudai/core/widgets/grade_adaptativa.dart';
+import 'package:ajudai/core/widgets/tela_adaptativa.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -17,31 +20,39 @@ class MinhasContestacoesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Column(
+    final web = context.usaLayoutWeb;
+
+    return TelaAdaptativa(
+      titulo: 'Minhas contestações',
+      rotaAtual: AppRoutes.meuPerfil,
+      semAppBarMobile: true,
+      child: Column(
         children: [
-          const CabecalhoSimples(
-            titulo: 'Minhas contestações',
-            subtitulo: 'Acompanhe o andamento dos seus casos',
-          ),
+          if (!web)
+            const CabecalhoSimples(
+              titulo: 'Minhas contestações',
+              subtitulo: 'Acompanhe o andamento dos seus casos',
+            ),
           Expanded(
-            child: AsyncListView<ContestacaoComUrls>(
-              carregar: ContestacaoRepository().listarMinhasContestacoes,
-              mensagemVazio: 'Você ainda não abriu nenhuma contestação.',
-              builder: (context, itens) => Column(
-                children: [
-                  for (final item in itens) ...[
-                    _CartaoContestacao(
-                      item: item,
-                      onTap: () => Navigator.of(context).pushNamed(
-                        AppRoutes.contestacaoDetalhe,
-                        arguments: item,
+            child: ConteudoCentralizado(
+              child: AsyncListView<ContestacaoComUrls>(
+                carregar: ContestacaoRepository().listarMinhasContestacoes,
+                mensagemVazio: 'Você ainda não abriu nenhuma contestação.',
+                builder: (context, itens) => GradeAdaptativa(
+                  larguraMinItem: 420,
+                  maxColunas: 2,
+                  espaco: 16,
+                  children: [
+                    for (final item in itens)
+                      _CartaoContestacao(
+                        item: item,
+                        onTap: () => Navigator.of(context).pushNamed(
+                          AppRoutes.contestacaoDetalhe,
+                          arguments: item,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 12),
                   ],
-                ],
+                ),
               ),
             ),
           ),

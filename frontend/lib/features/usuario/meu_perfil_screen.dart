@@ -1,3 +1,5 @@
+import 'package:ajudai/core/layout/responsivo.dart';
+import 'package:ajudai/core/widgets/tela_adaptativa.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -84,122 +86,155 @@ class _MeuPerfilScreenState extends State<MeuPerfilScreen> {
   @override
   Widget build(BuildContext context) {
     final usuario = Sessao.instance.usuario;
+    final web = context.usaLayoutWeb;
 
     if (usuario == null) {
-      return Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(title: const Text('Meu perfil')),
-        body: const Center(child: Text('Sessão não encontrada.')),
+      return const TelaAdaptativa(
+        titulo: 'Meu perfil',
+        rotaAtual: AppRoutes.meuPerfil,
+        child: Center(child: Text('Sessão não encontrada.')),
       );
     }
 
-    final selos = _perfilCompleto?.conquistas ?? <ConquistaUsuario>[];
+    final header = _PerfilHeader(
+      usuario: usuario,
+      perfilCompleto: _perfilCompleto,
+      carregando: _carregandoPerfilCompleto,
+      selos: _perfilCompleto?.conquistas ?? <ConquistaUsuario>[],
+      onEditar: _abrirEdicao,
+      onVerMais: () =>
+          Navigator.of(context).pushNamed(AppRoutes.meuPerfilCompleto),
+      comoCartao: web,
+    );
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Column(
-        children: [
-          _PerfilHeader(
-            usuario: usuario,
-            perfilCompleto: _perfilCompleto,
-            carregando: _carregandoPerfilCompleto,
-            selos: selos,
-            onEditar: _abrirEdicao,
-            onVerMais: () =>
-                Navigator.of(context).pushNamed(AppRoutes.meuPerfilCompleto),
+    return TelaAdaptativa(
+      titulo: 'Meu perfil',
+      rotaAtual: AppRoutes.meuPerfil,
+      semAppBarMobile: true,
+      rodapeMobile: const AppBottomNav(currentIndex: 2),
+      child: web ? _corpoWeb(usuario, header) : _corpoMobile(usuario, header),
+    );
+  }
+
+  Widget _corpoMobile(Usuario usuario, Widget header) {
+    return Column(
+      children: [
+        header,
+        Expanded(
+          child: RefreshIndicator(
+            color: AppColors.primary,
+            onRefresh: _carregarPerfilCompleto,
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+              children: _secoes(usuario),
+            ),
           ),
-          Expanded(
-            child: RefreshIndicator(
-              color: AppColors.primary,
-              onRefresh: _carregarPerfilCompleto,
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+        ),
+      ],
+    );
+  }
+
+  Widget _corpoWeb(Usuario usuario, Widget header) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(32),
+      child: ConteudoCentralizado(
+        larguraMax: 1100,
+        child: context.ehDesktop
+            ? Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _SecaoCard(
-                    children: [
-                      _LinhaInfo(
-                        icone: Icons.phone_rounded,
-                        label: 'Telefone',
-                        valor: usuario.telefone ?? 'Não informado',
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  ..._buildSecaoPrestador(context, usuario),
-
-                  Text('Central de suporte', style: AppTextStyles.titulo),
-                  const SizedBox(height: 12),
-                  _SecaoCard(
-                    children: [
-                      _AcaoItem(
-                        icone: Icons.gavel_rounded,
-                        cor: AppColors.warning,
-                        titulo: 'Minhas contestações',
-                        subtitulo:
-                            'Acompanhe contestações abertas em agendamentos',
-                        onTap: () => Navigator.of(
-                          context,
-                        ).pushNamed(AppRoutes.minhasContestacoes),
-                      ),
-                      const Divider(height: 1, color: AppColors.outline),
-                      _AcaoItem(
-                        icone: Icons.flag_rounded,
-                        cor: AppColors.error,
-                        titulo: 'Minhas denúncias',
-                        subtitulo:
-                            'Veja o andamento das denúncias que você fez',
-                        onTap: () => Navigator.of(
-                          context,
-                        ).pushNamed(AppRoutes.minhasDenuncias),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 20),
-
-                  Text('Mais', style: AppTextStyles.titulo),
-                  const SizedBox(height: 12),
-                  _SecaoCard(
-                    children: [
-                      _AcaoItem(
-                        icone: Icons.location_on_rounded,
-                        cor: AppColors.primary,
-                        titulo: 'Meus endereços',
-                        onTap: () => Navigator.of(
-                          context,
-                        ).pushNamed(AppRoutes.meusEnderecos),
-                      ),
-                      const Divider(height: 1, color: AppColors.outline),
-                      _AcaoItem(
-                        icone: Icons.chat_bubble_rounded,
-                        cor: AppColors.primary,
-                        titulo: 'Conversas',
-                        onTap: () => Navigator.of(
-                          context,
-                        ).pushNamed(AppRoutes.conversas),
-                      ),
-                    ],
-                  ),
-
-                  const SizedBox(height: 32),
-                  Center(
-                    child: TextButton.icon(
-                      onPressed: _sair,
-                      icon: const Icon(Icons.logout_rounded, size: 18),
-                      label: const Text('Sair da conta'),
-                      style: TextButton.styleFrom(
-                        foregroundColor: AppColors.textoSecundario,
-                      ),
+                  SizedBox(width: 340, child: header),
+                  const SizedBox(width: 32),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: _secoes(usuario),
                     ),
                   ),
                 ],
+              )
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  header,
+                  const SizedBox(height: 24),
+                  ..._secoes(usuario),
+                ],
               ),
-            ),
+      ),
+    );
+  }
+
+  /// Tudo que vem abaixo do cabeçalho — igual nos dois layouts.
+  List<Widget> _secoes(Usuario usuario) {
+    return [
+      _SecaoCard(
+        children: [
+          _LinhaInfo(
+            icone: Icons.phone_rounded,
+            label: 'Telefone',
+            valor: usuario.telefone ?? 'Não informado',
           ),
         ],
       ),
-      bottomNavigationBar: const AppBottomNav(currentIndex: 2),
-    );
+      const SizedBox(height: 20),
+      ..._buildSecaoPrestador(context, usuario),
+      Text('Central de suporte', style: AppTextStyles.titulo),
+      const SizedBox(height: 12),
+      _SecaoCard(
+        children: [
+          _AcaoItem(
+            icone: Icons.gavel_rounded,
+            cor: AppColors.warning,
+            titulo: 'Minhas contestações',
+            subtitulo: 'Acompanhe contestações abertas em agendamentos',
+            onTap: () =>
+                Navigator.of(context).pushNamed(AppRoutes.minhasContestacoes),
+          ),
+          const Divider(height: 1, color: AppColors.outline),
+          _AcaoItem(
+            icone: Icons.flag_rounded,
+            cor: AppColors.error,
+            titulo: 'Minhas denúncias',
+            subtitulo: 'Veja o andamento das denúncias que você fez',
+            onTap: () =>
+                Navigator.of(context).pushNamed(AppRoutes.minhasDenuncias),
+          ),
+        ],
+      ),
+      const SizedBox(height: 20),
+      Text('Mais', style: AppTextStyles.titulo),
+      const SizedBox(height: 12),
+      _SecaoCard(
+        children: [
+          _AcaoItem(
+            icone: Icons.location_on_rounded,
+            cor: AppColors.primary,
+            titulo: 'Meus endereços',
+            onTap: () =>
+                Navigator.of(context).pushNamed(AppRoutes.meusEnderecos),
+          ),
+          const Divider(height: 1, color: AppColors.outline),
+          _AcaoItem(
+            icone: Icons.chat_bubble_rounded,
+            cor: AppColors.primary,
+            titulo: 'Conversas',
+            onTap: () => Navigator.of(context).pushNamed(AppRoutes.conversas),
+          ),
+        ],
+      ),
+      const SizedBox(height: 32),
+      Center(
+        child: TextButton.icon(
+          onPressed: _sair,
+          icon: const Icon(Icons.logout_rounded, size: 18),
+          label: const Text('Sair da conta'),
+          style: TextButton.styleFrom(
+            foregroundColor: AppColors.textoSecundario,
+          ),
+        ),
+      ),
+    ];
   }
 
   List<Widget> _buildSecaoPrestador(BuildContext context, Usuario usuario) {
@@ -312,6 +347,7 @@ class _PerfilHeader extends StatelessWidget {
   final List<ConquistaUsuario> selos;
   final VoidCallback onEditar;
   final VoidCallback onVerMais;
+  final bool comoCartao;
 
   const _PerfilHeader({
     required this.usuario,
@@ -320,22 +356,27 @@ class _PerfilHeader extends StatelessWidget {
     required this.selos,
     required this.onEditar,
     required this.onVerMais,
+    this.comoCartao = false,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.primary,
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(24),
-          bottomRight: Radius.circular(24),
-        ),
+        borderRadius: comoCartao
+            ? BorderRadius.circular(20)
+            : const BorderRadius.only(
+                bottomLeft: Radius.circular(24),
+                bottomRight: Radius.circular(24),
+              ),
       ),
-      padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
+      padding: EdgeInsets.only(
+        top: comoCartao ? 0 : MediaQuery.of(context).padding.top,
+      ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 12, 8, 18),
+        padding: EdgeInsets.fromLTRB(20, comoCartao ? 20 : 12, 8, 18),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

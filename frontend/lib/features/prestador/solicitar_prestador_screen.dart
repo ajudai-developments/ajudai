@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:ajudai/core/layout/responsivo.dart';
+import 'package:ajudai/core/routes/app_routes.dart';
+import 'package:ajudai/core/widgets/tela_adaptativa.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared/shared.dart';
@@ -148,172 +151,186 @@ class _SolicitarPrestadorScreenState extends State<SolicitarPrestadorScreen> {
     }
   }
 
+  Widget _botaoConfirmar() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (!_podeConfirmar)
+          const Padding(
+            padding: EdgeInsets.only(bottom: 10),
+            child: Text(
+              'Envie o documento e aceite os dois termos para continuar.',
+              style: AppTextStyles.legenda,
+              textAlign: TextAlign.center,
+            ),
+          ),
+        AppButton(
+          label: 'Confirmar solicitação',
+          loading: _enviando,
+          onPressed: _podeConfirmar && !_selecionandoDocumento
+              ? _solicitar
+              : null,
+        ),
+      ],
+    );
+  }
+
+  Widget _rodapeMobile() {
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(top: BorderSide(color: AppColors.outline)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+          child: _botaoConfirmar(),
+        ),
+      ),
+    );
+  }
+
+  List<Widget> _filhos(bool ocupado) => [
+    ErrorBanner(mensagem: _erro),
+
+    // Apresentação
+    Container(
+      width: 56,
+      height: 56,
+      decoration: const BoxDecoration(
+        color: AppColors.primarySoft,
+        shape: BoxShape.circle,
+      ),
+      child: const Icon(
+        Icons.workspace_premium_rounded,
+        color: AppColors.primary,
+        size: 28,
+      ),
+    ),
+    const SizedBox(height: 16),
+    const Text('Ofereça seus serviços no Ajudaí', style: AppTextStyles.display),
+    const SizedBox(height: 6),
+    const Text(
+      'Sua conta passa por uma análise antes de poder oferecer '
+      'serviços na plataforma. Você será avisado quando terminar.',
+      style: AppTextStyles.corpo,
+    ),
+    const SizedBox(height: 20),
+
+    const SecaoCard(
+      child: Column(
+        children: [
+          _Beneficio(
+            icone: Icons.event_available_rounded,
+            texto: 'Receba pedidos de agendamento de clientes',
+          ),
+          SizedBox(height: 14),
+          _Beneficio(
+            icone: Icons.payments_outlined,
+            texto: 'Defina o valor de cada serviço que você oferece',
+          ),
+          SizedBox(height: 14),
+          _Beneficio(
+            icone: Icons.star_rounded,
+            texto: 'Ganhe avaliações, selos e destaque no perfil',
+          ),
+        ],
+      ),
+    ),
+    const SizedBox(height: 24),
+
+    // Como funciona
+    const Text('Como funciona', style: AppTextStyles.titulo),
+    const SizedBox(height: 12),
+    const SecaoCard(
+      child: Column(
+        children: [
+          _Passo(
+            numero: 1,
+            titulo: 'Envie seu documento',
+            subtitulo: 'Uma foto nítida, para confirmarmos quem você é',
+          ),
+          _Passo(
+            numero: 2,
+            titulo: 'Análise da equipe',
+            subtitulo: 'Verificamos as informações enviadas',
+          ),
+          _Passo(
+            numero: 3,
+            titulo: 'Comece a oferecer serviços',
+            subtitulo: 'Você é avisado quando for aprovado',
+            ultimo: true,
+          ),
+        ],
+      ),
+    ),
+    const SizedBox(height: 24),
+
+    // Documento
+    const Text('Seu documento', style: AppTextStyles.titulo),
+    const SizedBox(height: 12),
+    _CartaoDocumento(
+      documento: _documentoSelecionado,
+      previa: _previaDocumento,
+      tamanhoBytes: _tamanhoDocumento,
+      carregando: _selecionandoDocumento,
+      desabilitado: ocupado,
+      onTap: _selecionarDocumento,
+    ),
+    const SizedBox(height: 24),
+
+    // Termos
+    const Text('Antes de continuar', style: AppTextStyles.titulo),
+    const SizedBox(height: 12),
+    _Consentimento(
+      valor: _aceitaResponsabilidade,
+      onChanged: (v) => setState(() => _aceitaResponsabilidade = v),
+      texto:
+          'Entendo que sou responsabilizado por quaisquer danos '
+          'causados às propriedades dos clientes.',
+    ),
+    const SizedBox(height: 10),
+    _Consentimento(
+      valor: _aceitaPoliticaSuspensao,
+      onChanged: (v) => setState(() => _aceitaPoliticaSuspensao = v),
+      texto:
+          'Entendo que, no caso de violação das diretrizes do '
+          'aplicativo, fico sujeito a ter o cargo de prestador '
+          'suspenso ou, no pior dos casos, ser banido da '
+          'plataforma Ajudaí.',
+    ),
+  ];
+
   @override
   Widget build(BuildContext context) {
+    final web = context.usaLayoutWeb;
     final ocupado = _enviando || _selecionandoDocumento;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
+    return TelaAdaptativa(
+      titulo: 'Quero ser prestador',
+      rotaAtual: AppRoutes.meuPerfil,
+      appBarMobile: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
         centerTitle: false,
         titleSpacing: 0,
         title: const Text('Quero ser prestador', style: AppTextStyles.titulo),
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ErrorBanner(mensagem: _erro),
-
-              // Apresentação
-              Container(
-                width: 56,
-                height: 56,
-                decoration: const BoxDecoration(
-                  color: AppColors.primarySoft,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.workspace_premium_rounded,
-                  color: AppColors.primary,
-                  size: 28,
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text(
-                'Ofereça seus serviços no Ajudaí',
-                style: AppTextStyles.display,
-              ),
-              const SizedBox(height: 6),
-              const Text(
-                'Sua conta passa por uma análise antes de poder oferecer '
-                'serviços na plataforma. Você será avisado quando terminar.',
-                style: AppTextStyles.corpo,
-              ),
-              const SizedBox(height: 20),
-
-              const SecaoCard(
-                child: Column(
-                  children: [
-                    _Beneficio(
-                      icone: Icons.event_available_rounded,
-                      texto: 'Receba pedidos de agendamento de clientes',
-                    ),
-                    SizedBox(height: 14),
-                    _Beneficio(
-                      icone: Icons.payments_outlined,
-                      texto: 'Defina o valor de cada serviço que você oferece',
-                    ),
-                    SizedBox(height: 14),
-                    _Beneficio(
-                      icone: Icons.star_rounded,
-                      texto: 'Ganhe avaliações, selos e destaque no perfil',
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Como funciona
-              const Text('Como funciona', style: AppTextStyles.titulo),
-              const SizedBox(height: 12),
-              const SecaoCard(
-                child: Column(
-                  children: [
-                    _Passo(
-                      numero: 1,
-                      titulo: 'Envie seu documento',
-                      subtitulo:
-                          'Uma foto nítida, para confirmarmos quem você é',
-                    ),
-                    _Passo(
-                      numero: 2,
-                      titulo: 'Análise da equipe',
-                      subtitulo: 'Verificamos as informações enviadas',
-                    ),
-                    _Passo(
-                      numero: 3,
-                      titulo: 'Comece a oferecer serviços',
-                      subtitulo: 'Você é avisado quando for aprovado',
-                      ultimo: true,
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Documento
-              const Text('Seu documento', style: AppTextStyles.titulo),
-              const SizedBox(height: 12),
-              _CartaoDocumento(
-                documento: _documentoSelecionado,
-                previa: _previaDocumento,
-                tamanhoBytes: _tamanhoDocumento,
-                carregando: _selecionandoDocumento,
-                desabilitado: ocupado,
-                onTap: _selecionarDocumento,
-              ),
-              const SizedBox(height: 24),
-
-              // Termos
-              const Text('Antes de continuar', style: AppTextStyles.titulo),
-              const SizedBox(height: 12),
-              _Consentimento(
-                valor: _aceitaResponsabilidade,
-                onChanged: (v) => setState(() => _aceitaResponsabilidade = v),
-                texto:
-                    'Entendo que sou responsabilizado por quaisquer danos '
-                    'causados às propriedades dos clientes.',
-              ),
-              const SizedBox(height: 10),
-              _Consentimento(
-                valor: _aceitaPoliticaSuspensao,
-                onChanged: (v) => setState(() => _aceitaPoliticaSuspensao = v),
-                texto:
-                    'Entendo que, no caso de violação das diretrizes do '
-                    'aplicativo, fico sujeito a ter o cargo de prestador '
-                    'suspenso ou, no pior dos casos, ser banido da '
-                    'plataforma Ajudaí.',
-              ),
-            ],
-          ),
-        ),
-      ),
-
-      // Botão fixo no rodapé.
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          border: Border(top: BorderSide(color: AppColors.outline)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+      rodapeMobile: web ? null : _rodapeMobile(),
+      child: SafeArea(
+        child: ConteudoCentralizado(
+          larguraMax: 720,
+          child: SingleChildScrollView(
+            padding: web
+                ? const EdgeInsets.fromLTRB(32, 24, 32, 40)
+                : const EdgeInsets.fromLTRB(20, 8, 20, 24),
             child: Column(
-              mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                if (!_podeConfirmar)
-                  const Padding(
-                    padding: EdgeInsets.only(bottom: 10),
-                    child: Text(
-                      'Envie o documento e aceite os dois termos para continuar.',
-                      style: AppTextStyles.legenda,
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                AppButton(
-                  label: 'Confirmar solicitação',
-                  loading: _enviando,
-                  onPressed: _podeConfirmar && !_selecionandoDocumento
-                      ? _solicitar
-                      : null,
-                ),
+                ..._filhos(ocupado),
+                if (web) ...[const SizedBox(height: 28), _botaoConfirmar()],
               ],
             ),
           ),

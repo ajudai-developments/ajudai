@@ -1,24 +1,17 @@
+import 'package:ajudai/core/layout/responsivo.dart';
+import 'package:ajudai/core/theme/app_text_styles.dart';
+import 'package:ajudai/core/widgets/grade_adaptativa.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
 import '../../core/routes/app_routes.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/widgets/async_list_view.dart';
 import '../../core/widgets/servico_card.dart';
+import '../../core/widgets/tela_adaptativa.dart';
 import '../agendamento/criar_agendamento_args.dart';
 import 'servico_repository.dart';
 
-/// Lista as OFERTAS (prestadores + valor + avaliação) de uma categoria
-/// inteira OU de um serviço específico — a tela é a mesma, só muda a
-/// origem dos dados. O argumento da rota decide:
-///
-/// - [Categoria] (vindo de categorias_screen / Home): lista as ofertas da
-///   categoria inteira, sem passar por uma etapa de "tipo de serviço".
-/// - [ServicoRecente] (vindo dos "Serviços recentes" da Home): lista os
-///   prestadores que oferecem aquele serviço específico.
-///
-/// Recebe o objeto inteiro (não só o id), já que quem navega tem ele em
-/// mãos — evita uma segunda chamada só pra saber o nome pro título.
+/// (mantenha o comentário de documentação original aqui)
 class ServicosListaScreen extends StatelessWidget {
   const ServicosListaScreen({super.key});
 
@@ -69,22 +62,50 @@ class ServicosListaScreen extends StatelessWidget {
       );
     }
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(title: Text(titulo)),
-      body: AsyncListView<ServicoOferecidoPreview>(
+    return TelaAdaptativa(
+      titulo: titulo,
+      rotaAtual: AppRoutes.categorias, // mantém "Serviços" ativo na sidebar
+      child: AsyncListView<ServicoOferecidoPreview>(
         carregar: carregar,
         mensagemVazio: mensagemVazio,
-        builder: (context, servicos) => Column(
-          children: [
+        builder: (context, servicos) {
+          final cards = [
             for (final servico in servicos)
               ServicoCard(
                 servico: servico,
                 onTapDetalhe: () => _abrirDetalhe(context, servico),
                 onTapAgendar: () => _abrirAgendamento(context, servico),
               ),
-          ],
-        ),
+          ];
+
+          // Mobile: igual ao original.
+          if (!context.usaLayoutWeb) {
+            return ConteudoCentralizado(
+              larguraMax: 720, // evita esticar em tablet nativo
+              child: Column(children: cards),
+            );
+          }
+
+          return ConteudoCentralizado(
+            larguraMax: 1200,
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    servicos.length == 1
+                        ? '1 prestador disponível'
+                        : '${servicos.length} prestadores disponíveis',
+                    style: AppTextStyles.legenda,
+                  ),
+                  const SizedBox(height: 16),
+                  GradeAdaptativa(children: cards),
+                ],
+              ),
+            ),
+          );
+        },
       ),
     );
   }

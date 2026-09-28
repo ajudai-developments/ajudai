@@ -1,3 +1,5 @@
+import 'package:ajudai/core/layout/responsivo.dart';
+import 'package:ajudai/core/widgets/tela_adaptativa.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -127,30 +129,31 @@ class _NotificacoesScreenState extends State<NotificacoesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Notificações'),
-        actions: [
-          IconButton(
-            tooltip: 'Marcar todas como lidas',
-            icon: _marcandoTodas
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Icon(Icons.done_all),
-            onPressed: _marcandoTodas ? null : _marcarTodasComoLidas,
-          ),
-        ],
-      ),
-      body: AsyncListView<NotificacaoDto>(
-        carregar: _repository.listarMinhasNotificacoes,
-        mensagemVazio: 'Você não tem notificações.',
-        onDadosCarregados: (notificacoes) => _notificacoesAtuais = notificacoes,
-        builder: (context, notificacoes) =>
-            Column(children: [for (final n in notificacoes) _buildCard(n)]),
+    return TelaAdaptativa(
+      titulo: 'Notificações',
+      rotaAtual: AppRoutes.notificacoes,
+      acoes: [
+        IconButton(
+          tooltip: 'Marcar todas como lidas',
+          icon: _marcandoTodas
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : const Icon(Icons.done_all),
+          onPressed: _marcandoTodas ? null : _marcarTodasComoLidas,
+        ),
+      ],
+      child: ConteudoCentralizado(
+        larguraMax: 760,
+        child: AsyncListView<NotificacaoDto>(
+          carregar: _repository.listarMinhasNotificacoes,
+          mensagemVazio: 'Você não tem notificações.',
+          onDadosCarregados: (n) => _notificacoesAtuais = n,
+          builder: (context, notificacoes) =>
+              Column(children: [for (final n in notificacoes) _buildCard(n)]),
+        ),
       ),
     );
   }

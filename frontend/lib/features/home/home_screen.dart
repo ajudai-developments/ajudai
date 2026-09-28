@@ -22,7 +22,7 @@ import 'widgets/servico_recente_card.dart';
 /// Categorias mostradas na grade da Home antes de "Ver mais".
 /// Puramente de exibição (listarCategorias já devolve tudo).
 const _maxCategoriasMobile = 6;
-const _maxCategoriasWeb = 8;
+const _maxCategoriasWeb = 15;
 
 /// Tela inicial do app.
 ///

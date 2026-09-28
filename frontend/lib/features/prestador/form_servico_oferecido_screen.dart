@@ -1,8 +1,10 @@
+import 'package:ajudai/core/layout/responsivo.dart';
+import 'package:ajudai/core/routes/app_routes.dart';
+import 'package:ajudai/core/widgets/tela_adaptativa.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
 import '../../core/errors/erro_mapper.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/app_button.dart';
 import '../../core/widgets/app_text_field.dart';
@@ -171,85 +173,88 @@ class _FormServicoOferecidoScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Novo serviço oferecido')),
-      body: _carregandoCategorias
+    return TelaAdaptativa(
+      titulo: 'Novo serviço oferecido',
+      rotaAtual: AppRoutes.meusServicosOferecidos,
+      child: _carregandoCategorias
           ? const Center(child: CircularProgressIndicator())
           : SafeArea(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    ErrorBanner(
-                      mensagem: _erroGeral ?? _erroCategorias ?? _erroServicos,
-                    ),
-                    Text('Categoria', style: AppTextStyles.titulo),
-                    const SizedBox(height: 8),
-                    DropdownButtonFormField<Categoria>(
-                      initialValue: _categoriaSelecionada,
-                      hint: const Text('Selecione a categoria'),
-                      items: [
-                        for (final categoria in _categorias)
-                          DropdownMenuItem(
-                            value: categoria,
-                            child: Text(categoria.nome),
-                          ),
-                      ],
-                      onChanged: _selecionarCategoria,
-                    ),
-                    const SizedBox(height: 24),
-                    Text('Tipo de serviço', style: AppTextStyles.titulo),
-                    const SizedBox(height: 8),
-                    if (_carregandoServicos)
-                      const Center(child: CircularProgressIndicator())
-                    else if (_categoriaSelecionada == null)
-                      Text(
-                        'Selecione uma categoria primeiro.',
-                        style: AppTextStyles.legenda,
-                      )
-                    else if (_servicos.isEmpty)
-                      Text(
-                        'Nenhum tipo de serviço nessa categoria ainda.',
-                        style: AppTextStyles.legenda,
-                      )
-                    else
-                      DropdownButtonFormField<Servico>(
-                        initialValue: _servicoSelecionado,
-                        hint: const Text('Selecione o tipo de serviço'),
+              child: ConteudoCentralizado(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      ErrorBanner(
+                        mensagem:
+                            _erroGeral ?? _erroCategorias ?? _erroServicos,
+                      ),
+                      Text('Categoria', style: AppTextStyles.titulo),
+                      const SizedBox(height: 8),
+                      DropdownButtonFormField<Categoria>(
+                        initialValue: _categoriaSelecionada,
+                        hint: const Text('Selecione a categoria'),
                         items: [
-                          for (final servico in _servicos)
+                          for (final categoria in _categorias)
                             DropdownMenuItem(
-                              value: servico,
-                              child: Text(servico.nome),
+                              value: categoria,
+                              child: Text(categoria.nome),
                             ),
                         ],
-                        onChanged: (servico) =>
-                            setState(() => _servicoSelecionado = servico),
+                        onChanged: _selecionarCategoria,
                       ),
-                    const SizedBox(height: 24),
-                    Text('Detalhes', style: AppTextStyles.titulo),
-                    const SizedBox(height: 8),
-                    AppTextField(
-                      label: 'Descrição',
-                      controller: _descricaoController,
-                    ),
-                    const SizedBox(height: 16),
-                    AppTextField(
-                      label: 'Valor (R\$)',
-                      controller: _valorController,
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
+                      const SizedBox(height: 24),
+                      Text('Tipo de serviço', style: AppTextStyles.titulo),
+                      const SizedBox(height: 8),
+                      if (_carregandoServicos)
+                        const Center(child: CircularProgressIndicator())
+                      else if (_categoriaSelecionada == null)
+                        Text(
+                          'Selecione uma categoria primeiro.',
+                          style: AppTextStyles.legenda,
+                        )
+                      else if (_servicos.isEmpty)
+                        Text(
+                          'Nenhum tipo de serviço nessa categoria ainda.',
+                          style: AppTextStyles.legenda,
+                        )
+                      else
+                        DropdownButtonFormField<Servico>(
+                          initialValue: _servicoSelecionado,
+                          hint: const Text('Selecione o tipo de serviço'),
+                          items: [
+                            for (final servico in _servicos)
+                              DropdownMenuItem(
+                                value: servico,
+                                child: Text(servico.nome),
+                              ),
+                          ],
+                          onChanged: (servico) =>
+                              setState(() => _servicoSelecionado = servico),
+                        ),
+                      const SizedBox(height: 24),
+                      Text('Detalhes', style: AppTextStyles.titulo),
+                      const SizedBox(height: 8),
+                      AppTextField(
+                        label: 'Descrição',
+                        controller: _descricaoController,
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    AppButton(
-                      label: 'Adicionar serviço',
-                      loading: _enviando,
-                      onPressed: _salvar,
-                    ),
-                  ],
+                      const SizedBox(height: 16),
+                      AppTextField(
+                        label: 'Valor (R\$)',
+                        controller: _valorController,
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      AppButton(
+                        label: 'Adicionar serviço',
+                        loading: _enviando,
+                        onPressed: _salvar,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

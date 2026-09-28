@@ -1,3 +1,4 @@
+import 'package:ajudai/core/widgets/ajudai_logo.dart';
 import 'package:flutter/material.dart';
 
 import '../routes/app_routes.dart';
@@ -58,7 +59,11 @@ List<_ItemMenu> _itensDoMenu() {
   final s = Sessao.instance;
   return [
     const _ItemMenu(AppRoutes.home, 'Início', Icons.home_outlined),
-    const _ItemMenu(AppRoutes.categorias, 'Serviços', Icons.grid_view_outlined),
+    const _ItemMenu(
+      AppRoutes.categorias,
+      'Categorias',
+      Icons.grid_view_outlined,
+    ),
     if (s.estaLogado) ...[
       const _ItemMenu(
         AppRoutes.meusAgendamentos,
@@ -113,10 +118,12 @@ class _Sidebar extends StatelessWidget {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
-            child: Text(
-              'Ajudaí',
-              // troque por AjudaiLogo quando quiser
-              style: AppTextStyles.display.copyWith(color: AppColors.primary),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () => Navigator.of(
+                context,
+              ).pushNamedAndRemoveUntil(AppRoutes.home, (route) => false),
+              child: AjudaiLogo(),
             ),
           ),
           Expanded(
@@ -247,6 +254,8 @@ class _Topbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final podeVoltar = Navigator.of(context).canPop();
+
     return Container(
       height: 64,
       padding: const EdgeInsets.symmetric(horizontal: 32),
@@ -258,6 +267,14 @@ class _Topbar extends StatelessWidget {
       ),
       child: Row(
         children: [
+          if (podeVoltar) ...[
+            IconButton(
+              tooltip: 'Voltar',
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => Navigator.of(context).maybePop(),
+            ),
+            const SizedBox(width: 8),
+          ],
           Text(titulo, style: AppTextStyles.titulo),
           const Spacer(),
           ...acoes,

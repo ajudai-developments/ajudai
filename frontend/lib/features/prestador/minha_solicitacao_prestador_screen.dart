@@ -1,3 +1,5 @@
+import 'package:ajudai/core/layout/responsivo.dart';
+import 'package:ajudai/core/widgets/tela_adaptativa.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -51,32 +53,40 @@ class _MinhaSolicitacaoPrestadorScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Column(
+    final web = context.usaLayoutWeb;
+    return TelaAdaptativa(
+      titulo: 'Minha solicitação',
+      rotaAtual: AppRoutes.meuPerfil,
+      semAppBarMobile: true,
+      child: Column(
         children: [
-          const CabecalhoSimples(
-            titulo: 'Minha solicitação',
-            subtitulo: 'Acompanhe a análise do seu cadastro',
-          ),
+          if (!web)
+            const CabecalhoSimples(
+              titulo: 'Minha solicitação',
+              subtitulo: 'Acompanhe a análise do seu cadastro',
+            ),
+
           Expanded(
-            child: AsyncListView<VerificacaoComUrls>(
-              key: _listaKey,
-              carregar: _prestadorRepository.listarMinhasVerificacoes,
-              mensagemVazio: 'Você ainda não fez nenhuma solicitação.',
-              builder: (context, itens) {
-                final atual = itens.first;
-                final anteriores = itens.skip(1).toList();
-                return _Conteudo(
-                  atual: atual,
-                  anteriores: anteriores,
-                  statusTimeline: _statusTimeline(atual.verificacao.status),
-                  podeSolicitarNovamente:
-                      Sessao.instance.usuario?.statusPrestador ==
-                      StatusPrestador.rejeitado,
-                  onSolicitarNovamente: _solicitarNovamente,
-                );
-              },
+            child: ConteudoCentralizado(
+              larguraMax: 760,
+              child: AsyncListView<VerificacaoComUrls>(
+                key: _listaKey,
+                carregar: _prestadorRepository.listarMinhasVerificacoes,
+                mensagemVazio: 'Você ainda não fez nenhuma solicitação.',
+                builder: (context, itens) {
+                  final atual = itens.first;
+                  final anteriores = itens.skip(1).toList();
+                  return _Conteudo(
+                    atual: atual,
+                    anteriores: anteriores,
+                    statusTimeline: _statusTimeline(atual.verificacao.status),
+                    podeSolicitarNovamente:
+                        Sessao.instance.usuario?.statusPrestador ==
+                        StatusPrestador.rejeitado,
+                    onSolicitarNovamente: _solicitarNovamente,
+                  );
+                },
+              ),
             ),
           ),
         ],
