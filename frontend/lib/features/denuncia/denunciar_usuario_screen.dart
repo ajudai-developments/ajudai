@@ -1,14 +1,16 @@
-import 'package:ajudai/features/denuncia/widgets/seletor_prova.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
 import '../../core/errors/erro_mapper.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
-import '../../core/widgets/error_banner.dart';
+import '../../core/widgets/app_text_field.dart';
+import '../../core/widgets/tela_formulario.dart';
+import '../../core/widgets/tipo_denuncia_label.dart';
 import '../../core/ws/ws_message_stream.dart';
 import 'denuncia_repository.dart';
 import 'denunciar_usuario_args.dart';
+import 'widgets/seletor_prova.dart';
 
 /// Denúncia de um usuário. Recebe `DenunciarUsuarioArgs` (usuarioId +
 /// nomeUsuario, só pra exibição) via argumento da rota.
@@ -30,6 +32,8 @@ class _DenunciarUsuarioScreenState extends State<DenunciarUsuarioScreen> {
   List<ItemProva> _provas = [];
   bool _enviando = false;
   String? _erro;
+  String? _erroTipo;
+  String? _erroDescricao;
 
   @override
   void didChangeDependencies() {
@@ -46,15 +50,13 @@ class _DenunciarUsuarioScreenState extends State<DenunciarUsuarioScreen> {
   }
 
   Future<void> _enviar() async {
-    if (_tipo == null) {
-      setState(() => _erro = 'Selecione o motivo da denúncia.');
-      return;
-    }
     final descricao = _descricaoController.text.trim();
-    if (descricao.isEmpty) {
-      setState(() => _erro = 'Descreva o que aconteceu.');
-      return;
-    }
+
+    setState(() {
+      _erroTipo = _tipo == null ? 'Selecione o motivo da denúncia.' : null;
+      _erroDescricao = descricao.isEmpty ? 'Descreva o que aconteceu.' : null;
+    });
+    if (_tipo == null || descricao.isEmpty) return;
 
     setState(() {
       _enviando = true;
@@ -77,88 +79,158 @@ class _DenunciarUsuarioScreenState extends State<DenunciarUsuarioScreen> {
       );
       Navigator.of(context).pop();
     } on WsErroException catch (e) {
-      setState(
-        () => _erro = ErroMapper.paraMensagem(
-          e.codigo,
-          mensagemServidor: e.mensagem,
-        ),
-      );
+      if (mounted) {
+        setState(
+          () => _erro = ErroMapper.paraMensagem(
+            e.codigo,
+            mensagemServidor: e.mensagem,
+          ),
+        );
+      }
     } on WsTimeoutException {
-      setState(
-        () => _erro = 'Não foi possível conectar ao servidor. Tente novamente.',
-      );
+      if (mounted) {
+        setState(
+          () =>
+              _erro = 'Não foi possível conectar ao servidor. Tente novamente.',
+        );
+      }
     } finally {
       if (mounted) setState(() => _enviando = false);
     }
   }
 
-  // TipoDenuncia é do pacote shared — ajuste os rótulos reais aqui
-  // quando souber os valores; por ora caio no `.name`.
-  String _rotuloTipo(TipoDenuncia t) => t.name;
+  @override
+  Widget build(BuildContext context) {
+    return TelaFormulario(
+      titulo: 'Denunciar usuário',
+      subtitulo: _args.nomeUsuario,
+      rotuloBotao: 'Enviar denúncia',
+      enviando: _enviando,
+      onEnviar: _enviar,
+      erro: _erro,
+      children: [
+        const AvisoInformativo(
+          icone: Icons.shield_outlined,
+          texto:
+              'Sua denúncia é analisada pela nossa equipe. Você acompanha o '
+              'andamento em Perfil > Minhas denúncias.',
+        ),
+        const SizedBox(height: 24),
+        Text('Qual foi o motivo?', style: AppTextStyles.titulo),
+        const SizedBox(height: 12),
+        _SeletorMotivo(
+          valor: _tipo,
+          erro: _erroTipo,
+          onChanged: (v) => setState(() {
+            _tipo = v;
+            _erroTipo = null;
+          }),
+        ),
+        const SizedBox(height: 24),
+        Text('O que aconteceu?', style: AppTextStyles.titulo),
+        const SizedBox(height: 12),
+        AppTextField(
+          label: 'Descrição',
+          hint: 'Conte com detalhes o que aconteceu com ${_args.nomeUsuario}',
+          controller: _descricaoController,
+          erro: _erroDescricao,
+          maxLines: 6,
+          minLines: 4,
+          keyboardType: TextInputType.multiline,
+          textCapitalization: TextCapitalization.sentences,
+          onChanged: (_) {
+            if (_erroDescricao != null) setState(() => _erroDescricao = null);
+          },
+        ),
+        const SizedBox(height: 24),
+        SeletorProvas(
+          valor: _provas,
+          onChanged: (v) => setState(() => _provas = v),
+        ),
+      ],
+    );
+  }
+}
+
+/// Motivos da denúncia como chips selecionáveis (uma escolha só) — mais
+/// rápido de tocar do que abrir um dropdown, e todas as opções ficam
+/// visíveis de uma vez.
+class _SeletorMotivo extends StatelessWidget {
+  final TipoDenuncia? valor;
+  final String? erro;
+  final ValueChanged<TipoDenuncia> onChanged;
+
+  const _SeletorMotivo({
+    required this.valor,
+    required this.erro,
+    required this.onChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(title: Text('Denunciar ${_args.nomeUsuario}')),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ErrorBanner(mensagem: _erro),
-              Text(
-                'Conte pra gente o que aconteceu com ${_args.nomeUsuario}',
-                style: AppTextStyles.titulo,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: [
+            for (final tipo in TipoDenuncia.values)
+              _ChipMotivo(
+                rotulo: labelTipoDenuncia(tipo),
+                selecionado: tipo == valor,
+                onTap: () => onChanged(tipo),
               ),
-              const SizedBox(height: 20),
-              DropdownButtonFormField<TipoDenuncia>(
-                initialValue: _tipo,
-                decoration: const InputDecoration(
-                  labelText: 'Motivo',
-                  border: OutlineInputBorder(),
-                ),
-                items: [
-                  for (final t in TipoDenuncia.values)
-                    DropdownMenuItem(value: t, child: Text(_rotuloTipo(t))),
-                ],
-                onChanged: (v) => setState(() => _tipo = v),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _descricaoController,
-                maxLines: 5,
-                decoration: const InputDecoration(
-                  labelText: 'Descrição',
-                  border: OutlineInputBorder(),
-                  alignLabelWithHint: true,
-                ),
-              ),
-              const SizedBox(height: 20),
-              SeletorProvas(
-                valor: _provas,
-                onChanged: (v) => setState(() => _provas = v),
-              ),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: _enviando ? null : _enviar,
-                style: FilledButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.error,
-                  minimumSize: const Size(0, 48),
-                ),
-                child: _enviando
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Text('Enviar denúncia'),
-              ),
-            ],
+          ],
+        ),
+        if (erro != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            erro!,
+            style: AppTextStyles.legenda.copyWith(color: AppColors.error),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _ChipMotivo extends StatelessWidget {
+  final String rotulo;
+  final bool selecionado;
+  final VoidCallback onTap;
+
+  const _ChipMotivo({
+    required this.rotulo,
+    required this.selecionado,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(999),
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+          decoration: BoxDecoration(
+            color: selecionado ? AppColors.primarySoft : AppColors.surface,
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(
+              color: selecionado ? AppColors.primary : AppColors.outline,
+              width: selecionado ? 1.5 : 1,
+            ),
+          ),
+          child: Text(
+            rotulo,
+            style: AppTextStyles.corpo.copyWith(
+              fontSize: 13,
+              fontWeight: selecionado ? FontWeight.w700 : FontWeight.w500,
+              color: selecionado ? AppColors.primary : AppColors.textoNormal,
+            ),
           ),
         ),
       ),

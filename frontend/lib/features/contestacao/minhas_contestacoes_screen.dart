@@ -5,6 +5,7 @@ import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/async_list_view.dart';
+import '../../core/widgets/cabecalho_simples.dart';
 import '../../core/widgets/status_chip.dart';
 import 'contestacao_repository.dart';
 
@@ -18,23 +19,33 @@ class MinhasContestacoesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Minhas contestações')),
-      body: AsyncListView<ContestacaoComUrls>(
-        carregar: ContestacaoRepository().listarMinhasContestacoes,
-        mensagemVazio: 'Você ainda não abriu nenhuma contestação.',
-        builder: (context, itens) => Column(
-          children: [
-            for (final item in itens) ...[
-              _CartaoContestacao(
-                item: item,
-                onTap: () => Navigator.of(
-                  context,
-                ).pushNamed(AppRoutes.contestacaoDetalhe, arguments: item),
+      body: Column(
+        children: [
+          const CabecalhoSimples(
+            titulo: 'Minhas contestações',
+            subtitulo: 'Acompanhe o andamento dos seus casos',
+          ),
+          Expanded(
+            child: AsyncListView<ContestacaoComUrls>(
+              carregar: ContestacaoRepository().listarMinhasContestacoes,
+              mensagemVazio: 'Você ainda não abriu nenhuma contestação.',
+              builder: (context, itens) => Column(
+                children: [
+                  for (final item in itens) ...[
+                    _CartaoContestacao(
+                      item: item,
+                      onTap: () => Navigator.of(context).pushNamed(
+                        AppRoutes.contestacaoDetalhe,
+                        arguments: item,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                ],
               ),
-              const SizedBox(height: 12),
-            ],
-          ],
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }

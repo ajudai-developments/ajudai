@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared/shared.dart';
 
+import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_text_styles.dart';
+
 /// Limite de 30MB por arquivo — mesma regra do backend pra provas de
 /// denúncia/contestação (foto ou vídeo).
 const _limiteBytes = 30 * 1024 * 1024;
@@ -21,9 +24,8 @@ class ItemProva {
   });
 }
 
-/// Seletor de provas (foto/vídeo). Mostra uma grade com o que já foi
-/// selecionado + botão de adicionar, que abre um bottom sheet pra
-/// escolher câmera/galeria e foto/vídeo.
+/// Seletor de provas (foto/vídeo): grade com o que já foi selecionado +
+/// botão de adicionar, que abre um bottom sheet com câmera/galeria.
 class SeletorProvas extends StatefulWidget {
   final List<ItemProva> valor;
   final ValueChanged<List<ItemProva>> onChanged;
@@ -59,7 +61,9 @@ class _SeletorProvasState extends State<SeletorProvas> {
     final file = File(arquivo.path);
     final tamanho = await file.length();
     if (tamanho > _limiteBytes) {
-      setState(() => _erro = 'Arquivo maior que 30MB. Escolha outro.');
+      if (mounted) {
+        setState(() => _erro = 'Arquivo maior que 30MB. Escolha outro.');
+      }
       return;
     }
 
@@ -89,103 +93,200 @@ class _SeletorProvasState extends State<SeletorProvas> {
       setState(() => _erro = 'Máximo de ${widget.maximo} arquivos.');
       return;
     }
-    showModalBottomSheet(
+
+    showModalBottomSheet<void>(
       context: context,
-      builder: (context) => SafeArea(
-        child: Wrap(
+      backgroundColor: AppColors.surface,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      builder: (sheetContext) {
+        void escolher(bool video, ImageSource origem) {
+          Navigator.of(sheetContext).pop();
+          _adicionar(video: video, origem: origem);
+        }
+
+        return SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 12, 20, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.outline,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Text('Adicionar prova', style: AppTextStyles.titulo),
+                const SizedBox(height: 8),
+                _OpcaoSheet(
+                  icone: Icons.photo_camera_outlined,
+                  rotulo: 'Tirar foto',
+                  onTap: () => escolher(false, ImageSource.camera),
+                ),
+                _OpcaoSheet(
+                  icone: Icons.videocam_outlined,
+                  rotulo: 'Gravar vídeo',
+                  onTap: () => escolher(true, ImageSource.camera),
+                ),
+                _OpcaoSheet(
+                  icone: Icons.image_outlined,
+                  rotulo: 'Foto da galeria',
+                  onTap: () => escolher(false, ImageSource.gallery),
+                ),
+                _OpcaoSheet(
+                  icone: Icons.video_library_outlined,
+                  rotulo: 'Vídeo da galeria',
+                  onTap: () => escolher(true, ImageSource.gallery),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
           children: [
-            ListTile(
-              leading: const Icon(Icons.photo_camera_outlined),
-              title: const Text('Tirar foto'),
-              onTap: () {
-                Navigator.of(context).pop();
-                _adicionar(video: false, origem: ImageSource.camera);
-              },
+            Text('Provas', style: AppTextStyles.titulo),
+            const SizedBox(width: 6),
+            Text('(opcional)', style: AppTextStyles.legenda),
+            const Spacer(),
+            Text(
+              '${widget.valor.length}/${widget.maximo}',
+              style: AppTextStyles.legenda,
             ),
-            ListTile(
-              leading: const Icon(Icons.videocam_outlined),
-              title: const Text('Gravar vídeo'),
-              onTap: () {
-                Navigator.of(context).pop();
-                _adicionar(video: true, origem: ImageSource.camera);
-              },
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Fotos e vídeos ajudam nossa equipe a analisar mais rápido.',
+          style: AppTextStyles.legenda,
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 12,
+          runSpacing: 12,
+          children: [
+            for (var i = 0; i < widget.valor.length; i++)
+              _Miniatura(item: widget.valor[i], onRemover: () => _remover(i)),
+            if (widget.valor.length < widget.maximo)
+              _BotaoAdicionar(onTap: _abrirSeletor),
+          ],
+        ),
+        if (_erro != null) ...[
+          const SizedBox(height: 8),
+          Text(
+            _erro!,
+            style: AppTextStyles.legenda.copyWith(color: AppColors.error),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
+class _OpcaoSheet extends StatelessWidget {
+  final IconData icone;
+  final String rotulo;
+  final VoidCallback onTap;
+
+  const _OpcaoSheet({
+    required this.icone,
+    required this.rotulo,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(12),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: const BoxDecoration(
+                color: AppColors.primarySoft,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icone, color: AppColors.primary, size: 22),
             ),
-            ListTile(
-              leading: const Icon(Icons.image_outlined),
-              title: const Text('Escolher foto da galeria'),
-              onTap: () {
-                Navigator.of(context).pop();
-                _adicionar(video: false, origem: ImageSource.gallery);
-              },
+            const SizedBox(width: 14),
+            Expanded(
+              child: Text(
+                rotulo,
+                style: AppTextStyles.corpo.copyWith(
+                  fontSize: 15,
+                  color: AppColors.textoTitulo,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
-            ListTile(
-              leading: const Icon(Icons.video_library_outlined),
-              title: const Text('Escolher vídeo da galeria'),
-              onTap: () {
-                Navigator.of(context).pop();
-                _adicionar(video: true, origem: ImageSource.gallery);
-              },
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.textoSecundario,
             ),
           ],
         ),
       ),
     );
   }
+}
+
+class _Miniatura extends StatelessWidget {
+  final ItemProva item;
+  final VoidCallback onRemover;
+
+  const _Miniatura({required this.item, required this.onRemover});
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Provas (opcional)',
-          style: Theme.of(context).textTheme.labelLarge,
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            for (var i = 0; i < widget.valor.length; i++)
-              _buildMiniatura(widget.valor[i], () => _remover(i)),
-            if (widget.valor.length < widget.maximo)
-              _buildBotaoAdicionar(scheme),
-          ],
-        ),
-        if (_erro != null) ...[
-          const SizedBox(height: 6),
-          Text(_erro!, style: TextStyle(color: scheme.error, fontSize: 12)),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildMiniatura(ItemProva item, VoidCallback onRemover) {
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        Container(
-          width: 72,
-          height: 72,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            color: Colors.black12,
-            image: item.ehVideo
-                ? null
-                : DecorationImage(
-                    image: FileImage(File(item.caminhoLocal)),
-                    fit: BoxFit.cover,
-                  ),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(14),
+          child: Container(
+            width: 84,
+            height: 84,
+            decoration: BoxDecoration(
+              color: item.ehVideo
+                  ? AppColors.textoTitulo
+                  : AppColors.surfaceAlt,
+              image: item.ehVideo
+                  ? null
+                  : DecorationImage(
+                      image: FileImage(File(item.caminhoLocal)),
+                      fit: BoxFit.cover,
+                    ),
+            ),
+            child: item.ehVideo
+                ? const Icon(
+                    Icons.play_circle_fill_rounded,
+                    color: Colors.white,
+                    size: 32,
+                  )
+                : null,
           ),
-          child: item.ehVideo
-              ? const Icon(
-                  Icons.play_circle_fill_rounded,
-                  color: Colors.white70,
-                  size: 28,
-                )
-              : null,
         ),
         Positioned(
           top: -6,
@@ -193,10 +294,11 @@ class _SeletorProvasState extends State<SeletorProvas> {
           child: GestureDetector(
             onTap: onRemover,
             child: Container(
-              padding: const EdgeInsets.all(2),
-              decoration: const BoxDecoration(
-                color: Colors.black87,
+              padding: const EdgeInsets.all(3),
+              decoration: BoxDecoration(
+                color: AppColors.textoTitulo,
                 shape: BoxShape.circle,
+                border: Border.all(color: AppColors.surface, width: 2),
               ),
               child: const Icon(
                 Icons.close_rounded,
@@ -209,18 +311,44 @@ class _SeletorProvasState extends State<SeletorProvas> {
       ],
     );
   }
+}
 
-  Widget _buildBotaoAdicionar(ColorScheme scheme) {
-    return GestureDetector(
-      onTap: _abrirSeletor,
+class _BotaoAdicionar extends StatelessWidget {
+  final VoidCallback onTap;
+  const _BotaoAdicionar({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap: onTap,
       child: Container(
-        width: 72,
-        height: 72,
+        width: 84,
+        height: 84,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: scheme.outlineVariant),
+          color: AppColors.surfaceAlt,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.outline),
         ),
-        child: Icon(Icons.add_rounded, color: scheme.onSurfaceVariant),
+        child: const Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.add_photo_alternate_outlined,
+              color: AppColors.primary,
+              size: 26,
+            ),
+            SizedBox(height: 4),
+            Text(
+              'Adicionar',
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: AppColors.primary,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

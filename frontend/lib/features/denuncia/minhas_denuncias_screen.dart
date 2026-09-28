@@ -1,4 +1,3 @@
-import 'package:ajudai/core/widgets/tipo_denuncia_label.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -6,7 +5,9 @@ import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/async_list_view.dart';
+import '../../core/widgets/cabecalho_simples.dart';
 import '../../core/widgets/status_chip.dart';
+import '../../core/widgets/tipo_denuncia_label.dart';
 import 'denuncia_repository.dart';
 
 /// Lista as denúncias que o usuário logado ABRIU (não as que ele
@@ -19,23 +20,32 @@ class MinhasDenunciasScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Minhas denúncias')),
-      body: AsyncListView<DenunciaComUrls>(
-        carregar: DenunciaRepository().listarMinhasDenuncias,
-        mensagemVazio: 'Você ainda não abriu nenhuma denúncia.',
-        builder: (context, itens) => Column(
-          children: [
-            for (final item in itens) ...[
-              _CartaoDenuncia(
-                item: item,
-                onTap: () => Navigator.of(
-                  context,
-                ).pushNamed(AppRoutes.denunciaDetalhe, arguments: item),
+      body: Column(
+        children: [
+          const CabecalhoSimples(
+            titulo: 'Minhas denúncias',
+            subtitulo: 'Acompanhe o andamento dos seus casos',
+          ),
+          Expanded(
+            child: AsyncListView<DenunciaComUrls>(
+              carregar: DenunciaRepository().listarMinhasDenuncias,
+              mensagemVazio: 'Você ainda não abriu nenhuma denúncia.',
+              builder: (context, itens) => Column(
+                children: [
+                  for (final item in itens) ...[
+                    _CartaoDenuncia(
+                      item: item,
+                      onTap: () => Navigator.of(
+                        context,
+                      ).pushNamed(AppRoutes.denunciaDetalhe, arguments: item),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                ],
               ),
-              const SizedBox(height: 12),
-            ],
-          ],
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }

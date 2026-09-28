@@ -22,9 +22,11 @@ class ServicoRepository {
   ServicoRepository(this._client);
 
   Future<List<Servico>> listarServicos({String? categoriaId}) async {
-    var query = _client.from('servicos').select();
-    if (categoriaId != null) query = query.eq('categoria_id', categoriaId);
-    final response = await query.order('nome');
+    final response = await _client.rpc(
+      'listar_servicos_disponiveis',
+      params: {'p_categoria_id': categoriaId},
+    );
+
     return (response as List).map((e) => Servico.fromJson(e)).toList();
   }
 

@@ -5,15 +5,21 @@ import '../theme/app_text_styles.dart';
 
 /// Cabeçalho vermelho arredondado simples (botão de voltar + título +
 /// subtítulo) — mesmo padrão visual de [CabecalhoComAbas], mas sem abas.
-/// Usado em telas de detalhe empilhadas (contestação, denúncia).
+/// Usado em telas empilhadas: formulários, detalhes e listas de perfil
+/// (contestações, denúncias, endereços, conversas).
 class CabecalhoSimples extends StatelessWidget {
   final String titulo;
   final String subtitulo;
+
+  /// Use `false` em telas de topo (raiz da bottom nav), onde não há
+  /// pra onde voltar.
+  final bool mostrarBotaoVoltar;
 
   const CabecalhoSimples({
     super.key,
     required this.titulo,
     required this.subtitulo,
+    this.mostrarBotaoVoltar = true,
   });
 
   @override
@@ -29,16 +35,19 @@ class CabecalhoSimples extends StatelessWidget {
       ),
       padding: EdgeInsets.only(top: MediaQuery.of(context).padding.top),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(4, 4, 20, 22),
+        padding: EdgeInsets.fromLTRB(mostrarBotaoVoltar ? 4 : 20, 4, 20, 22),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            IconButton(
-              onPressed: () => Navigator.of(context).maybePop(),
-              icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-            ),
+            if (mostrarBotaoVoltar)
+              IconButton(
+                onPressed: () => Navigator.of(context).maybePop(),
+                icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+              )
+            else
+              const SizedBox(height: 12),
             Padding(
-              padding: const EdgeInsets.only(left: 16),
+              padding: EdgeInsets.only(left: mostrarBotaoVoltar ? 16 : 0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [

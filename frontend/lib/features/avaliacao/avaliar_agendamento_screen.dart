@@ -5,7 +5,9 @@ import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/app_button.dart';
+import '../../core/widgets/cabecalho_simples.dart';
 import '../../core/widgets/error_banner.dart';
+import '../../core/widgets/secao_card.dart';
 import '../../core/widgets/user_avatar.dart';
 import '../../core/ws/ws_message_stream.dart';
 import '../denuncia/denunciar_usuario_args.dart';
@@ -13,17 +15,18 @@ import 'avaliacao_repository.dart';
 import 'avaliar_agendamento_args.dart';
 import 'widgets/rating_input.dart';
 
-/// Tela única do fluxo de avaliação. A avaliação é OPCIONAL, então
-/// nunca bloqueia: dá pra pular a qualquer momento (botão no app bar
-/// ou o próprio botão principal, que vira "Pular avaliação" quando
-/// nada foi preenchido), e dá pra enviar só uma das notas — por
-/// exemplo, avaliar a pessoa e deixar o serviço em branco — sem exigir
-/// as duas.
+/// Tela única do fluxo de avaliação (sempre OPCIONAL).
 ///
-/// Quando [AvaliarAgendamentoArgs.avaliarServico] é true (quem avalia é
-/// o CLIENTE), mostra as duas seções — serviço e pessoa — uma embaixo
-/// da outra, na mesma tela. Quando é o PRESTADOR, mostra só a seção da
-/// pessoa.
+/// Layout, de cima pra baixo:
+/// 1. Cabeçalho vermelho arredondado (CabecalhoSimples).
+/// 2. Card do serviço (só quando quem avalia é o CLIENTE): estrelas +
+///    comentário opcional, que só aparece depois de escolher a nota.
+/// 3. Card da pessoa (prestador/cliente): avatar, estrelas + comentário.
+/// 4. "Algo deu errado?": contestar serviço / denunciar pessoa.
+/// 5. Rodapé fixo: botão principal + "Pular por agora".
+///
+/// Dá pra enviar só uma das notas. "Pular" envia tudo como pulado, sem
+/// nota e sem comentário, independentemente do que foi preenchido.
 class AvaliarAgendamentoScreen extends StatefulWidget {
   const AvaliarAgendamentoScreen({super.key});
 
@@ -63,11 +66,15 @@ class _AvaliarAgendamentoScreenState extends State<AvaliarAgendamentoScreen> {
 
   bool get _nadaPreenchido => _notaServico == 0 && _notaPessoa == 0;
 
-  Future<void> _enviar() async {
+  Future<void> _enviar({bool pular = false}) async {
+    FocusScope.of(context).unfocus();
     setState(() {
       _enviando = true;
       _erro = null;
     });
+
+    final notaServico = pular ? 0 : _notaServico;
+    final notaPessoa = pular ? 0 : _notaPessoa;
 
     try {
       if (_args.avaliarServico) {
@@ -75,25 +82,25 @@ class _AvaliarAgendamentoScreenState extends State<AvaliarAgendamentoScreen> {
         await _avaliacaoRepository.avaliarAgendamento(
           agendamentoId: _args.agendamentoId,
           avaliadoId: _args.avaliadoId,
-          avaliacao: _notaServico > 0 ? _notaServico.toDouble() : null,
-          pulado: _notaServico == 0,
-          mensagem: mensagem.isEmpty ? null : mensagem,
+          avaliacao: notaServico > 0 ? notaServico.toDouble() : null,
+          pulado: notaServico == 0,
+          mensagem: (pular || mensagem.isEmpty) ? null : mensagem,
         );
       }
 
       final mensagemPessoa = _mensagemPessoaController.text.trim();
       await _avaliacaoRepository.avaliarUsuario(
         agendamentoId: _args.agendamentoId,
-        avaliacao: _notaPessoa > 0 ? _notaPessoa.toDouble() : null,
-        pulado: _notaPessoa == 0,
-        mensagem: mensagemPessoa.isEmpty ? null : mensagemPessoa,
+        avaliacao: notaPessoa > 0 ? notaPessoa.toDouble() : null,
+        pulado: notaPessoa == 0,
+        mensagem: (pular || mensagemPessoa.isEmpty) ? null : mensagemPessoa,
       );
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            _nadaPreenchido
+            (pular || _nadaPreenchido)
                 ? 'Avaliação pulada.'
                 : 'Avaliação enviada. Obrigado!',
           ),
@@ -101,10 +108,12 @@ class _AvaliarAgendamentoScreenState extends State<AvaliarAgendamentoScreen> {
       );
       Navigator.of(context).pop();
     } on WsErroException catch (e) {
+      if (!mounted) return;
       setState(() {
         _erro = ErroMapper.paraMensagem(e.codigo, mensagemServidor: e.mensagem);
       });
     } on WsTimeoutException {
+      if (!mounted) return;
       setState(() {
         _erro = 'Não foi possível conectar ao servidor. Tente novamente.';
       });
@@ -133,188 +142,332 @@ class _AvaliarAgendamentoScreenState extends State<AvaliarAgendamentoScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text('Avaliar'),
-        centerTitle: true,
-        elevation: 0,
-        actions: [
-          TextButton(
-            onPressed: _enviando ? null : _enviar,
-            child: const Text('Pular'),
+      body: Column(
+        children: [
+          CabecalhoSimples(
+            titulo: 'Avaliar',
+            subtitulo: _args.avaliarServico
+                ? _args.nomeServico
+                : 'Atendimento com ${_args.nomeContraparte}',
+          ),
+          Expanded(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () => FocusScope.of(context).unfocus(),
+              child: SingleChildScrollView(
+                keyboardDismissBehavior:
+                    ScrollViewKeyboardDismissBehavior.onDrag,
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    ErrorBanner(mensagem: _erro),
+                    if (_args.avaliarServico) ...[
+                      _CartaoAvaliacao(
+                        topo: const _IconeServico(),
+                        titulo: _args.nomeServico,
+                        pergunta: 'Como foi o serviço?',
+                        nota: _notaServico,
+                        onNota: (v) => setState(() => _notaServico = v),
+                        controller: _mensagemServicoController,
+                        hintComentario: 'Conte como foi (opcional)',
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                    _CartaoAvaliacao(
+                      topo: Container(
+                        padding: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppColors.primarySoft,
+                            width: 3,
+                          ),
+                        ),
+                        child: UserAvatar(
+                          avatarUrl: _args.avatarContraparte,
+                          radius: 32,
+                        ),
+                      ),
+                      titulo: _args.nomeContraparte,
+                      subtituloTitulo: _args.papelContraparte,
+                      pergunta: 'Como foi com ${_args.nomeContraparte}?',
+                      nota: _notaPessoa,
+                      onNota: (v) => setState(() => _notaPessoa = v),
+                      controller: _mensagemPessoaController,
+                      hintComentario: 'Deixe um comentário (opcional)',
+                    ),
+                    const SizedBox(height: 24),
+                    Text('Algo deu errado?', style: AppTextStyles.titulo),
+                    const SizedBox(height: 12),
+                    SecaoCard(
+                      child: Column(
+                        children: [
+                          if (_args.avaliarServico) ...[
+                            _AcaoProblema(
+                              icone: Icons.gavel_rounded,
+                              cor: AppColors.warning,
+                              titulo: 'Contestar o serviço',
+                              subtitulo: 'O serviço não foi como combinado',
+                              onTap: _enviando ? null : _contestar,
+                            ),
+                            const Divider(height: 24, color: AppColors.outline),
+                          ],
+                          _AcaoProblema(
+                            icone: Icons.flag_rounded,
+                            cor: AppColors.error,
+                            titulo: 'Denunciar ${_args.nomeContraparte}',
+                            subtitulo: 'Relatar um problema com a pessoa',
+                            onTap: _enviando ? null : _denunciar,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          _RodapeAcoes(
+            enviando: _enviando,
+            nadaPreenchido: _nadaPreenchido,
+            onEnviar: () => _enviar(),
+            onPular: () => _enviar(pular: true),
           ),
         ],
       ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ErrorBanner(mensagem: _erro),
-              const SizedBox(height: 4),
-              Center(
-                child: Text(
-                  'A avaliação é opcional — mas ajuda a comunidade.',
-                  style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: 16),
-              if (_args.avaliarServico) ...[
-                _buildCardServico(),
-                const SizedBox(height: 16),
-              ],
-              _buildCardPessoa(),
-              const SizedBox(height: 20),
-              AppButton(
-                label: _nadaPreenchido ? 'Pular avaliação' : 'Enviar avaliação',
-                loading: _enviando,
-                onPressed: _enviar,
-              ),
+    );
+  }
+}
+
+/// Card de avaliação (serviço ou pessoa): elemento de topo, título,
+/// pergunta, estrelas com rótulo e comentário que aparece após a nota.
+class _CartaoAvaliacao extends StatelessWidget {
+  final Widget topo;
+  final String titulo;
+  final String? subtituloTitulo;
+  final String pergunta;
+  final int nota;
+  final ValueChanged<int> onNota;
+  final TextEditingController controller;
+  final String hintComentario;
+
+  const _CartaoAvaliacao({
+    required this.topo,
+    required this.titulo,
+    this.subtituloTitulo,
+    required this.pergunta,
+    required this.nota,
+    required this.onNota,
+    required this.controller,
+    required this.hintComentario,
+  });
+
+  OutlineInputBorder _borda(Color cor, {double largura = 1}) {
+    return OutlineInputBorder(
+      borderRadius: BorderRadius.circular(14),
+      borderSide: BorderSide(color: cor, width: largura),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SecaoCard(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        child: Column(
+          children: [
+            topo,
+            const SizedBox(height: 12),
+            Text(
+              titulo,
+              style: AppTextStyles.titulo,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+            if (subtituloTitulo != null) ...[
+              const SizedBox(height: 2),
+              Text(subtituloTitulo!, style: AppTextStyles.legenda),
             ],
-          ),
+            const SizedBox(height: 16),
+            Text(
+              pergunta,
+              style: AppTextStyles.corpo,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            RatingInput(valor: nota, onChanged: onNota),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 220),
+              curve: Curves.easeOut,
+              alignment: Alignment.topCenter,
+              child: nota == 0
+                  ? const SizedBox(width: double.infinity)
+                  : Padding(
+                      padding: const EdgeInsets.only(top: 16),
+                      child: TextField(
+                        controller: controller,
+                        maxLines: 3,
+                        minLines: 3,
+                        maxLength: 300,
+                        textCapitalization: TextCapitalization.sentences,
+                        cursorColor: AppColors.primary,
+                        style: AppTextStyles.corpo.copyWith(
+                          color: AppColors.textoTitulo,
+                        ),
+                        decoration: InputDecoration(
+                          hintText: hintComentario,
+                          hintStyle: AppTextStyles.corpo.copyWith(
+                            color: AppColors.textoSecundario,
+                          ),
+                          filled: true,
+                          fillColor: AppColors.surfaceAlt,
+                          contentPadding: const EdgeInsets.all(16),
+                          counterStyle: AppTextStyles.legenda,
+                          border: _borda(Colors.transparent),
+                          enabledBorder: _borda(Colors.transparent),
+                          focusedBorder: _borda(
+                            AppColors.primary,
+                            largura: 1.5,
+                          ),
+                        ),
+                      ),
+                    ),
+            ),
+          ],
         ),
       ),
     );
   }
+}
 
-  Widget _buildCardServico() {
+class _IconeServico extends StatelessWidget {
+  const _IconeServico();
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+      width: 64,
+      height: 64,
+      decoration: const BoxDecoration(
+        color: AppColors.primarySoft,
+        shape: BoxShape.circle,
       ),
-      child: Column(
+      child: const Icon(
+        Icons.handyman_rounded,
+        color: AppColors.primary,
+        size: 30,
+      ),
+    );
+  }
+}
+
+/// Linha clicável de ação secundária (contestar / denunciar).
+class _AcaoProblema extends StatelessWidget {
+  final IconData icone;
+  final Color cor;
+  final String titulo;
+  final String subtitulo;
+  final VoidCallback? onTap;
+
+  const _AcaoProblema({
+    required this.icone,
+    required this.cor,
+    required this.titulo,
+    required this.subtitulo,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Row(
         children: [
-          Text(
-            _args.nomeServico,
-            style: AppTextStyles.corpo.copyWith(fontWeight: FontWeight.w700),
-            textAlign: TextAlign.center,
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: cor.withValues(alpha: 0.12),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icone, color: cor, size: 20),
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Como foi sua experiência com esse serviço?',
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 13),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
-          RatingInput(
-            valor: _notaServico,
-            onChanged: (v) => setState(() => _notaServico = v),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _mensagemServicoController,
-            maxLines: 3,
-            decoration: InputDecoration(
-              labelText: 'Comentário sobre o serviço (opcional)',
-              alignLabelWithHint: true,
-              filled: true,
-              fillColor: AppColors.background,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
-              ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  titulo,
+                  style: AppTextStyles.corpo.copyWith(
+                    color: AppColors.textoTitulo,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 2),
+                Text(subtitulo, style: AppTextStyles.legenda),
+              ],
             ),
           ),
-          const SizedBox(height: 8),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton.icon(
-              onPressed: _enviando ? null : _contestar,
-              icon: Icon(
-                Icons.report_gmailerrorred_outlined,
-                size: 16,
-                color: Colors.grey.shade600,
-              ),
-              label: Text(
-                'Contestar o serviço',
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-              ),
-            ),
+          const Icon(
+            Icons.chevron_right_rounded,
+            color: AppColors.textoSecundario,
           ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildCardPessoa() {
+/// Rodapé fixo com a ação principal e o "pular".
+class _RodapeAcoes extends StatelessWidget {
+  final bool enviando;
+  final bool nadaPreenchido;
+  final VoidCallback onEnviar;
+  final VoidCallback onPular;
+
+  const _RodapeAcoes({
+    required this.enviando,
+    required this.nadaPreenchido,
+    required this.onEnviar,
+    required this.onPular,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(top: BorderSide(color: AppColors.outline)),
       ),
-      child: Column(
-        children: [
-          UserAvatar(avatarUrl: _args.avatarContraparte, radius: 32),
-          const SizedBox(height: 10),
-          Text(
-            _args.nomeContraparte,
-            style: AppTextStyles.corpo.copyWith(fontWeight: FontWeight.w700),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 2),
-          Text(
-            _args.papelContraparte,
-            style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-          ),
-          const SizedBox(height: 16),
-          RatingInput(
-            valor: _notaPessoa,
-            onChanged: (v) => setState(() => _notaPessoa = v),
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _mensagemPessoaController,
-            maxLines: 3,
-            decoration: InputDecoration(
-              labelText: 'Comentário sobre ${_args.nomeContraparte} (opcional)',
-              alignLabelWithHint: true,
-              filled: true,
-              fillColor: AppColors.background,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide.none,
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 12, 20, 8),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              AppButton(
+                label: 'Enviar avaliação',
+                loading: enviando,
+                onPressed: nadaPreenchido ? null : onEnviar,
               ),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Align(
-            alignment: Alignment.centerRight,
-            child: TextButton.icon(
-              onPressed: _enviando ? null : _denunciar,
-              icon: Icon(
-                Icons.flag_outlined,
-                size: 16,
-                color: Colors.grey.shade600,
+              TextButton(
+                onPressed: enviando ? null : onPular,
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.textoSecundario,
+                ),
+                child: const Text('Pular por agora'),
               ),
-              label: Text(
-                'Denunciar ${_args.nomeContraparte}',
-                style: TextStyle(color: Colors.grey.shade600, fontSize: 12),
-              ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

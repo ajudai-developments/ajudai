@@ -6,6 +6,7 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/app_button.dart';
 import '../../core/widgets/async_list_view.dart';
+import '../../core/widgets/cabecalho_simples.dart';
 import 'endereco_repository.dart';
 
 /// Limite de endereços por usuário, espelhando a regra já validada no
@@ -16,8 +17,8 @@ const _limiteEnderecos = 3;
 
 /// Lista de endereços do usuário.
 ///
-/// Cada endereço é um cartão tocável (toque = editar). O botão de adicionar
-/// fica fixo no rodapé, no mesmo padrão do formulário de endereço.
+/// Cabeçalho vermelho da marca, cada endereço como cartão tocável (toque =
+/// editar) e botão de adicionar fixo no rodapé.
 class MeusEnderecosScreen extends StatefulWidget {
   const MeusEnderecosScreen({super.key});
 
@@ -51,33 +52,37 @@ class _MeusEnderecosScreenState extends State<MeusEnderecosScreen> {
 
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        scrolledUnderElevation: 0,
-        centerTitle: false,
-        titleSpacing: 0,
-        title: const Text('Meus endereços', style: AppTextStyles.titulo),
-      ),
-      body: AsyncListView<Endereco>(
-        key: _listKey,
-        carregar: _enderecoRepository.obterMeusEnderecos,
-        mensagemVazio:
-            'Você ainda não tem endereços.\nAdicione um para agendar serviços.',
-        onDadosCarregados: (enderecos) {
-          if (mounted) setState(() => _totalEnderecos = enderecos.length);
-        },
-        builder: (context, enderecos) => Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            for (final endereco in enderecos) ...[
-              _EnderecoCard(
-                endereco: endereco,
-                onTap: () => _abrirFormulario(enderecoParaEditar: endereco),
+      body: Column(
+        children: [
+          const CabecalhoSimples(
+            titulo: 'Meus endereços',
+            subtitulo: 'Onde você quer receber os serviços',
+          ),
+          Expanded(
+            child: AsyncListView<Endereco>(
+              key: _listKey,
+              carregar: _enderecoRepository.obterMeusEnderecos,
+              mensagemVazio:
+                  'Você ainda não tem endereços.\nAdicione um para agendar serviços.',
+              onDadosCarregados: (enderecos) {
+                if (mounted) setState(() => _totalEnderecos = enderecos.length);
+              },
+              builder: (context, enderecos) => Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (final endereco in enderecos) ...[
+                    _EnderecoCard(
+                      endereco: endereco,
+                      onTap: () =>
+                          _abrirFormulario(enderecoParaEditar: endereco),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                ],
               ),
-              const SizedBox(height: 12),
-            ],
-          ],
-        ),
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: Container(
         decoration: const BoxDecoration(

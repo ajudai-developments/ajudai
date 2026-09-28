@@ -10,7 +10,8 @@ import '../theme/app_colors.dart';
 /// (label + controller + erro etc.) continuam funcionando sem mudança.
 ///
 /// Quando [obscureText] é true, o campo ganha sozinho o botão de
-/// mostrar/ocultar senha.
+/// mostrar/ocultar senha. Para textos longos (descrições), use
+/// [maxLines] > 1 (e opcionalmente [minLines]).
 class AppTextField extends StatefulWidget {
   final String label;
   final TextEditingController controller;
@@ -24,9 +25,12 @@ class AppTextField extends StatefulWidget {
   final String? hint;
   final TextInputAction? textInputAction;
   final ValueChanged<String>? onSubmitted;
+  final ValueChanged<String>? onChanged;
   final List<TextInputFormatter>? inputFormatters;
   final Iterable<String>? autofillHints;
   final TextCapitalization textCapitalization;
+  final int maxLines;
+  final int? minLines;
 
   const AppTextField({
     super.key,
@@ -40,9 +44,12 @@ class AppTextField extends StatefulWidget {
     this.hint,
     this.textInputAction,
     this.onSubmitted,
+    this.onChanged,
     this.inputFormatters,
     this.autofillHints,
     this.textCapitalization = TextCapitalization.none,
+    this.maxLines = 1,
+    this.minLines,
   });
 
   @override
@@ -61,6 +68,8 @@ class _AppTextFieldState extends State<AppTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final multilinha = !widget.obscureText && widget.maxLines > 1;
+
     return TextField(
       controller: widget.controller,
       obscureText: _oculto,
@@ -68,14 +77,19 @@ class _AppTextFieldState extends State<AppTextField> {
       keyboardType: widget.keyboardType,
       textInputAction: widget.textInputAction,
       onSubmitted: widget.onSubmitted,
+      onChanged: widget.onChanged,
       inputFormatters: widget.inputFormatters,
       autofillHints: widget.autofillHints,
       textCapitalization: widget.textCapitalization,
+      maxLines: widget.obscureText ? 1 : widget.maxLines,
+      minLines: widget.obscureText ? null : widget.minLines,
       cursorColor: AppColors.primary,
       decoration: InputDecoration(
         labelText: widget.label,
         hintText: widget.hint,
         errorText: widget.erro,
+        alignLabelWithHint: multilinha,
+        floatingLabelStyle: const TextStyle(color: AppColors.primary),
         filled: true,
         fillColor: AppColors.surfaceAlt,
         contentPadding: const EdgeInsets.symmetric(

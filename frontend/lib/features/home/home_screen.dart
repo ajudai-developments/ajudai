@@ -214,11 +214,12 @@ class _HomeScreenState extends State<HomeScreen> {
     ).pushNamed(AppRoutes.servicosLista, arguments: servico);
   }
 
-  void _abrirPrestadorRecente(PrestadorRecente prestador) {
-    Navigator.of(context).pushNamed(
+  void _abrirPrestadorRecente(PrestadorRecente prestador) async {
+    await Navigator.of(context).pushNamed(
       AppRoutes.servicoDetalhe,
       arguments: prestador.servicoOferecidoId,
     );
+    await _carregarAgendamentos();
   }
 
   @override

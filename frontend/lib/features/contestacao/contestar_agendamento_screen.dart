@@ -1,11 +1,11 @@
-import 'package:ajudai/features/denuncia/widgets/seletor_prova.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/errors/erro_mapper.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
-import '../../core/widgets/error_banner.dart';
+import '../../core/widgets/app_text_field.dart';
+import '../../core/widgets/tela_formulario.dart';
 import '../../core/ws/ws_message_stream.dart';
+import '../denuncia/widgets/seletor_prova.dart';
 import 'contestacao_repository.dart';
 
 /// Contestação de um agendamento. Recebe `agendamentoId` (String) via
@@ -29,6 +29,7 @@ class _ContestarAgendamentoScreenState
   List<ItemProva> _provas = [];
   bool _enviando = false;
   String? _erro;
+  String? _erroDescricao;
 
   @override
   void didChangeDependencies() {
@@ -47,13 +48,14 @@ class _ContestarAgendamentoScreenState
   Future<void> _enviar() async {
     final descricao = _descricaoController.text.trim();
     if (descricao.isEmpty) {
-      setState(() => _erro = 'Descreva o que aconteceu.');
+      setState(() => _erroDescricao = 'Descreva o que aconteceu.');
       return;
     }
 
     setState(() {
       _enviando = true;
       _erro = null;
+      _erroDescricao = null;
     });
 
     try {
@@ -71,16 +73,21 @@ class _ContestarAgendamentoScreenState
       );
       Navigator.of(context).pop();
     } on WsErroException catch (e) {
-      setState(
-        () => _erro = ErroMapper.paraMensagem(
-          e.codigo,
-          mensagemServidor: e.mensagem,
-        ),
-      );
+      if (mounted) {
+        setState(
+          () => _erro = ErroMapper.paraMensagem(
+            e.codigo,
+            mensagemServidor: e.mensagem,
+          ),
+        );
+      }
     } on WsTimeoutException {
-      setState(
-        () => _erro = 'Não foi possível conectar ao servidor. Tente novamente.',
-      );
+      if (mounted) {
+        setState(
+          () =>
+              _erro = 'Não foi possível conectar ao servidor. Tente novamente.',
+        );
+      }
     } finally {
       if (mounted) setState(() => _enviando = false);
     }
@@ -88,54 +95,41 @@ class _ContestarAgendamentoScreenState
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Contestar agendamento')),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              ErrorBanner(mensagem: _erro),
-              Text(
-                'O que não saiu como combinado?',
-                style: AppTextStyles.titulo,
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _descricaoController,
-                maxLines: 5,
-                decoration: const InputDecoration(
-                  labelText: 'Descrição',
-                  border: OutlineInputBorder(),
-                  alignLabelWithHint: true,
-                ),
-              ),
-              const SizedBox(height: 20),
-              SeletorProvas(
-                valor: _provas,
-                onChanged: (v) => setState(() => _provas = v),
-              ),
-              const SizedBox(height: 24),
-              FilledButton(
-                onPressed: _enviando ? null : _enviar,
-                style: FilledButton.styleFrom(minimumSize: const Size(0, 48)),
-                child: _enviando
-                    ? const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: Colors.white,
-                        ),
-                      )
-                    : const Text('Enviar contestação'),
-              ),
-            ],
-          ),
+    return TelaFormulario(
+      titulo: 'Contestar agendamento',
+      subtitulo: 'Conte o que não saiu como combinado',
+      rotuloBotao: 'Enviar contestação',
+      enviando: _enviando,
+      onEnviar: _enviar,
+      erro: _erro,
+      children: [
+        const AvisoInformativo(
+          texto:
+              'Nossa equipe vai analisar o caso. Você acompanha o andamento '
+              'em Perfil > Minhas contestações.',
         ),
-      ),
+        const SizedBox(height: 24),
+        Text('O que aconteceu?', style: AppTextStyles.titulo),
+        const SizedBox(height: 12),
+        AppTextField(
+          label: 'Descrição',
+          hint: 'Explique com detalhes o que não saiu como combinado',
+          controller: _descricaoController,
+          erro: _erroDescricao,
+          maxLines: 6,
+          minLines: 4,
+          keyboardType: TextInputType.multiline,
+          textCapitalization: TextCapitalization.sentences,
+          onChanged: (_) {
+            if (_erroDescricao != null) setState(() => _erroDescricao = null);
+          },
+        ),
+        const SizedBox(height: 24),
+        SeletorProvas(
+          valor: _provas,
+          onChanged: (v) => setState(() => _provas = v),
+        ),
+      ],
     );
   }
 }

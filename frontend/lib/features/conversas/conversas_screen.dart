@@ -9,14 +9,15 @@ import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/async_list_view.dart';
+import '../../core/widgets/cabecalho_simples.dart';
 import '../../core/ws/ws_message_stream.dart';
 import 'conversas_repository.dart';
 
 /// Lista de conversas do usuário.
 ///
-/// Cada conversa é uma linha (avatar, nome, última mensagem e horário)
-/// separada por um divisor fino — formato de app de mensagens, em vez de
-/// cartões com borda, porque a lista pode ser longa.
+/// Cabeçalho vermelho da marca + cada conversa como uma linha (avatar,
+/// nome, última mensagem e horário) separada por um divisor fino —
+/// formato de app de mensagens, porque a lista pode ser longa.
 class ConversasScreen extends StatefulWidget {
   const ConversasScreen({super.key});
 
@@ -93,30 +94,34 @@ class _ConversasScreenState extends State<ConversasScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.background,
-        scrolledUnderElevation: 0,
-        centerTitle: false,
-        title: const Text('Conversas', style: AppTextStyles.titulo),
-      ),
-      body: AsyncListView<ConversaResumo>(
-        key: _listKey,
-        carregar: _repository.listarConversas,
-        mensagemVazio:
-            'Você ainda não tem conversas.\nInicie uma pelo perfil de um prestador.',
-        builder: (context, conversas) => Column(
-          children: [
-            for (var i = 0; i < conversas.length; i++)
-              _ConversaItem(
-                conversa: conversas[i],
-                resumo: _resumo(conversas[i]).texto,
-                ehAnexo: _resumo(conversas[i]).anexo,
-                horario: _horario(conversas[i].ultimaMensagemEm),
-                mostrarDivisor: i < conversas.length - 1,
-                onTap: () => _abrirConversa(conversas[i]),
+      body: Column(
+        children: [
+          const CabecalhoSimples(
+            titulo: 'Conversas',
+            subtitulo: 'Suas mensagens com clientes e prestadores',
+          ),
+          Expanded(
+            child: AsyncListView<ConversaResumo>(
+              key: _listKey,
+              carregar: _repository.listarConversas,
+              mensagemVazio:
+                  'Você ainda não tem conversas.\nInicie uma pelo perfil de um prestador.',
+              builder: (context, conversas) => Column(
+                children: [
+                  for (var i = 0; i < conversas.length; i++)
+                    _ConversaItem(
+                      conversa: conversas[i],
+                      resumo: _resumo(conversas[i]).texto,
+                      ehAnexo: _resumo(conversas[i]).anexo,
+                      horario: _horario(conversas[i].ultimaMensagemEm),
+                      mostrarDivisor: i < conversas.length - 1,
+                      onTap: () => _abrirConversa(conversas[i]),
+                    ),
+                ],
               ),
-          ],
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }

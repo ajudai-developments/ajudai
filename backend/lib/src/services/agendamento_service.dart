@@ -282,7 +282,10 @@ class AgendamentoService {
       );
     }
 
-    if (DateTime.now().toUtc().isBefore(agendamento.horaFim.toUtc())) {
+    final agora = DateTime.now().toUtc();
+    final horaFim = agendamento.horaFim.toUtc();
+
+    if (!agora.isBefore(horaFim)) {
       throw ErroDto(
         codigo: ErroCodigo.dadosInvalidos,
         mensagem: 'Esse agendamento não pode ser iniciado',
