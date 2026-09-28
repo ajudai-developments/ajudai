@@ -68,6 +68,24 @@ class ServicoRepository {
     ).servicos;
   }
 
+  Future<List<ServicoOferecidoPreview>> listarServicosOferecidosPorServicoId({
+    required String servicoId,
+  }) async {
+    await WsClient.instance.conectar();
+
+    WsClient.instance.enviar(
+      ListarServicosOferecidosPorServicoRequestDto(servicoId: servicoId),
+    );
+
+    final json = await WsMessageStream.instance.aguardar(
+      TipoMensagem.listarServicoOferecidoPorServicoOk,
+    );
+
+    return ListarServicosOferecidosPorServicoResponseDto.fromJson(
+      json,
+    ).servicos;
+  }
+
   Future<ObterServicoOferecidoResponseDto> obterServicoOferecido({
     required String servicoOferecidoId,
   }) async {
@@ -81,5 +99,19 @@ class ServicoRepository {
       TipoMensagem.obterServicoOferecidoOk,
     );
     return ObterServicoOferecidoResponseDto.fromJson(json);
+  }
+
+  /// Serviços (do catálogo) que o usuário logado contratou recentemente,
+  /// do mais recente pro mais antigo. Exige usuário logado.
+  /// O `servicoId` serve direto em `listarServicosOferecidosPorServicoId`.
+  Future<List<ServicoRecente>> listarServicosRecentes({int? limite}) async {
+    await WsClient.instance.conectar();
+
+    WsClient.instance.enviar(ListarServicosRecentesRequestDto(limite: limite));
+
+    final json = await WsMessageStream.instance.aguardar(
+      TipoMensagem.listarServicosRecenteOk,
+    );
+    return ListarServicosRecentesResponseDto.fromJson(json).servicos;
   }
 }

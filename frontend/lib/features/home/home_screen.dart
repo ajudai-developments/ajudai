@@ -1,4 +1,5 @@
 import 'package:ajudai/core/ws/ws_message_stream.dart';
+import 'package:ajudai/features/usuario/usuario_repository.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -12,6 +13,8 @@ import '../../core/widgets/categoria_card.dart';
 import '../servico/servico_repository.dart';
 import 'home_repository.dart';
 import 'widgets/agendamento_proximo_card.dart';
+import 'widgets/prestador_recente_card.dart';
+import 'widgets/servico_recente_card.dart';
 
 /// Quantidade de categorias mostradas na grade da Home antes de precisar
 /// tocar em "Ver mais" (que leva pra categorias_screen, com a lista
@@ -32,10 +35,16 @@ const _maxCategoriasNaHome = 6;
 /// 3. Categorias de serviço — grade com as primeiras
 ///    [_maxCategoriasNaHome], "Ver mais" abre categorias_screen com a
 ///    lista completa.
-/// 4. Central de suporte — atalhos pra Minhas contestações e Minhas
-///    denúncias. Só aparece logado (são telas de "minhas ...").
-/// 5. "Serviços recentes" — NÃO implementar ainda (sem endpoint no
-///    backend). Seção fica oculta até existir.
+/// 4. Serviços recentes — só logado. Lista horizontal dos serviços que o
+///    usuário contratou por último; tocar abre a lista de prestadores
+///    daquele serviço (servicos_lista_screen). Oculta se não houver nada.
+/// 5. Prestadores recentes — só logado. Lista horizontal dos prestadores
+///    contratados por último; tocar abre o detalhe do serviço que o
+///    usuário contratou com ele. Oculta se não houver nada.
+///
+/// As seções de recentes são secundárias: se a chamada falhar, elas
+/// simplesmente não aparecem (não vale mostrar erro na Home por causa
+/// delas).
 ///
 /// Categorias e agendamentos são buscados com estado próprio (não usa
 /// AsyncListView) porque esta tela tem várias seções na mesma lista
@@ -51,6 +60,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final _servicoRepository = ServicoRepository();
+  final _usuarioRepository = UsuarioRepository();
   final _homeRepository = HomeRepository();
 
   bool _carregandoCategorias = true;
@@ -62,15 +72,23 @@ class _HomeScreenState extends State<HomeScreen> {
   AgendamentoDetalhadoCliente? _agendamentoCliente;
   AgendamentoDetalhadoPrestador? _agendamentoPrestador;
 
+  List<ServicoRecente> _servicosRecentes = [];
+  List<PrestadorRecente> _prestadoresRecentes = [];
+
   @override
   void initState() {
     super.initState();
     _carregarCategorias();
     _carregarAgendamentos();
+    _carregarRecentes();
   }
 
   Future<void> _atualizarTudo() async {
-    await Future.wait([_carregarCategorias(), _carregarAgendamentos()]);
+    await Future.wait([
+      _carregarCategorias(),
+      _carregarAgendamentos(),
+      _carregarRecentes(),
+    ]);
   }
 
   Future<void> _carregarCategorias() async {
@@ -145,10 +163,62 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  /// Serviços e prestadores recentes. As duas chamadas são feitas uma de
+  /// cada vez (o protocolo WS não tem id de correlação — ver
+  /// WsMessageStream.aguardar) e falhas são silenciosas: a seção só
+  /// não aparece.
+  Future<void> _carregarRecentes() async {
+    if (!Sessao.instance.estaLogado) {
+      setState(() {
+        _servicosRecentes = [];
+        _prestadoresRecentes = [];
+      });
+      return;
+    }
+
+    var servicos = <ServicoRecente>[];
+    var prestadores = <PrestadorRecente>[];
+
+    try {
+      servicos = await _servicoRepository.listarServicosRecentes();
+    } on WsErroException {
+      // seção opcional: sem erro na tela
+    } on WsTimeoutException {
+      // seção opcional: sem erro na tela
+    }
+
+    try {
+      prestadores = await _usuarioRepository.listarPrestadoresRecentes();
+    } on WsErroException {
+      // seção opcional: sem erro na tela
+    } on WsTimeoutException {
+      // seção opcional: sem erro na tela
+    }
+
+    if (!mounted) return;
+    setState(() {
+      _servicosRecentes = servicos;
+      _prestadoresRecentes = prestadores;
+    });
+  }
+
   void _abrirCategoria(Categoria categoria) {
     Navigator.of(
       context,
     ).pushNamed(AppRoutes.servicosLista, arguments: categoria);
+  }
+
+  void _abrirServicoRecente(ServicoRecente servico) {
+    Navigator.of(
+      context,
+    ).pushNamed(AppRoutes.servicosLista, arguments: servico);
+  }
+
+  void _abrirPrestadorRecente(PrestadorRecente prestador) {
+    Navigator.of(context).pushNamed(
+      AppRoutes.servicoDetalhe,
+      arguments: prestador.servicoOferecidoId,
+    );
   }
 
   @override
@@ -179,6 +249,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 12),
                   _buildCategorias(),
+
+                  _buildServicosRecentesSection(),
+                  _buildPrestadoresRecentesSection(),
                 ],
               ),
             ),
@@ -331,6 +404,70 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () => _abrirCategoria(categoria),
           ),
       ],
+    );
+  }
+
+  Widget _buildServicosRecentesSection() {
+    if (!Sessao.instance.estaLogado || _servicosRecentes.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 28),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionHeader(titulo: 'Serviços recentes'),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 120,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: _servicosRecentes.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 12),
+              itemBuilder: (context, i) {
+                final servico = _servicosRecentes[i];
+                return ServicoRecenteCard(
+                  servico: servico,
+                  onTap: () => _abrirServicoRecente(servico),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPrestadoresRecentesSection() {
+    if (!Sessao.instance.estaLogado || _prestadoresRecentes.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 28),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSectionHeader(titulo: 'Prestadores recentes'),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 112,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: _prestadoresRecentes.length,
+              separatorBuilder: (_, _) => const SizedBox(width: 8),
+              itemBuilder: (context, i) {
+                final prestador = _prestadoresRecentes[i];
+                return PrestadorRecenteCard(
+                  prestador: prestador,
+                  onTap: () => _abrirPrestadorRecente(prestador),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

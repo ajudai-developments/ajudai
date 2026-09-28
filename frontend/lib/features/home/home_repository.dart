@@ -9,11 +9,6 @@ import '../../core/ws/ws_message_stream.dart';
 /// Categorias de serviço NÃO ficam aqui — usar ServicoRepository
 /// (features/servico/servico_repository.dart), que é a fonte única de
 /// verdade pra isso e também é usado pela categorias_screen.
-///
-/// NÃO implementar ainda, pois o backend não suporta:
-/// - "serviços recentes" (não existe endpoint/tabela para isso);
-/// - busca por serviço/prestador (sem filtro implementado);
-/// - serviços próximos por localização (sem geolocalização mapeada).
 class HomeRepository {
   /// Agendamento mais próximo em que o usuário logado é o CLIENTE
   /// (ele contratou um prestador). `null` se não houver nenhum dentro
@@ -50,10 +45,4 @@ class HomeRepository {
       json,
     ).agendamento;
   }
-
-  // TODO: Future<List<ServicoOferecidoPreview>> obterServicosRecentes()
-  //   — aguardando endpoint no backend.
-
-  // TODO: Future<List<ServicoOferecidoPreview>> buscarServicosProximos()
-  //   — aguardando geolocalização + endpoint no backend.
 }

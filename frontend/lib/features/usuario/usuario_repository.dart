@@ -93,4 +93,22 @@ class UsuarioRepository {
     );
     return BuscarPerfilEstatisticasResponseDto.fromJson(json).estatisticas;
   }
+
+  /// Prestadores que o usuário logado contratou recentemente (um por
+  /// prestador). Cada item traz o `servicoOferecidoId` da contratação
+  /// mais recente com ele, pra abrir o detalhe do serviço.
+  Future<List<PrestadorRecente>> listarPrestadoresRecentes({
+    int? limite,
+  }) async {
+    await WsClient.instance.conectar();
+
+    WsClient.instance.enviar(
+      ListarPrestadoresRecentesRequestDto(limite: limite),
+    );
+
+    final json = await WsMessageStream.instance.aguardar(
+      TipoMensagem.listarPrestadoresRecenteOk,
+    );
+    return ListarPrestadoresRecentesResponseDto.fromJson(json).prestadores;
+  }
 }

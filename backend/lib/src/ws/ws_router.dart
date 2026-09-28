@@ -164,6 +164,8 @@ class WsRouter {
   }
 
   Future<void> rotear(WsConnection conexao, Map<String, dynamic> msg) async {
+    print("Mensagem recebida: $msg");
+    print("Tipo: ${msg['tipo']}");
     final tipo = TipoMensagem.fromValor(msg['tipo'] as String?);
 
     if (tipo == null) {
