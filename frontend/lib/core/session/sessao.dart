@@ -1,21 +1,19 @@
 import 'package:ajudai/core/session/permissoes.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shared/shared.dart';
 
 /// Guarda o usuário autenticado na sessão atual do app.
 ///
-/// Usado pelas telas para decidir o que mostrar (ex: seção de prestador
-/// só aparece se ehPrestador == true). Como o app usa setState simples
-/// (sem gerenciador de estado), esta classe é só um "cofre" de leitura —
-/// ela NÃO notifica ninguém quando muda. Uma tela que precise reagir a
-/// login/logout deve navegar (push/pushReplacement) em vez de esperar
-/// rebuild automático.
-class Sessao {
+/// Agora é um ChangeNotifier: quem depende da sessão (sidebar web,
+/// bottom nav, etc.) pode escutar via ListenableBuilder/AnimatedBuilder
+/// em vez de depender de rebuild por navegação — importante no layout
+/// web, onde às vezes login/logout acontece sem trocar de tela.
+class Sessao extends ChangeNotifier {
   Sessao._();
   static final Sessao instance = Sessao._();
 
   Usuario? _usuario;
 
-  /// Só leitura por fora — a única forma de mudar é via definirUsuario/limpar.
   Usuario? get usuario => _usuario;
 
   bool get estaLogado => _usuario != null;
@@ -25,7 +23,13 @@ class Sessao {
   bool get ehAdmin => _usuario?.userRole == UserRole.admin;
   Permissoes get permissoes => Permissoes(papel: usuario?.userRole);
 
-  void definirUsuario(Usuario u) => _usuario = u;
+  void definirUsuario(Usuario u) {
+    _usuario = u;
+    notifyListeners();
+  }
 
-  void limpar() => _usuario = null;
+  void limpar() {
+    _usuario = null;
+    notifyListeners();
+  }
 }

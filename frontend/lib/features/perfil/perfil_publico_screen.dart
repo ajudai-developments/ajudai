@@ -329,6 +329,8 @@ class _Cabecalho extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final usuario = dados?.usuario;
+    final selos = dados?.selos;
+    final selosNaoEstaVazio = selos != null && selos.isNotEmpty;
 
     return Container(
       width: double.infinity,
@@ -337,94 +339,133 @@ class _Cabecalho extends StatelessWidget {
         borderRadius: comoCartao
             ? BorderRadius.circular(20)
             : const BorderRadius.only(
-                bottomLeft: Radius.circular(28),
-                bottomRight: Radius.circular(28),
+                bottomLeft: Radius.circular(24),
+                bottomRight: Radius.circular(24),
               ),
       ),
       padding: EdgeInsets.only(
         top: comoCartao ? 0 : MediaQuery.of(context).padding.top,
       ),
       child: Padding(
-        padding: EdgeInsets.fromLTRB(12, comoCartao ? 24 : 4, 12, 24),
+        padding: EdgeInsets.fromLTRB(20, comoCartao ? 20 : 12, 8, 18),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (!comoCartao)
-              Align(
-                alignment: Alignment.topLeft,
-                child: IconButton(
-                  onPressed: () => Navigator.of(context).maybePop(),
-                  icon: const Icon(
-                    Icons.arrow_back_rounded,
-                    color: Colors.white,
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Área clicável: avatar + nome → perfil completo
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: const BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                        ),
+                        child: UserAvatar(
+                          avatarUrl: usuario?.avatarUrl,
+                          radius: 28,
+                        ),
+                      ),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              children: [
+                                Flexible(
+                                  child: Text(
+                                    usuario!.nome,
+                                    style: AppTextStyles.display.copyWith(
+                                      color: Colors.white,
+                                      fontSize: 18,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                                const SizedBox(width: 2),
+                                const Icon(
+                                  Icons.chevron_right_rounded,
+                                  color: Colors.white70,
+                                  size: 20,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Wrap(
+                              spacing: 10,
+                              runSpacing: 4,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              children: [
+                                if (usuario.verificado)
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 3,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withValues(
+                                        alpha: 0.18,
+                                      ),
+                                      borderRadius: BorderRadius.circular(999),
+                                    ),
+                                    child: const Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.verified,
+                                          size: 12,
+                                          color: Colors.white,
+                                        ),
+                                        SizedBox(width: 4),
+                                        Text(
+                                          'Verificado',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                if (carregando)
+                                  const SizedBox(
+                                    height: 14,
+                                    width: 14,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                else
+                                  RatingDisplay(
+                                    media: dados?.mediaAvaliacaoUsuario,
+                                    quantidadeAvaliacoes:
+                                        dados?.quantidadeAvaliacoesUsuario ?? 0,
+                                    cor: Colors.white,
+                                  ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ),
-            Container(
-              padding: const EdgeInsets.all(3),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                shape: BoxShape.circle,
-              ),
-              child: UserAvatar(avatarUrl: usuario?.avatarUrl, radius: 38),
+              ],
             ),
-            const SizedBox(height: 12),
-            Text(
-              usuario?.nome ?? (carregando ? 'Carregando...' : 'Perfil'),
-              style: AppTextStyles.display.copyWith(
-                color: Colors.white,
-                fontSize: 20,
+            if (!carregando && selosNaoEstaVazio) ...[
+              const SizedBox(height: 12),
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: SelosDestaque(selos: selos, sobreFundoEscuro: true),
               ),
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            if (usuario != null && usuario.verificado) ...[
-              const SizedBox(height: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 10,
-                  vertical: 4,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.18),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.verified, size: 14, color: Colors.white),
-                    SizedBox(width: 4),
-                    Text(
-                      'Verificado',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-            if (dados != null && dados!.ehPrestador) ...[
-              const SizedBox(height: 10),
-              RatingDisplay(
-                media: dados!.mediaAvaliacaoUsuario,
-                quantidadeAvaliacoes: dados!.quantidadeAvaliacoesUsuario,
-                cor: Colors.white,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                '${dados!.quantidadeServicosConcluidos} serviços concluídos',
-                style: TextStyle(
-                  fontSize: 12.5,
-                  color: Colors.white.withValues(alpha: 0.85),
-                ),
-              ),
-            ],
-            if (dados != null && dados!.selos.isNotEmpty) ...[
-              const SizedBox(height: 16),
-              SelosDestaque(selos: dados!.selos, sobreFundoEscuro: true),
             ],
           ],
         ),

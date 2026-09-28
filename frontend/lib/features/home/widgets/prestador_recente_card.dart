@@ -1,8 +1,8 @@
+import 'package:ajudai/core/widgets/prestador_avatar.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
 import '../../../core/theme/app_text_styles.dart';
-import '../../../core/widgets/user_avatar.dart';
 
 /// Card compacto de um prestador recente (foto + nome), usado na Home.
 /// Ao tocar, o chamador leva pro detalhe do serviço que o usuário
@@ -28,7 +28,11 @@ class PrestadorRecenteCard extends StatelessWidget {
           padding: const EdgeInsets.symmetric(vertical: 4),
           child: Column(
             children: [
-              UserAvatar(avatarUrl: prestador.prestadorAvatarUrl, radius: 30),
+              PrestadorAvatar(
+                avatarUrl: prestador.prestadorAvatarUrl,
+                nome: prestador.prestadorNome,
+                verificado: prestador.prestadorVerificado,
+              ),
               const SizedBox(height: 8),
               Text(
                 prestador.prestadorNome,

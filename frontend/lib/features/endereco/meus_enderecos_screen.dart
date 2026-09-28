@@ -1,3 +1,6 @@
+import 'package:ajudai/core/layout/responsivo.dart';
+import 'package:ajudai/core/widgets/grade_adaptativa.dart';
+import 'package:ajudai/core/widgets/tela_adaptativa.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -19,6 +22,7 @@ const _limiteEnderecos = 3;
 ///
 /// Cabeçalho vermelho da marca, cada endereço como cartão tocável (toque =
 /// editar) e botão de adicionar fixo no rodapé.
+
 class MeusEnderecosScreen extends StatefulWidget {
   const MeusEnderecosScreen({super.key});
 
@@ -30,8 +34,6 @@ class _MeusEnderecosScreenState extends State<MeusEnderecosScreen> {
   final _enderecoRepository = EnderecoRepository();
   final _listKey = GlobalKey<AsyncListViewState<Endereco>>();
 
-  // Só usado pra decidir se o botão de adicionar fica desabilitado — a
-  // lista em si é renderizada e mantida pelo AsyncListView.
   int _totalEnderecos = 0;
 
   Future<void> _abrirFormulario({Endereco? enderecoParaEditar}) async {
@@ -39,8 +41,6 @@ class _MeusEnderecosScreenState extends State<MeusEnderecosScreen> {
       context,
     ).pushNamed(AppRoutes.formEndereco, arguments: enderecoParaEditar);
 
-    // form_endereco_screen retorna `true` via Navigator.pop(true) quando
-    // criar/editar tem sucesso, pra sabermos que precisa recarregar.
     if (resultado == true) {
       _listKey.currentState?.recarregar();
     }
@@ -49,15 +49,19 @@ class _MeusEnderecosScreenState extends State<MeusEnderecosScreen> {
   @override
   Widget build(BuildContext context) {
     final atingiuLimite = _totalEnderecos >= _limiteEnderecos;
+    final web = context.usaLayoutWeb;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Column(
+    return TelaAdaptativa(
+      titulo: 'Meus endereços',
+      rotaAtual: AppRoutes.meuPerfil,
+      semAppBarMobile: true,
+      child: Column(
         children: [
-          const CabecalhoSimples(
-            titulo: 'Meus endereços',
-            subtitulo: 'Onde você quer receber os serviços',
-          ),
+          if (!web)
+            const CabecalhoSimples(
+              titulo: 'Meus endereços',
+              subtitulo: 'Onde você quer receber os serviços',
+            ),
           Expanded(
             child: AsyncListView<Endereco>(
               key: _listKey,
@@ -65,57 +69,81 @@ class _MeusEnderecosScreenState extends State<MeusEnderecosScreen> {
               mensagemVazio:
                   'Você ainda não tem endereços.\nAdicione um para agendar serviços.',
               onDadosCarregados: (enderecos) {
-                if (mounted) setState(() => _totalEnderecos = enderecos.length);
+                if (mounted) {
+                  setState(() => _totalEnderecos = enderecos.length);
+                }
               },
-              builder: (context, enderecos) => Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (final endereco in enderecos) ...[
+              builder: (context, enderecos) {
+                final cards = [
+                  for (final endereco in enderecos)
                     _EnderecoCard(
                       endereco: endereco,
                       onTap: () =>
                           _abrirFormulario(enderecoParaEditar: endereco),
                     ),
-                    const SizedBox(height: 12),
-                  ],
-                ],
+                ];
+
+                return web
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: GradeAdaptativa(
+                          larguraMinItem: 300,
+                          maxColunas: 3,
+                          children: cards,
+                        ),
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          for (final card in cards) ...[
+                            card,
+                            const SizedBox(height: 12),
+                          ],
+                        ],
+                      );
+              },
+            ),
+          ),
+          Container(
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              color: AppColors.surface,
+              border: Border(top: BorderSide(color: AppColors.outline)),
+            ),
+            child: SafeArea(
+              top: false,
+              child: ConteudoCentralizado(
+                larguraMax: 560,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: Text(
+                          atingiuLimite
+                              ? 'Você atingiu o limite de $_limiteEnderecos endereços. '
+                                    'Edite ou troque um deles.'
+                              : '$_totalEnderecos de $_limiteEnderecos endereços',
+                          style: AppTextStyles.legenda,
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      AppButton(
+                        label: 'Adicionar endereço',
+                        onPressed: atingiuLimite
+                            ? null
+                            : () => _abrirFormulario(),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
         ],
-      ),
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          border: Border(top: BorderSide(color: AppColors.outline)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: Text(
-                    atingiuLimite
-                        ? 'Você atingiu o limite de $_limiteEnderecos endereços. '
-                              'Edite ou troque um deles.'
-                        : '$_totalEnderecos de $_limiteEnderecos endereços',
-                    style: AppTextStyles.legenda,
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-                AppButton(
-                  label: 'Adicionar endereço',
-                  onPressed: atingiuLimite ? null : () => _abrirFormulario(),
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }

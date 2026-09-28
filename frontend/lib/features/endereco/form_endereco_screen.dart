@@ -1,3 +1,6 @@
+import 'package:ajudai/core/layout/responsivo.dart';
+import 'package:ajudai/core/routes/app_routes.dart';
+import 'package:ajudai/core/widgets/tela_adaptativa.dart';
 import 'package:ajudai/core/ws/ws_message_stream.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
@@ -231,16 +234,15 @@ class _FormEnderecoScreenState extends State<FormEnderecoScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Só deixa salvar depois que o CEP atual foi confirmado — evita
-    // enviar um endereço pra um CEP que nunca foi validado.
     final podeSalvar =
         _cepVerificado != null &&
         _nomeController.text.trim().isNotEmpty &&
         _numeroController.text.trim().isNotEmpty;
 
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
+    return TelaAdaptativa(
+      titulo: _ehEdicao ? 'Editar endereço' : 'Novo endereço',
+      rotaAtual: AppRoutes.meuPerfil, // endereço é sub-tela do perfil
+      appBarMobile: AppBar(
         backgroundColor: AppColors.background,
         scrolledUnderElevation: 0,
         centerTitle: false,
@@ -250,10 +252,11 @@ class _FormEnderecoScreenState extends State<FormEnderecoScreen> {
           style: AppTextStyles.titulo,
         ),
       ),
-      body: SafeArea(
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: () => FocusScope.of(context).unfocus(),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: () => FocusScope.of(context).unfocus(),
+        child: ConteudoCentralizado(
+          larguraMax: 560,
           child: SingleChildScrollView(
             keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
             padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
@@ -272,10 +275,7 @@ class _FormEnderecoScreenState extends State<FormEnderecoScreen> {
                   style: AppTextStyles.corpo,
                 ),
                 const SizedBox(height: 24),
-
                 ErrorBanner(mensagem: _erroGeral),
-
-                // CEP
                 AppTextField(
                   label: 'CEP',
                   hint: '00000-000',
@@ -287,8 +287,6 @@ class _FormEnderecoScreenState extends State<FormEnderecoScreen> {
                 ),
                 _ResultadoCep(carregando: _verificandoCep, cep: _cepVerificado),
                 const SizedBox(height: 16),
-
-                // Número + complemento
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -314,8 +312,6 @@ class _FormEnderecoScreenState extends State<FormEnderecoScreen> {
                   ],
                 ),
                 const SizedBox(height: 28),
-
-                // Nome do endereço
                 const Text('Salvar como', style: AppTextStyles.titulo),
                 const SizedBox(height: 12),
                 Row(
@@ -340,26 +336,13 @@ class _FormEnderecoScreenState extends State<FormEnderecoScreen> {
                     textCapitalization: TextCapitalization.sentences,
                   ),
                 ],
+                const SizedBox(height: 28),
+                AppButton(
+                  label: _ehEdicao ? 'Salvar alterações' : 'Salvar endereço',
+                  loading: _carregando,
+                  onPressed: podeSalvar ? _salvar : null,
+                ),
               ],
-            ),
-          ),
-        ),
-      ),
-
-      // Botão fixo no rodapé.
-      bottomNavigationBar: Container(
-        decoration: const BoxDecoration(
-          color: AppColors.surface,
-          border: Border(top: BorderSide(color: AppColors.outline)),
-        ),
-        child: SafeArea(
-          top: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
-            child: AppButton(
-              label: _ehEdicao ? 'Salvar alterações' : 'Salvar endereço',
-              loading: _carregando,
-              onPressed: podeSalvar ? _salvar : null,
             ),
           ),
         ),

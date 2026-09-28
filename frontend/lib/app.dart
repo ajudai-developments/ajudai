@@ -136,6 +136,21 @@ class _AppRootState extends State<_AppRoot> {
 
   static const _rotasAdmin = <String>{AppRoutes.adminDashboard};
 
+  /// Rotas que um admin PODE acessar. Fora dessa lista, qualquer tentativa
+  /// de navegação enquanto logado como admin é redirecionada pro
+  /// dashboard — o admin não deve "passear" pelo app normal (agendar
+  /// serviço, ver categorias etc.), só usar a área administrativa.
+  ///
+  /// login/cadastro/splash ficam de fora de propósito: um admin nunca
+  /// deveria precisar visitar essas telas estando logado, mas não custa
+  /// não travar caso aconteça algo fora do fluxo esperado (deep link, etc).
+  static const _rotasPermitidasParaAdmin = <String>{
+    AppRoutes.adminDashboard,
+    AppRoutes.login,
+    AppRoutes.cadastro,
+    AppRoutes.splash,
+  };
+
   Route<dynamic> _rotaBloqueada(RouteSettings settings, String mensagem) {
     return MaterialPageRoute(
       settings: settings,
@@ -159,6 +174,14 @@ class _AppRootState extends State<_AppRoot> {
     }
     if (_rotasAdmin.contains(nome) && perm.papel != UserRole.admin) {
       return _rotaBloqueada(settings, 'Acesso restrito.');
+    }
+
+    if (perm.papel == UserRole.admin &&
+        !_rotasPermitidasParaAdmin.contains(nome)) {
+      return MaterialPageRoute(
+        settings: const RouteSettings(name: AppRoutes.adminDashboard),
+        builder: (_) => const AdminDashboardScreen(),
+      );
     }
 
     final builders = <String, WidgetBuilder>{

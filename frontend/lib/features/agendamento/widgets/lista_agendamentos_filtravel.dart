@@ -1,3 +1,5 @@
+import 'package:ajudai/core/layout/responsivo.dart';
+import 'package:ajudai/core/widgets/grade_adaptativa.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -169,6 +171,20 @@ class _ListaAgendamentosFiltravelState
                 style: AppTextStyles.corpo,
               ),
             ),
+          )
+        else if (context.usaLayoutWeb)
+          GradeAdaptativa(
+            larguraMinItem: 360,
+            children: [
+              for (final item in filtrados)
+                AgendamentoCard(
+                  item: item,
+                  onTap: () => widget.onTapItem(item),
+                  onExecutarAcao: (acao, {motivo}) =>
+                      _executar(item, acao, motivo: motivo),
+                  onAvaliar: () => widget.onAvaliar(item),
+                ),
+            ],
           )
         else
           for (final item in filtrados)

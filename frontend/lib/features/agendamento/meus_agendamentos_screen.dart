@@ -1,4 +1,8 @@
+import 'package:ajudai/core/layout/responsivo.dart';
+import 'package:ajudai/core/theme/app_text_styles.dart';
+import 'package:ajudai/core/widgets/abas_chips_web.dart';
 import 'package:ajudai/core/widgets/cabecalho_com_abas.dart';
+import 'package:ajudai/core/widgets/tela_adaptativa.dart';
 import 'package:ajudai/features/agendamento/widgets/lista_agendamento_historico.dart';
 import 'package:ajudai/features/avaliacao/avaliar_agendamento_args.dart';
 import 'package:ajudai/features/denuncia/denunciar_usuario_args.dart';
@@ -6,7 +10,6 @@ import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
 import '../../core/routes/app_routes.dart';
-import '../../core/theme/app_colors.dart';
 import '../../core/widgets/app_bottom_nav.dart';
 import '../../core/widgets/async_list_view.dart';
 import '../servico/servico_repository.dart';
@@ -82,66 +85,95 @@ class _MeusAgendamentosScreenState extends State<MeusAgendamentosScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: Column(
-        children: [
-          CabecalhoComAbas(
-            titulo: 'Meus agendamentos',
-            subtitulo: 'Acompanhe os serviços que você contratou',
-            abas: const ['Ativos', 'Histórico'],
-            abaSelecionada: _aba,
-            onTrocarAba: (i) => setState(() => _aba = i),
-            mostrarBotaoVoltar: false,
-          ),
-          Expanded(
-            child: IndexedStack(
-              index: _aba,
-              sizing: StackFit.expand,
-              children: [
-                AsyncListView<AgendamentoComDetalhes>(
-                  key: ValueKey('ativos-$_reloadTick'),
-                  carregar: () async {
-                    final agendamentos = await _agendamentoRepository
-                        .listarAgendamentosCliente();
-                    return carregarComDetalhesCliente(
-                      agendamentos,
-                      _servicoRepository,
-                    );
-                  },
-                  mensagemVazio: 'Você ainda não tem agendamentos.',
-                  builder: (context, itens) => ListaAgendamentosFiltravel(
-                    itens: itens,
-                    onTapItem: _abrirDetalhe,
-                    executarAcao: _executarAcao,
-                    onAvaliar: _abrirAvaliacao,
-                  ),
+    final web = context.usaLayoutWeb;
+
+    final ativos = AsyncListView<AgendamentoComDetalhes>(
+      key: ValueKey('ativos-$_reloadTick'),
+      carregar: () async {
+        final agendamentos = await _agendamentoRepository
+            .listarAgendamentosCliente();
+        return carregarComDetalhesCliente(agendamentos, _servicoRepository);
+      },
+      mensagemVazio: 'Você ainda não tem agendamentos.',
+      builder: (context, itens) => ListaAgendamentosFiltravel(
+        itens: itens,
+        onTapItem: _abrirDetalhe,
+        executarAcao: _executarAcao,
+        onAvaliar: _abrirAvaliacao,
+      ),
+    );
+
+    final historico = AsyncListView<AgendamentoComDetalhes>(
+      key: ValueKey('historico-$_reloadTick'),
+      carregar: () async {
+        final agendamentos = await _agendamentoRepository
+            .listarHistoricoCliente();
+        return carregarComDetalhesCliente(agendamentos, _servicoRepository);
+      },
+      mensagemVazio: 'Nenhum agendamento no seu histórico ainda.',
+      builder: (context, itens) => ListaAgendamentosHistorico(
+        itens: itens,
+        onTapItem: _abrirDetalhe,
+        onAvaliar: _abrirAvaliacao,
+        onDenunciar: _abrirDenuncia,
+        onContestar: _abrirContestacao,
+      ),
+    );
+
+    return TelaAdaptativa(
+      titulo: 'Meus agendamentos',
+      rotaAtual: AppRoutes.meusAgendamentos,
+      semAppBarMobile: true,
+      rodapeMobile: const AppBottomNav(currentIndex: 0),
+      child: web
+          ? ConteudoCentralizado(
+              larguraMax: 1000,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(0, 24, 0, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Acompanhe os serviços que você contratou',
+                      style: AppTextStyles.corpo,
+                    ),
+                    const SizedBox(height: 16),
+                    AbasChipsWeb(
+                      abas: const ['Ativos', 'Histórico'],
+                      selecionada: _aba,
+                      onChanged: (i) => setState(() => _aba = i),
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: IndexedStack(
+                        index: _aba,
+                        sizing: StackFit.expand,
+                        children: [ativos, historico],
+                      ),
+                    ),
+                  ],
                 ),
-                AsyncListView<AgendamentoComDetalhes>(
-                  key: ValueKey('historico-$_reloadTick'),
-                  carregar: () async {
-                    final agendamentos = await _agendamentoRepository
-                        .listarHistoricoCliente();
-                    return carregarComDetalhesCliente(
-                      agendamentos,
-                      _servicoRepository,
-                    );
-                  },
-                  mensagemVazio: 'Nenhum agendamento no seu histórico ainda.',
-                  builder: (context, itens) => ListaAgendamentosHistorico(
-                    itens: itens,
-                    onTapItem: _abrirDetalhe,
-                    onAvaliar: _abrirAvaliacao,
-                    onDenunciar: _abrirDenuncia,
-                    onContestar: _abrirContestacao,
+              ),
+            )
+          : Column(
+              children: [
+                CabecalhoComAbas(
+                  titulo: 'Meus agendamentos',
+                  subtitulo: 'Acompanhe os serviços que você contratou',
+                  abas: const ['Ativos', 'Histórico'],
+                  abaSelecionada: _aba,
+                  onTrocarAba: (i) => setState(() => _aba = i),
+                  mostrarBotaoVoltar: false,
+                ),
+                Expanded(
+                  child: IndexedStack(
+                    index: _aba,
+                    sizing: StackFit.expand,
+                    children: [ativos, historico],
                   ),
                 ),
               ],
             ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: const AppBottomNav(currentIndex: 0),
     );
   }
 }

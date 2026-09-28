@@ -1,3 +1,4 @@
+import 'package:ajudai/core/widgets/prestador_avatar.dart';
 import 'package:ajudai/features/agendamento/widgets/avaliacao_elegibilidade.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
@@ -43,13 +44,6 @@ class AgendamentoHistoricoCard extends StatelessWidget {
     return '${_dois(l.day)}/${_dois(l.month)}/${l.year}';
   }
 
-  String _iniciais(String nome) {
-    final partes = nome.trim().split(RegExp(r'\s+'));
-    if (partes.isEmpty || partes.first.isEmpty) return '?';
-    if (partes.length == 1) return partes.first[0].toUpperCase();
-    return (partes.first[0] + partes.last[0]).toUpperCase();
-  }
-
   Color _corDestaque(ColorScheme scheme) {
     switch (_grupoDe(item.agendamento.status)) {
       case _GrupoStatusHistorico.concluido:
@@ -65,7 +59,6 @@ class AgendamentoHistoricoCard extends StatelessWidget {
     final a = item.agendamento;
     final corDestaque = _corDestaque(scheme);
     final avatarUrl = item.contraparteAvatarUrl;
-    final temAvatar = avatarUrl != null && avatarUrl.isNotEmpty;
     final rotulo = item.comoCliente ? 'Prestador' : 'Cliente';
     final elegibilidade = AvaliacaoElegibilidade.calcular(item);
 
@@ -101,22 +94,10 @@ class AgendamentoHistoricoCard extends StatelessWidget {
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            CircleAvatar(
-                              radius: 18,
-                              backgroundColor: scheme.primaryContainer,
-                              backgroundImage: temAvatar
-                                  ? NetworkImage(avatarUrl)
-                                  : null,
-                              child: temAvatar
-                                  ? null
-                                  : Text(
-                                      _iniciais(item.nomeContraparte),
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: scheme.onPrimaryContainer,
-                                        fontWeight: FontWeight.w700,
-                                      ),
-                                    ),
+                            PrestadorAvatar(
+                              avatarUrl: avatarUrl,
+                              nome: item.nomeContraparte,
+                              verificado: item.contraparteVerificada,
                             ),
                             const SizedBox(width: 10),
                             Expanded(

@@ -103,42 +103,47 @@ class _Sidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final itens = _itensDoMenu();
+    return ListenableBuilder(
+      listenable: Sessao.instance,
+      builder: (context, _) {
+        final itens = _itensDoMenu();
 
-    return Container(
-      width: 260,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          right: BorderSide(color: Colors.black.withValues(alpha: 0.08)),
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
-            child: InkWell(
-              borderRadius: BorderRadius.circular(8),
-              onTap: () => Navigator.of(
-                context,
-              ).pushNamedAndRemoveUntil(AppRoutes.home, (route) => false),
-              child: AjudaiLogo(),
+        return Container(
+          width: 260,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border(
+              right: BorderSide(color: Colors.black.withValues(alpha: 0.08)),
             ),
           ),
-          Expanded(
-            child: ListView(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              children: [
-                for (final item in itens)
-                  _ItemSidebar(item: item, ativo: item.rota == rotaAtual),
-              ],
-            ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24, 28, 24, 24),
+                child: InkWell(
+                  borderRadius: BorderRadius.circular(8),
+                  onTap: () => Navigator.of(
+                    context,
+                  ).pushNamedAndRemoveUntil(AppRoutes.home, (route) => false),
+                  child: AjudaiLogo(),
+                ),
+              ),
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  children: [
+                    for (final item in itens)
+                      _ItemSidebar(item: item, ativo: item.rota == rotaAtual),
+                  ],
+                ),
+              ),
+              const Divider(height: 1),
+              const _RodapeSidebar(),
+            ],
           ),
-          const Divider(height: 1),
-          const _RodapeSidebar(),
-        ],
-      ),
+        );
+      },
     );
   }
 }
@@ -194,55 +199,61 @@ class _RodapeSidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final sessao = Sessao.instance;
+    return ListenableBuilder(
+      listenable: Sessao.instance,
+      builder: (context, _) {
+        final sessao = Sessao.instance;
 
-    if (!sessao.estaLogado) {
-      return Padding(
-        padding: const EdgeInsets.all(16),
-        child: SizedBox(
-          width: double.infinity,
-          child: FilledButton(
-            onPressed: () => Navigator.of(context).pushNamed(AppRoutes.login),
-            child: const Text('Entrar'),
+        if (!sessao.estaLogado) {
+          return Padding(
+            padding: const EdgeInsets.all(16),
+            child: SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: () =>
+                    Navigator.of(context).pushNamed(AppRoutes.login),
+                child: const Text('Entrar'),
+              ),
+            ),
+          );
+        }
+
+        final nome = sessao.usuario?.nome ?? '';
+
+        return InkWell(
+          onTap: () =>
+              Navigator.of(context).pushReplacementNamed(AppRoutes.meuPerfil),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 18,
+                  backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+                  child: Text(
+                    nome.isNotEmpty ? nome[0].toUpperCase() : '?',
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    nome,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: AppTextStyles.corpo.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-      );
-    }
-
-    final nome = sessao.usuario?.nome ?? '';
-
-    return InkWell(
-      onTap: () =>
-          Navigator.of(context).pushReplacementNamed(AppRoutes.meuPerfil),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 18,
-              backgroundColor: AppColors.primary.withValues(alpha: 0.12),
-              child: Text(
-                nome.isNotEmpty ? nome[0].toUpperCase() : '?',
-                style: const TextStyle(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                nome,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: AppTextStyles.corpo.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+        );
+      },
     );
   }
 }

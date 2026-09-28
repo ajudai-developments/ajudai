@@ -1,3 +1,4 @@
+import 'package:ajudai/core/session/sessao.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/errors/erro_mapper.dart';
@@ -54,7 +55,15 @@ class _LoginScreenState extends State<LoginScreen> {
       await _authRepository.login(email: email, senha: senha);
 
       if (!mounted) return;
-      Navigator.of(context).pushReplacementNamed(AppRoutes.meuPerfil);
+
+      if (Sessao.instance.ehAdmin) {
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil(AppRoutes.adminDashboard, (route) => false);
+        return;
+      }
+
+      Navigator.pop(context);
     } on WsErroException catch (e) {
       if (!mounted) return;
       setState(() {
@@ -73,8 +82,18 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  void _irParaCadastro() {
-    Navigator.of(context).pushNamed(AppRoutes.cadastro);
+  void _irParaCadastro() async {
+    final concluiuCadastro = await Navigator.of(
+      context,
+    ).pushNamed(AppRoutes.cadastro);
+
+    if (!mounted || concluiuCadastro != true) return;
+
+    if (Navigator.of(context).canPop()) {
+      Navigator.of(context).pop();
+    } else {
+      Navigator.of(context).pushReplacementNamed(AppRoutes.home);
+    }
   }
 
   /// Campos e botões — idêntico nos dois layouts.

@@ -4,7 +4,6 @@ import 'package:ajudai/features/auth/widgets/cadastro_endereco_step.dart';
 import 'package:ajudai/features/auth/widgets/passos_indicator.dart';
 import 'package:flutter/material.dart';
 
-import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/widgets/ajudai_logo.dart';
 import 'widgets/cadastro_dados_step.dart';
@@ -43,9 +42,7 @@ class _CadastroScreenState extends State<CadastroScreen> {
   }
 
   void _irParaHome() {
-    Navigator.of(
-      context,
-    ).pushNamedAndRemoveUntil(AppRoutes.home, (route) => false);
+    Navigator.of(context).pop(true);
   }
 
   Widget _buildPasso() {

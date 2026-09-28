@@ -1,10 +1,8 @@
-import 'package:ajudai/core/session/sessao.dart';
+import 'package:ajudai/core/routes/destino_pos_login.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'package:shared/shared.dart';
 import 'package:video_player/video_player.dart';
 
-import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../auth/auth_repository.dart';
 
@@ -85,18 +83,7 @@ class _SplashScreenState extends State<SplashScreen> {
     await _sessao;
     if (_navegou || !mounted) return;
     _navegou = true;
-    Navigator.of(context).pushReplacementNamed(_destino());
-  }
-
-  String _destino() {
-    final papel = Sessao.instance.permissoes.papel;
-
-    if (papel == UserRole.admin) {
-      // Admin é só web. No mobile, manda pro login (TODO: fazer logout
-      // e avisar "use a versão web").
-      return kIsWeb ? AppRoutes.adminDashboard : AppRoutes.login;
-    }
-    return AppRoutes.home;
+    Navigator.of(context).pushReplacementNamed(destinoPosLogin());
   }
 
   @override

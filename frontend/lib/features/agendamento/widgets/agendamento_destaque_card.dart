@@ -146,13 +146,27 @@ class AgendamentoDestaqueCard extends StatelessWidget {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(rotulo, style: AppTextStyles.legenda),
-                                  Text(
-                                    item.nomeContraparte,
-                                    style: AppTextStyles.corpo.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    maxLines: 1,
-                                    overflow: TextOverflow.ellipsis,
+                                  Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          item.nomeContraparte,
+                                          style: AppTextStyles.corpo.copyWith(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                      if (item.contraparteVerificada) ...[
+                                        const SizedBox(width: 4),
+                                        Icon(
+                                          Icons.verified_rounded,
+                                          size: 14,
+                                          color: scheme.primary,
+                                        ),
+                                      ],
+                                    ],
                                   ),
                                 ],
                               ),
