@@ -24,7 +24,7 @@ class ListarPrestadoresRecentesResponseDto implements WsMessage {
   const ListarPrestadoresRecentesResponseDto({required this.prestadores});
 
   @override
-  TipoMensagem get tipo => TipoMensagem.listarPrestadoresRecente;
+  TipoMensagem get tipo => TipoMensagem.listarPrestadoresRecenteOk;
 
   factory ListarPrestadoresRecentesResponseDto.fromJson(
     Map<String, dynamic> json,
