@@ -1,3 +1,4 @@
+import 'package:ajudai/features/servico/widgets/servico_icones.dart';
 import 'package:flutter/material.dart';
 import 'package:shared/shared.dart';
 
@@ -29,16 +30,16 @@ class CartaoServicoOferecido extends StatelessWidget {
         child: Row(
           children: [
             Container(
-              width: 42,
-              height: 42,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
-                color: AppColors.primarySoft,
-                borderRadius: BorderRadius.circular(11),
+                color: AppColors.primary.withValues(alpha: 0.10),
+                shape: BoxShape.circle,
               ),
-              child: const Icon(
-                Icons.handyman_rounded,
+              child: Icon(
+                iconeDoServico(servico.servicoNome),
                 color: AppColors.primary,
-                size: 20,
+                size: 24,
               ),
             ),
             const SizedBox(width: 12),

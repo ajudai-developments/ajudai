@@ -1,16 +1,23 @@
-import 'package:ajudai/core/widgets/app_button.dart';
-import 'package:ajudai/core/widgets/app_text_field.dart';
-import 'package:ajudai/core/widgets/error_banner.dart';
-import 'package:ajudai/core/ws/ws_message_stream.dart';
+import 'package:ajudai/features/auth/widgets/cadastro_endereco_step.dart';
+import 'package:ajudai/features/auth/widgets/passos_indicator.dart';
 import 'package:flutter/material.dart';
-import 'package:shared/shared.dart';
 
-import '../../core/errors/erro_mapper.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
-import '../../core/theme/app_text_styles.dart';
-import 'auth_repository.dart';
+import '../../core/widgets/ajudai_logo.dart';
+import 'widgets/cadastro_dados_step.dart';
+import 'widgets/cadastro_foto_step.dart';
 
+/// Fluxo de cadastro em 3 passos, todos dentro desta mesma rota:
+///
+/// 1. Dados básicos — cria a conta (é aqui que a sessão passa a existir).
+/// 2. Endereço — opcional, pode pular.
+/// 3. Foto de perfil — opcional, pode pular.
+///
+/// Depois do passo 1 a conta já foi criada, então não dá mais pra voltar
+/// pro formulário (o botão voltar some e o voltar do sistema é ignorado).
+/// Ao terminar o passo 3 (enviando a foto ou pulando) vai pra Home,
+/// limpando a pilha de navegação.
 class CadastroScreen extends StatefulWidget {
   const CadastroScreen({super.key});
 
@@ -19,124 +26,82 @@ class CadastroScreen extends StatefulWidget {
 }
 
 class _CadastroScreenState extends State<CadastroScreen> {
-  final _authRepository = AuthRepository();
+  static const _totalPassos = 3;
 
-  final _nomeController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _senhaController = TextEditingController();
-  final _cpfController = TextEditingController();
-  final _telefoneController = TextEditingController();
+  int _passo = 0;
 
-  bool _carregando = false;
-  String? _erroGeral;
-  String? _erroCpf;
-  String? _erroTelefone;
+  void _avancar() {
+    if (!mounted) return;
 
-  @override
-  void dispose() {
-    _nomeController.dispose();
-    _emailController.dispose();
-    _senhaController.dispose();
-    _cpfController.dispose();
-    _telefoneController.dispose();
-    super.dispose();
+    if (_passo >= _totalPassos - 1) {
+      _irParaHome();
+      return;
+    }
+    setState(() => _passo++);
   }
 
-  /// Valida CPF (obrigatório) e telefone (opcional, mas se preenchido
-  /// precisa ser válido) usando os validators do `shared`.
-  /// Retorna true se pode prosseguir com o envio.
-  bool _validarCamposLocais() {
-    final cpf = _cpfController.text;
-    final telefone = _telefoneController.text.trim();
-
-    setState(() {
-      _erroCpf = CpfValidator.isValido(cpf) ? null : 'CPF inválido.';
-      _erroTelefone = (telefone.isEmpty || TelefoneValidator.isValido(telefone))
-          ? null
-          : 'Telefone inválido.';
-    });
-
-    return _erroCpf == null && _erroTelefone == null;
+  void _irParaHome() {
+    Navigator.of(
+      context,
+    ).pushNamedAndRemoveUntil(AppRoutes.home, (route) => false);
   }
 
-  Future<void> _cadastrar() async {
-    if (!_validarCamposLocais()) return;
-
-    setState(() {
-      _carregando = true;
-      _erroGeral = null;
-    });
-
-    final telefone = _telefoneController.text.trim();
-
-    try {
-      await _authRepository.cadastrar(
-        email: _emailController.text.trim(),
-        senha: _senhaController.text,
-        nome: _nomeController.text.trim(),
-        cpf: _cpfController.text,
-        telefone: telefone.isEmpty ? null : telefone,
-      );
-
-      if (!mounted) return;
-      // TODO: trocar pela rota inicial definitiva do app (home/tabs).
-      Navigator.of(context).pushReplacementNamed(AppRoutes.home);
-    } on WsErroException catch (e) {
-      setState(() {
-        _erroGeral = ErroMapper.paraMensagem(e.codigo, mensagemServidor: e.mensagem);
-      });
-    } on WsTimeoutException {
-      setState(() {
-        _erroGeral = 'Não foi possível conectar ao servidor. Tente novamente.';
-      });
-    } finally {
-      if (mounted) setState(() => _carregando = false);
+  Widget _buildPasso() {
+    switch (_passo) {
+      case 0:
+        return CadastroDadosStep(
+          key: const ValueKey('passo-dados'),
+          onCadastrado: _avancar,
+        );
+      case 1:
+        return CadastroEnderecoStep(
+          key: const ValueKey('passo-endereco'),
+          onAvancar: _avancar,
+        );
+      default:
+        return CadastroFotoStep(
+          key: const ValueKey('passo-foto'),
+          onConcluir: _avancar,
+        );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+    return PopScope(
+      // Só dá pra sair pelo voltar no passo 1 (conta ainda não criada).
+      canPop: _passo == 0,
+      child: Scaffold(
+        backgroundColor: AppColors.background,
+        body: SafeArea(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
             children: [
-              Text('Criar conta', style: AppTextStyles.titulo, textAlign: TextAlign.center),
-              const SizedBox(height: 24),
-              ErrorBanner(mensagem: _erroGeral),
-              AppTextField(label: 'Nome completo', controller: _nomeController),
-              const SizedBox(height: 16),
-              AppTextField(
-                label: 'E-mail',
-                controller: _emailController,
-                keyboardType: TextInputType.emailAddress,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 48,
+                      child: _passo == 0
+                          ? IconButton(
+                              onPressed: () => Navigator.of(context).maybePop(),
+                              icon: const Icon(Icons.arrow_back_rounded),
+                            )
+                          : null,
+                    ),
+                    const Expanded(
+                      child: Center(child: AjudaiLogo(altura: 56)),
+                    ),
+                    const SizedBox(width: 48),
+                  ],
+                ),
               ),
-              const SizedBox(height: 16),
-              AppTextField(label: 'Senha', controller: _senhaController, obscureText: true),
-              const SizedBox(height: 16),
-              AppTextField(
-                label: 'CPF',
-                controller: _cpfController,
-                keyboardType: TextInputType.number,
-                erro: _erroCpf,
-              ),
-              const SizedBox(height: 16),
-              AppTextField(
-                label: 'Telefone (opcional)',
-                controller: _telefoneController,
-                keyboardType: TextInputType.phone,
-                erro: _erroTelefone,
-              ),
-              const SizedBox(height: 24),
-              AppButton(label: 'Cadastrar', loading: _carregando, onPressed: _cadastrar),
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: _carregando ? null : () => Navigator.of(context).pop(),
-                child: Text('Já tem conta? Entrar', style: AppTextStyles.corpo),
+              PassosIndicador(total: _totalPassos, atual: _passo),
+              Expanded(
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 250),
+                  child: _buildPasso(),
+                ),
               ),
             ],
           ),

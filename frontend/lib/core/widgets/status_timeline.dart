@@ -10,6 +10,10 @@ import '../theme/app_text_styles.dart';
 /// / Rejeitada) — só um deles de fato acontece, então ambos aparecem
 /// como opções, com o desfecho real destacado e o outro esmaecido.
 ///
+/// Todo o destaque usa o vermelho da marca ([AppColors.primary]); o que
+/// diferencia os desfechos é o caminho destacado, o cartão preenchido e o
+/// ícone (check vs. X), não a cor.
+///
 /// Enquanto o caso ainda não chegou a um desfecho (status 'aberta' ou
 /// 'em_analise'), a etapa atual pulsa — se o status já for 'resolvida'
 /// ou 'rejeitada', não há pulso (o caso já foi decidido).
@@ -66,16 +70,6 @@ class _StatusTimelineState extends State<StatusTimeline>
     final abertaAtual = status == 'aberta';
     final analiseAtual = status == 'em_analise';
 
-    // Cor da linha que desce de "Em análise" até o garfo: enquanto não
-    // decidido, segue o padrão das etapas anteriores (vermelho da marca);
-    // uma vez decidido, já assume a cor do desfecho (verde/vermelho de
-    // erro), pra a "trilha" ficar visualmente contínua com o resultado.
-    final corLinhaAteGarfo = !decidido
-        ? AppColors.primary
-        : status == 'resolvida'
-        ? AppColors.success
-        : AppColors.error;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -93,7 +87,9 @@ class _StatusTimelineState extends State<StatusTimeline>
           concluida: decidido,
           atual: analiseAtual,
           pulso: analiseAtual ? _pulso : null,
-          corLinha: decidido ? corLinhaAteGarfo : AppColors.outline,
+          // Linha que desce de "Em análise" até o garfo: vermelha assim que
+          // o caso é decidido, pra trilha ficar contínua com o desfecho.
+          corLinha: decidido ? AppColors.primary : AppColors.outline,
         ),
         _GarfoDesfecho(
           decidido: decidido,
@@ -119,7 +115,7 @@ class _EtapaVertical extends StatelessWidget {
 
   /// Cor da linha vertical abaixo desta etapa. Recebida de fora (em vez
   /// de calculada aqui) porque a última etapa antes do garfo precisa
-  /// refletir a cor do desfecho já decidido, não só "concluída ou não".
+  /// refletir se o desfecho já foi decidido, não só "concluída ou não".
   final Color corLinha;
 
   const _EtapaVertical({
@@ -273,17 +269,13 @@ class _GarfoDesfecho extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final corTronco = !decidido
-        ? AppColors.outline
-        : resolvidaEscolhida
-        ? AppColors.success
-        : AppColors.error;
+    final corTronco = decidido ? AppColors.primary : AppColors.outline;
 
     final corBracoEsquerdo = resolvidaEscolhida
-        ? AppColors.success
+        ? AppColors.primary
         : AppColors.outline;
     final corBracoDireito = rejeitadaEscolhida
-        ? AppColors.error
+        ? AppColors.primary
         : AppColors.outline;
 
     return Column(
@@ -307,7 +299,7 @@ class _GarfoDesfecho extends StatelessWidget {
                 titulo: 'Resolvida',
                 subtitulo: 'Caso encerrado a seu favor',
                 icone: Icons.check_circle_rounded,
-                cor: AppColors.success,
+                cor: AppColors.primary,
                 escolhida: resolvidaEscolhida,
                 esmaecida: decidido && !resolvidaEscolhida,
               ),
@@ -318,7 +310,7 @@ class _GarfoDesfecho extends StatelessWidget {
                 titulo: 'Rejeitada',
                 subtitulo: 'Solicitação não atendida',
                 icone: Icons.cancel_rounded,
-                cor: AppColors.error,
+                cor: AppColors.primary,
                 escolhida: rejeitadaEscolhida,
                 esmaecida: decidido && !rejeitadaEscolhida,
               ),
@@ -338,9 +330,13 @@ class _GarfoDesfecho extends StatelessWidget {
 /// pixel inteiro em vez de [Canvas.drawLine]. Um traço (`drawLine`) numa
 /// posição Y fracionária (ex: `9.9`) é espalhado pelo antialiasing entre
 /// duas linhas de pixel, ficando bem mais claro/fraco que uma linha
-/// vertical mais longa — exatamente o motivo do trecho horizontal
-/// aparecer "sem cor" enquanto o vertical aparecia sólido. Um retângulo
-/// preenchido com bordas inteiras não sofre desse problema.
+/// vertical mais longa. Um retângulo preenchido com bordas inteiras não
+/// sofre desse problema.
+///
+/// Atenção: o trecho horizontal centerX -> leftX é compartilhado pelos dois
+/// caminhos, então o garfo é desenhado em segmentos que NÃO se sobrepõem
+/// (cada pedaço tem uma única cor). A espessura (2px) é igual à das linhas
+/// das etapas, pra tronco e linha anterior ficarem alinhados.
 class _GarfoPainter extends CustomPainter {
   final Color corTronco;
   final Color corEsquerda;
@@ -354,7 +350,7 @@ class _GarfoPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    const espessura = 3.0;
+    const espessura = 2.0; // igual à linha das etapas (Container width: 2)
     const centerX = 12.0; // alinhado ao centro das bolinhas (24px) acima
     final midY = (size.height * 0.45).round().toDouble();
     final leftX = (size.width * 0.25).round().toDouble();
@@ -363,29 +359,43 @@ class _GarfoPainter extends CustomPainter {
     const metade = espessura / 2;
 
     void linhaVertical(double x, double yInicio, double yFim, Color cor) {
+      final topo = yInicio < yFim ? yInicio : yFim;
+      final base = yInicio < yFim ? yFim : yInicio;
       canvas.drawRect(
-        Rect.fromLTRB(x - metade, yInicio, x + metade, yFim),
+        Rect.fromLTRB(x - metade, topo, x + metade, base),
         Paint()..color = cor,
       );
     }
 
     void linhaHorizontal(double xInicio, double xFim, double y, Color cor) {
+      final esquerda = xInicio < xFim ? xInicio : xFim;
+      final direita = xInicio < xFim ? xFim : xInicio;
       canvas.drawRect(
-        Rect.fromLTRB(xInicio, y - metade, xFim, y + metade),
+        Rect.fromLTRB(esquerda, y - metade, direita, y + metade),
         Paint()..color = cor,
       );
     }
 
-    // Tronco: desce do topo até a altura do garfo.
-    linhaVertical(centerX, 0, midY, corTronco);
+    final esquerdaAtiva = corEsquerda != AppColors.outline;
 
-    // Braço esquerdo (Resolvida): horizontal até leftX, depois desce.
-    linhaHorizontal(leftX, centerX, midY, corEsquerda);
-    linhaVertical(leftX, midY, bottomY, corEsquerda);
+    // Tronco: desce do topo até a base da linha horizontal.
+    linhaVertical(centerX, 0, midY + metade, corTronco);
 
-    // Braço direito (Rejeitada): horizontal até rightX, depois desce.
-    linhaHorizontal(centerX, rightX, midY, corDireita);
-    linhaVertical(rightX, midY, bottomY, corDireita);
+    // Horizontal 1: centerX -> leftX. Faz parte do caminho de QUALQUER
+    // desfecho, então recebe a cor do desfecho ativo (ou cinza se nenhum).
+    linhaHorizontal(
+      centerX - metade,
+      leftX + metade,
+      midY,
+      esquerdaAtiva ? corEsquerda : corDireita,
+    );
+
+    // Horizontal 2: leftX -> rightX. Só pertence ao caminho da Rejeitada.
+    linhaHorizontal(leftX + metade, rightX + metade, midY, corDireita);
+
+    // Descidas: começam logo abaixo da horizontal, sem cobrir ninguém.
+    linhaVertical(leftX, midY + metade, bottomY, corEsquerda);
+    linhaVertical(rightX, midY + metade, bottomY, corDireita);
   }
 
   @override

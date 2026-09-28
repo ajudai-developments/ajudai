@@ -1,13 +1,14 @@
-import 'package:ajudai/core/widgets/app_button.dart';
-import 'package:ajudai/core/widgets/app_text_field.dart';
-import 'package:ajudai/core/widgets/error_banner.dart';
-import 'package:ajudai/core/ws/ws_message_stream.dart';
 import 'package:flutter/material.dart';
 
 import '../../core/errors/erro_mapper.dart';
 import '../../core/routes/app_routes.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_text_styles.dart';
+import '../../core/widgets/ajudai_logo.dart';
+import '../../core/widgets/app_button.dart';
+import '../../core/widgets/app_text_field.dart';
+import '../../core/widgets/error_banner.dart';
+import '../../core/ws/ws_message_stream.dart';
 import 'auth_repository.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -34,19 +35,23 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _entrar() async {
+    final email = _emailController.text.trim();
+    final senha = _senhaController.text;
+
+    if (email.isEmpty || senha.isEmpty) {
+      setState(() => _erroGeral = 'Informe seu e-mail e sua senha.');
+      return;
+    }
+
     setState(() {
       _carregando = true;
       _erroGeral = null;
     });
 
     try {
-      await _authRepository.login(
-        email: _emailController.text.trim(),
-        senha: _senhaController.text,
-      );
+      await _authRepository.login(email: email, senha: senha);
 
       if (!mounted) return;
-      // TODO: trocar pela rota inicial definitiva do app (home/tabs).
       Navigator.of(context).pushReplacementNamed(AppRoutes.meuPerfil);
     } on WsErroException catch (e) {
       setState(() {
@@ -70,53 +75,110 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final podeVoltar = Navigator.of(context).canPop();
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  'Entrar',
-                  style: AppTextStyles.titulo,
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 24),
-                ErrorBanner(mensagem: _erroGeral),
-                AppTextField(
-                  label: 'E-mail',
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                ),
-                const SizedBox(height: 16),
-                AppTextField(
-                  label: 'Senha',
-                  controller: _senhaController,
-                  obscureText: true,
-                ),
-                const SizedBox(height: 24),
-                AppButton(
-                  label: 'Entrar',
-                  loading: _carregando,
-                  onPressed: _entrar,
-                ),
-                const SizedBox(height: 16),
-                TextButton(
-                  onPressed: _carregando ? null : _irParaCadastro,
-                  child: Text(
-                    'Não tem conta? Cadastre-se',
-                    style: AppTextStyles.corpo,
+        child: Column(
+          children: [
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(4, 4, 4, 0),
+                child: podeVoltar
+                    ? IconButton(
+                        onPressed: () => Navigator.of(context).maybePop(),
+                        icon: const Icon(Icons.arrow_back_rounded),
+                      )
+                    : const SizedBox(height: 48),
+              ),
+            ),
+            Expanded(
+              child: Center(
+                child: SingleChildScrollView(
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Center(child: AjudaiLogo(altura: 112)),
+                      const SizedBox(height: 28),
+                      Text(
+                        'Bem-vindo de volta',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.display,
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Entre para agendar e acompanhar seus serviços.',
+                        textAlign: TextAlign.center,
+                        style: AppTextStyles.corpo,
+                      ),
+                      const SizedBox(height: 28),
+                      ErrorBanner(mensagem: _erroGeral),
+                      AppTextField(
+                        label: 'E-mail',
+                        controller: _emailController,
+                        icone: Icons.mail_outline_rounded,
+                        keyboardType: TextInputType.emailAddress,
+                        textInputAction: TextInputAction.next,
+                        autofillHints: const [AutofillHints.email],
+                      ),
+                      const SizedBox(height: 12),
+                      AppTextField(
+                        label: 'Senha',
+                        controller: _senhaController,
+                        icone: Icons.lock_outline_rounded,
+                        obscureText: true,
+                        textInputAction: TextInputAction.done,
+                        autofillHints: const [AutofillHints.password],
+                        onSubmitted: (_) {
+                          if (!_carregando) _entrar();
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      AppButton(
+                        label: 'Entrar',
+                        loading: _carregando,
+                        onPressed: _entrar,
+                      ),
+                      const SizedBox(height: 20),
+                      const _DivisorOu(),
+                      const SizedBox(height: 20),
+                      AppOutlinedButton(
+                        label: 'Criar conta',
+                        onPressed: _carregando ? null : _irParaCadastro,
+                      ),
+                    ],
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
+          ],
         ),
       ),
+    );
+  }
+}
+
+/// Linha "—— ou ——" entre a ação principal e a secundária.
+class _DivisorOu extends StatelessWidget {
+  const _DivisorOu();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Expanded(child: Divider(height: 1, color: AppColors.outline)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Text('ou', style: AppTextStyles.legenda),
+        ),
+        const Expanded(child: Divider(height: 1, color: AppColors.outline)),
+      ],
     );
   }
 }
