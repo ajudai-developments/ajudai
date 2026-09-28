@@ -314,8 +314,8 @@ class _GarfoDesfecho extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(
               child: _CartaoDesfecho(
-                titulo: textos.positivoTitulo,
-                subtitulo: textos.positivoSubtitulo,
+                titulo: textos.negativoTitulo,
+                subtitulo: textos.negativoSubtitulo,
                 icone: Icons.cancel_rounded,
                 cor: AppColors.primary,
                 escolhida: rejeitadaEscolhida,
