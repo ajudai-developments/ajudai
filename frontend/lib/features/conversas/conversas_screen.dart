@@ -12,6 +12,11 @@ import '../../core/widgets/async_list_view.dart';
 import '../../core/ws/ws_message_stream.dart';
 import 'conversas_repository.dart';
 
+/// Lista de conversas do usuário.
+///
+/// Cada conversa é uma linha (avatar, nome, última mensagem e horário)
+/// separada por um divisor fino — formato de app de mensagens, em vez de
+/// cartões com borda, porque a lista pode ser longa.
 class ConversasScreen extends StatefulWidget {
   const ConversasScreen({super.key});
 
@@ -42,10 +47,27 @@ class _ConversasScreenState extends State<ConversasScreen> {
     super.dispose();
   }
 
-  String _resumo(ConversaResumo conversa) {
+  /// Texto da última mensagem + se ela é um anexo.
+  ///
+  /// O model só traz o TEXTO da última mensagem. Quando é só um anexo
+  /// (foto, vídeo ou áudio, sem legenda) o texto vem vazio, mas
+  /// `ultimaMensagemEm` existe — então há mensagem, só não há texto.
+  /// Nesse caso mostra "Arquivo anexado" em vez de "Nenhuma mensagem".
+  ({String texto, bool anexo}) _resumo(ConversaResumo conversa) {
     final texto = conversa.ultimaMensagemTexto;
-    if (texto == null || texto.isEmpty) return 'Nenhuma mensagem ainda';
-    return conversa.ultimaMensagemDeMim == true ? 'Você: $texto' : texto;
+    final deMim = conversa.ultimaMensagemDeMim == true;
+
+    if (texto == null || texto.isEmpty) {
+      if (conversa.ultimaMensagemEm == null) {
+        return (texto: 'Nenhuma mensagem ainda', anexo: false);
+      }
+      return (
+        texto: deMim ? 'Você: Arquivo anexado' : 'Arquivo anexado',
+        anexo: true,
+      );
+    }
+
+    return (texto: deMim ? 'Você: $texto' : texto, anexo: false);
   }
 
   String _horario(DateTime? data) {
@@ -60,53 +82,128 @@ class _ConversasScreenState extends State<ConversasScreen> {
     return DateFormat('dd/MM').format(local);
   }
 
+  Future<void> _abrirConversa(ConversaResumo conversa) async {
+    await Navigator.of(
+      context,
+    ).pushNamed(AppRoutes.conversa, arguments: conversa);
+    if (mounted) _listKey.currentState?.recarregar();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(title: const Text('Conversas')),
+      appBar: AppBar(
+        backgroundColor: AppColors.background,
+        scrolledUnderElevation: 0,
+        centerTitle: false,
+        title: const Text('Conversas', style: AppTextStyles.titulo),
+      ),
       body: AsyncListView<ConversaResumo>(
         key: _listKey,
         carregar: _repository.listarConversas,
-        mensagemVazio: 'Você ainda não iniciou nenhuma conversa.',
+        mensagemVazio:
+            'Você ainda não tem conversas.\nInicie uma pelo perfil de um prestador.',
         builder: (context, conversas) => Column(
           children: [
-            for (final conversa in conversas)
-              Card(
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 6,
-                  ),
-                  leading: UserAvatar(
-                    avatarUrl: conversa.outroUsuario.avatarUrl,
-                    radius: 22,
-                    fallbackIcon: Icons.person,
-                  ),
-                  title: Text(
-                    conversa.outroUsuario.nome,
-                    style: AppTextStyles.titulo.copyWith(fontSize: 16),
-                  ),
-                  subtitle: Text(
-                    _resumo(conversa),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  trailing: Text(
-                    _horario(conversa.ultimaMensagemEm),
-                    style: AppTextStyles.legenda,
-                  ),
-                  onTap: () async {
-                    await Navigator.of(
-                      context,
-                    ).pushNamed(AppRoutes.conversa, arguments: conversa);
-                    if (mounted) _listKey.currentState?.recarregar();
-                  },
-                ),
+            for (var i = 0; i < conversas.length; i++)
+              _ConversaItem(
+                conversa: conversas[i],
+                resumo: _resumo(conversas[i]).texto,
+                ehAnexo: _resumo(conversas[i]).anexo,
+                horario: _horario(conversas[i].ultimaMensagemEm),
+                mostrarDivisor: i < conversas.length - 1,
+                onTap: () => _abrirConversa(conversas[i]),
               ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ConversaItem extends StatelessWidget {
+  final ConversaResumo conversa;
+  final String resumo;
+  final bool ehAnexo;
+  final String horario;
+  final bool mostrarDivisor;
+  final VoidCallback onTap;
+
+  const _ConversaItem({
+    required this.conversa,
+    required this.resumo,
+    required this.ehAnexo,
+    required this.horario,
+    required this.mostrarDivisor,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: Row(
+              children: [
+                UserAvatar(
+                  avatarUrl: conversa.outroUsuario.avatarUrl,
+                  radius: 26,
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              conversa.outroUsuario.nome,
+                              style: AppTextStyles.titulo,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(horario, style: AppTextStyles.legenda),
+                        ],
+                      ),
+                      const SizedBox(height: 3),
+                      Row(
+                        children: [
+                          if (ehAnexo) ...[
+                            const Icon(
+                              Icons.attach_file_rounded,
+                              size: 15,
+                              color: AppColors.textoSecundario,
+                            ),
+                            const SizedBox(width: 2),
+                          ],
+                          Expanded(
+                            child: Text(
+                              resumo,
+                              style: AppTextStyles.corpo,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        if (mostrarDivisor)
+          const Divider(height: 1, indent: 66, color: AppColors.outline),
+      ],
     );
   }
 }

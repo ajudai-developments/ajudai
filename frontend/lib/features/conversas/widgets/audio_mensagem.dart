@@ -1,17 +1,30 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
+import 'package:video_player/video_player.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/widgets/user_avatar.dart';
 
 /// Bolha de mensagem de áudio: avatar de quem enviou, botão de play,
-/// waveform do arquivo e duração — baixa o áudio pra um arquivo local
-/// antes de preparar o player (audio_waveforms espera um caminho local).
+/// waveform e tempo.
+///
+/// Arquitetura (importante pra não voltar os bugs antigos):
+/// - A REPRODUÇÃO é feita pelo `video_player` (que já é usado nos vídeos
+///   do chat). Ele dá duração e posição confiáveis, permite tocar de novo
+///   depois do fim e não tem os crashes de dispose do player do
+///   audio_waveforms.
+/// - O `audio_waveforms` é usado SÓ pra extrair as amplitudes da onda
+///   ([PlayerController.waveformExtraction]); o controller dele é
+///   descartado logo depois da extração, sem nunca tocar nada.
+/// - A onda é desenhada aqui mesmo ([_WaveformPainter]) e o progresso dela
+///   e o contador de tempo saem da MESMA posição ([_posicao]) — por isso
+///   os dois andam juntos.
 class AudioMensagem extends StatefulWidget {
   final String? url;
   final String? avatarUrl;
@@ -28,40 +41,42 @@ class AudioMensagem extends StatefulWidget {
   State<AudioMensagem> createState() => _AudioMensagemState();
 }
 
-class _AudioMensagemState extends State<AudioMensagem> {
-  final _playerController = PlayerController();
-  StreamSubscription<PlayerState>? _estadoSub;
-  StreamSubscription<int>? _duracaoSub;
+class _AudioMensagemState extends State<AudioMensagem>
+    with SingleTickerProviderStateMixin {
+  static const _margemFim = Duration(milliseconds: 80);
 
-  // `preparePlayer(shouldExtractWaveform: true)` dispara extração de
-  // waveform NATIVA, em background, que continua rodando mesmo depois
-  // do await retornar. Se o widget for descartado (usuário sai da tela)
-  // antes dessa extração terminar, e o controller for disposed nesse
-  // meio-tempo, a extração tenta parar um MediaCodec que já foi
-  // liberado — daí o crash nativo "codec is released already". Essa
-  // flag evita qualquer chamada ao controller depois que o widget já
-  // foi desmontado.
+  VideoPlayerController? _video;
+  Future<void>? _inicializacao;
+
+  /// Só serve de "relógio" pra redesenhar a onda/tempo enquanto toca — o
+  /// video_player só avisa a posição a cada ~500 ms, o que ficaria
+  /// travado. Entre um aviso e outro, a posição é interpolada.
+  late final AnimationController _ticker = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 1),
+  );
+
   bool _disposed = false;
 
   bool _preparado = false;
   bool _falhaAoCarregar = false;
   bool _tocando = false;
-  Duration _duracaoTotal = Duration.zero;
-  Duration _duracaoAtual = Duration.zero;
+  bool _fimTratado = false;
+
+  List<double> _amplitudes = const [];
+  Duration _total = Duration.zero;
+
+  // Última posição informada pelo player e o instante em que chegou.
+  Duration _posBase = Duration.zero;
+  DateTime _posEm = DateTime.now();
 
   @override
   void initState() {
     super.initState();
-    _estadoSub = _playerController.onPlayerStateChanged.listen((estado) {
-      if (!mounted) return;
-      setState(() => _tocando = estado == PlayerState.playing);
-    });
-    _duracaoSub = _playerController.onCurrentDurationChanged.listen((ms) {
-      if (!mounted) return;
-      setState(() => _duracaoAtual = Duration(milliseconds: ms));
-    });
     _preparar();
   }
+
+  // ------------------------------------------------------------- preparo
 
   Future<void> _preparar() async {
     final url = widget.url;
@@ -69,23 +84,28 @@ class _AudioMensagemState extends State<AudioMensagem> {
       if (mounted) setState(() => _falhaAoCarregar = true);
       return;
     }
+
     try {
-      final caminhoLocal = await _baixarArquivoTemporario(url);
+      final caminho = await _baixarArquivoTemporario(url);
       if (_disposed) return;
 
-      await _playerController.preparePlayer(
-        path: caminhoLocal,
-        shouldExtractWaveform: true,
-      );
-      if (_disposed) return;
+      final controller = VideoPlayerController.file(File(caminho));
+      _video = controller;
+      controller.addListener(_aoMudarVideo);
 
-      final duracaoMs = await _playerController.getDuration(DurationType.max);
-      if (!mounted || _disposed) return;
+      final inicializacao = controller.initialize();
+      _inicializacao = inicializacao;
+      await inicializacao;
+      if (_disposed) return; // o dispose() cuida de liberar o controller
+
       setState(() {
         _preparado = true;
-        _duracaoTotal = Duration(milliseconds: duracaoMs);
+        _total = controller.value.duration;
       });
-    } catch (e) {
+
+      // A onda chega depois; até lá o áudio já pode ser tocado.
+      unawaited(_extrairWaveform(caminho));
+    } catch (_) {
       if (mounted && !_disposed) setState(() => _falhaAoCarregar = true);
     }
   }
@@ -103,6 +123,114 @@ class _AudioMensagemState extends State<AudioMensagem> {
     return caminho;
   }
 
+  /// Extrai as amplitudes com um PlayerController descartável. O
+  /// controller só é liberado DEPOIS de a extração terminar (evita o crash
+  /// nativo "codec is released already") e nunca chega a tocar nada, então
+  /// o dispose dele é seguro.
+  Future<void> _extrairWaveform(String caminho) async {
+    final extrator = PlayerController();
+    try {
+      final dados = await extrator.waveformExtraction.extractWaveformData(
+        path: caminho,
+        noOfSamples: 60,
+      );
+      if (_disposed || !mounted) return;
+      setState(() => _amplitudes = dados);
+    } catch (_) {
+      // Sem onda: ficam barras neutras, o áudio toca normalmente.
+    } finally {
+      // O dispose() do PlayerController é `async void`: um erro nativo nele
+      // (ex: release de um player que nunca foi preparado) escaparia como
+      // exceção não tratada. Rodar dentro de runZonedGuarded captura isso.
+      runZonedGuarded(extrator.dispose, (erro, pilha) {});
+    }
+  }
+
+  // ------------------------------------------------------------ reprodução
+
+  void _aoMudarVideo() {
+    final video = _video;
+    if (video == null || _disposed || !mounted) return;
+
+    final valor = video.value;
+    if (!valor.isInitialized) return;
+
+    final total = valor.duration;
+    final terminou =
+        total > Duration.zero &&
+        valor.position >= total - _margemFim &&
+        !valor.isPlaying;
+
+    if (terminou) {
+      if (!_fimTratado) {
+        _fimTratado = true;
+        // Volta ao início: o próximo play toca do começo.
+        _posBase = Duration.zero;
+        _posEm = DateTime.now();
+        video.seekTo(Duration.zero);
+        _definirTocando(false);
+      }
+      return;
+    }
+
+    if (valor.isPlaying) _fimTratado = false;
+    _posBase = valor.position;
+    _posEm = DateTime.now();
+    _definirTocando(valor.isPlaying);
+  }
+
+  void _definirTocando(bool tocando) {
+    if (tocando == _tocando) return;
+    setState(() => _tocando = tocando);
+    if (tocando) {
+      _ticker.repeat();
+    } else {
+      _ticker.stop();
+    }
+  }
+
+  Future<void> _alternarReproducao() async {
+    final video = _video;
+    if (video == null || !_preparado || _disposed) return;
+
+    try {
+      if (video.value.isPlaying) {
+        await video.pause();
+        return;
+      }
+      if (_total > Duration.zero &&
+          video.value.position >= _total - _margemFim) {
+        await video.seekTo(Duration.zero);
+      }
+      await video.play();
+    } catch (_) {
+      if (mounted && !_disposed) setState(() => _falhaAoCarregar = true);
+    }
+  }
+
+  void _buscar(double fracao) {
+    final video = _video;
+    if (video == null || !_preparado || _total == Duration.zero) return;
+
+    final alvo = Duration(
+      milliseconds: (_total.inMilliseconds * fracao.clamp(0.0, 1.0)).round(),
+    );
+    _fimTratado = false;
+    _posBase = alvo;
+    _posEm = DateTime.now();
+    setState(() {});
+    video.seekTo(alvo);
+  }
+
+  /// Posição atual, usada tanto pela onda quanto pelo contador.
+  Duration _posicao() {
+    if (!_tocando) return _posBase;
+    final estimada = _posBase + DateTime.now().difference(_posEm);
+    return estimada > _total ? _total : estimada;
+  }
+
+  // ------------------------------------------------------------------ UI
+
   String _formatarDuracao(Duration duracao) {
     final minutos = duracao.inMinutes.toString().padLeft(2, '0');
     final segundos = (duracao.inSeconds % 60).toString().padLeft(2, '0');
@@ -112,94 +240,225 @@ class _AudioMensagemState extends State<AudioMensagem> {
   @override
   void dispose() {
     _disposed = true;
-    _estadoSub?.cancel();
-    _duracaoSub?.cancel();
-    // Evita que uma exceção nativa (ex: extração de waveform ainda em
-    // andamento tentando parar um codec já liberado) derrube o dispose
-    // e, com ele, o resto da árvore de widgets sendo desmontada.
-    try {
-      _playerController.dispose();
-    } catch (_) {
-      // Ignorado de propósito: o controller já está sendo descartado
-      // de qualquer forma; não há o que fazer aqui além de não
-      // deixar a exceção subir.
+    _ticker.dispose();
+
+    final video = _video;
+    if (video != null) {
+      video.removeListener(_aoMudarVideo);
+      // Nunca descarta no meio do initialize() — mesmo cuidado do
+      // VideoMensagem.
+      final inicializacao = _inicializacao;
+      if (inicializacao == null) {
+        video.dispose();
+      } else {
+        inicializacao.whenComplete(video.dispose).catchError((_) {});
+      }
     }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final duracaoExibida = _duracaoAtual > Duration.zero
-        ? _duracaoAtual
-        : _duracaoTotal;
-    final corBase = widget.minha ? Colors.white : AppColors.primary;
+    final minha = widget.minha;
 
-    return SizedBox(
-      width: 240,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          UserAvatar(avatarUrl: widget.avatarUrl, radius: 16),
-          const SizedBox(width: 8),
-          GestureDetector(
-            onTap: _preparado
-                ? () {
-                    _tocando
-                        ? _playerController.pausePlayer()
-                        : _playerController.startPlayer();
-                  }
-                : null,
-            child: CircleAvatar(
-              radius: 16,
-              backgroundColor: widget.minha
-                  ? Colors.white24
-                  : AppColors.primary.withValues(alpha: 0.1),
-              child: !_preparado
-                  ? (_falhaAoCarregar
-                        ? Icon(Icons.error_outline, size: 16, color: corBase)
-                        : SizedBox(
-                            width: 14,
-                            height: 14,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: corBase,
-                            ),
-                          ))
-                  : Icon(
-                      _tocando ? Icons.pause : Icons.play_arrow,
-                      size: 18,
-                      color: corBase,
-                    ),
-            ),
+    // Sobre o fundo vermelho (minha) o botão é branco; sobre o cinza
+    // (recebida) o botão é vermelho.
+    final corBotao = minha ? Colors.white : AppColors.primary;
+    final corIconeBotao = minha ? AppColors.primary : Colors.white;
+    final corTexto = minha ? Colors.white70 : AppColors.textoSecundario;
+
+    return AnimatedBuilder(
+      animation: _ticker,
+      builder: (context, _) {
+        final posicao = _posicao();
+        final progresso = _total > Duration.zero
+            ? (posicao.inMilliseconds / _total.inMilliseconds).clamp(0.0, 1.0)
+            : 0.0;
+        final exibida = posicao > Duration.zero ? posicao : _total;
+
+        return SizedBox(
+          width: 250,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              UserAvatar(avatarUrl: widget.avatarUrl, radius: 16),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: _preparado ? _alternarReproducao : null,
+                child: Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: _falhaAoCarregar ? Colors.transparent : corBotao,
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: !_preparado
+                        ? (_falhaAoCarregar
+                              ? Icon(
+                                  Icons.error_outline_rounded,
+                                  size: 22,
+                                  color: corTexto,
+                                )
+                              : SizedBox(
+                                  width: 16,
+                                  height: 16,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: corIconeBotao,
+                                  ),
+                                ))
+                        : Icon(
+                            _tocando
+                                ? Icons.pause_rounded
+                                : Icons.play_arrow_rounded,
+                            size: 24,
+                            color: corIconeBotao,
+                          ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _Waveform(
+                  amplitudes: _amplitudes,
+                  progresso: progresso,
+                  corTocada: minha ? Colors.white : AppColors.primary,
+                  corRestante: minha
+                      ? Colors.white54
+                      : AppColors.primary.withValues(alpha: 0.3),
+                  onBuscar: _preparado ? _buscar : null,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                _formatarDuracao(exibida),
+                style: TextStyle(fontSize: 11, color: corTexto),
+              ),
+            ],
           ),
-          const SizedBox(width: 8),
-          Expanded(
-            child: _preparado
-                ? AudioFileWaveforms(
-                    size: const Size(double.infinity, 32),
-                    playerController: _playerController,
-                    enableSeekGesture: true,
-                    waveformType: WaveformType.fitWidth,
-                    playerWaveStyle: PlayerWaveStyle(
-                      fixedWaveColor: widget.minha
-                          ? Colors.white54
-                          : AppColors.primary.withValues(alpha: 0.3),
-                      liveWaveColor: corBase,
-                      spacing: 4,
-                    ),
-                  )
-                : const SizedBox(height: 32),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            _formatarDuracao(duracaoExibida),
-            style: TextStyle(
-              fontSize: 11,
-              color: widget.minha ? Colors.white70 : AppColors.textoSecundario,
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
+  }
+}
+
+/// Onda do áudio: barras arredondadas, coloridas até o ponto já tocado.
+/// Tocar/arrastar sobre ela pula pra aquele ponto.
+class _Waveform extends StatelessWidget {
+  final List<double> amplitudes;
+  final double progresso;
+  final Color corTocada;
+  final Color corRestante;
+  final ValueChanged<double>? onBuscar;
+
+  const _Waveform({
+    required this.amplitudes,
+    required this.progresso,
+    required this.corTocada,
+    required this.corRestante,
+    required this.onBuscar,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final largura = constraints.maxWidth;
+
+        void buscar(double dx) {
+          if (onBuscar == null || largura <= 0) return;
+          onBuscar!(dx / largura);
+        }
+
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapDown: (d) => buscar(d.localPosition.dx),
+          onHorizontalDragUpdate: (d) => buscar(d.localPosition.dx),
+          child: SizedBox(
+            height: 32,
+            width: double.infinity,
+            child: CustomPaint(
+              painter: _WaveformPainter(
+                amplitudes: amplitudes,
+                progresso: progresso,
+                corTocada: corTocada,
+                corRestante: corRestante,
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _WaveformPainter extends CustomPainter {
+  final List<double> amplitudes;
+  final double progresso;
+  final Color corTocada;
+  final Color corRestante;
+
+  _WaveformPainter({
+    required this.amplitudes,
+    required this.progresso,
+    required this.corTocada,
+    required this.corRestante,
+  });
+
+  static const _larguraBarra = 3.0;
+  static const _espaco = 3.0;
+
+  /// Reduz/estica as amplitudes pra exatamente [n] barras (pega o pico de
+  /// cada trecho) e normaliza pra 0..1.
+  List<double> _reamostrar(int n) {
+    if (amplitudes.isEmpty) return List.filled(n, 0.25);
+
+    final abs = amplitudes.map((a) => a.abs()).toList();
+    final maior = abs.reduce(math.max);
+    if (maior <= 0) return List.filled(n, 0.25);
+
+    return List.generate(n, (i) {
+      final ini = (i * abs.length / n).floor();
+      final fim = math.min(
+        abs.length,
+        math.max(ini + 1, ((i + 1) * abs.length / n).floor()),
+      );
+      var pico = 0.0;
+      for (var j = ini; j < fim; j++) {
+        pico = math.max(pico, abs[j]);
+      }
+      return (pico / maior).clamp(0.12, 1.0).toDouble();
+    });
+  }
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final n = ((size.width + _espaco) / (_larguraBarra + _espaco))
+        .floor()
+        .clamp(1, 200);
+    final barras = _reamostrar(n);
+    final passo = size.width / n;
+
+    final paint = Paint()
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = _larguraBarra;
+
+    for (var i = 0; i < n; i++) {
+      final x = passo * i + passo / 2;
+      final altura = math.max(4.0, barras[i] * size.height);
+      final topo = (size.height - altura) / 2;
+
+      paint.color = (i + 0.5) / n <= progresso ? corTocada : corRestante;
+      canvas.drawLine(Offset(x, topo), Offset(x, topo + altura), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _WaveformPainter old) {
+    return old.progresso != progresso ||
+        old.amplitudes != amplitudes ||
+        old.corTocada != corTocada ||
+        old.corRestante != corRestante;
   }
 }

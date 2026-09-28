@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:ajudai/features/conversas/widgets/miniatura_anexo.dart';
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:flutter/material.dart';
@@ -8,8 +9,15 @@ import 'package:path_provider/path_provider.dart';
 import 'package:shared/shared.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/theme/app_text_styles.dart';
 import 'anexo_selecionado.dart';
 
+/// Barra de digitação do chat.
+///
+/// Visual: campo em formato de pílula cinza (anexo à esquerda, câmera à
+/// direita enquanto não há texto) e botão redondo vermelho de
+/// enviar/gravar. Durante a gravação de áudio, a pílula vira o painel de
+/// gravação (lixeira, tempo, waveform).
 class Composer extends StatefulWidget {
   final TextEditingController controller;
   final bool enviando;
@@ -166,144 +174,214 @@ class _ComposerState extends State<Composer> {
     return '$minutos:$segundos';
   }
 
+  /// Botão redondo vermelho (enviar / gravar / enviar áudio).
+  Widget _botaoPrincipal({
+    required VoidCallback? onPressed,
+    required Widget icon,
+    required String tooltip,
+  }) {
+    return IconButton.filled(
+      onPressed: onPressed,
+      icon: icon,
+      tooltip: tooltip,
+      style: IconButton.styleFrom(
+        backgroundColor: AppColors.primary,
+        foregroundColor: Colors.white,
+        disabledBackgroundColor: AppColors.outline,
+        minimumSize: const Size(48, 48),
+      ),
+    );
+  }
+
+  Widget _painelGravacao() {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceAlt,
+              borderRadius: BorderRadius.circular(26),
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  onPressed: widget.enviando ? null : _cancelarGravacao,
+                  icon: const Icon(
+                    Icons.delete_outline_rounded,
+                    color: AppColors.primary,
+                  ),
+                  tooltip: 'Cancelar gravação',
+                ),
+                Container(
+                  width: 8,
+                  height: 8,
+                  margin: const EdgeInsets.only(right: 8),
+                  decoration: const BoxDecoration(
+                    color: AppColors.primary,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                Text(
+                  _formatarDuracao(_duracaoGravacao),
+                  style: AppTextStyles.corpo.copyWith(
+                    color: AppColors.textoTitulo,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: AudioWaveforms(
+                    size: const Size(double.infinity, 36),
+                    recorderController: _recorderController,
+                    waveStyle: const WaveStyle(
+                      waveColor: AppColors.primary,
+                      extendWaveform: true,
+                      showMiddleLine: false,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        _botaoPrincipal(
+          onPressed: widget.enviando ? null : _confirmarGravacao,
+          icon: const Icon(Icons.send_rounded),
+          tooltip: 'Enviar áudio',
+        ),
+      ],
+    );
+  }
+
+  Widget _painelDigitacao(bool podeEnviarTexto) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Expanded(
+          child: Container(
+            decoration: BoxDecoration(
+              color: AppColors.surfaceAlt,
+              borderRadius: BorderRadius.circular(26),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                IconButton(
+                  onPressed: widget.enviando ? null : widget.onAnexar,
+                  icon: const Icon(
+                    Icons.attach_file_rounded,
+                    color: AppColors.textoSecundario,
+                  ),
+                  tooltip: 'Anexar imagem ou vídeo',
+                ),
+                Expanded(
+                  child: TextField(
+                    controller: widget.controller,
+                    minLines: 1,
+                    maxLines: 4,
+                    cursorColor: AppColors.primary,
+                    textCapitalization: TextCapitalization.sentences,
+                    textInputAction: TextInputAction.newline,
+                    style: AppTextStyles.corpo.copyWith(
+                      color: AppColors.textoTitulo,
+                      fontSize: 15,
+                    ),
+                    decoration: const InputDecoration(
+                      hintText: 'Escreva uma mensagem',
+                      hintStyle: TextStyle(
+                        color: AppColors.textoSecundario,
+                        fontSize: 15,
+                      ),
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    onSubmitted: (_) => widget.onEnviar(),
+                  ),
+                ),
+                if (!_temTexto)
+                  IconButton(
+                    onPressed: widget.enviando ? null : widget.onCamera,
+                    icon: const Icon(
+                      Icons.photo_camera_outlined,
+                      color: AppColors.textoSecundario,
+                    ),
+                    tooltip: 'Câmera',
+                  )
+                else
+                  const SizedBox(width: 12),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        _botaoPrincipal(
+          onPressed: widget.enviando
+              ? null
+              : (podeEnviarTexto ? widget.onEnviar : _iniciarGravacao),
+          icon: widget.enviando
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.primary,
+                  ),
+                )
+              : Icon(podeEnviarTexto ? Icons.send_rounded : Icons.mic_rounded),
+          tooltip: podeEnviarTexto ? 'Enviar mensagem' : 'Gravar áudio',
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final podeEnviarTexto = _temTexto || widget.anexos.isNotEmpty;
 
-    return SafeArea(
-      top: false,
-      child: Container(
-        padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
-        color: Colors.white,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (widget.anexos.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 8),
-                child: SizedBox(
-                  height: 110,
-                  child: ListView.separated(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: widget.anexos.length,
-                    separatorBuilder: (_, _) => const SizedBox(width: 8),
-                    itemBuilder: (context, index) {
-                      final anexo = widget.anexos[index];
-                      return MiniaturaAnexo(
-                        key: ValueKey(anexo.caminho),
-                        anexo: anexo,
-                        desabilitado: widget.enviando,
-                        onRemover: () => widget.onRemoverAnexo(anexo),
-                      );
-                    },
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.surface,
+        border: Border(top: BorderSide(color: AppColors.outline)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (widget.anexos.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: SizedBox(
+                    height: 110,
+                    child: ListView.separated(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: widget.anexos.length,
+                      separatorBuilder: (context, index) =>
+                          const SizedBox(width: 8),
+                      itemBuilder: (context, index) {
+                        final anexo = widget.anexos[index];
+                        return MiniaturaAnexo(
+                          key: ValueKey(anexo.caminho),
+                          anexo: anexo,
+                          desabilitado: widget.enviando,
+                          onRemover: () => widget.onRemoverAnexo(anexo),
+                        );
+                      },
+                    ),
                   ),
                 ),
-              ),
-            if (_gravando)
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: widget.enviando ? null : _cancelarGravacao,
-                    icon: const Icon(
-                      Icons.delete_outline,
-                      color: Colors.redAccent,
-                    ),
-                    tooltip: 'Cancelar gravação',
-                  ),
-                  Container(
-                    width: 10,
-                    height: 10,
-                    margin: const EdgeInsets.only(right: 8),
-                    decoration: const BoxDecoration(
-                      color: Colors.redAccent,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  Text(
-                    _formatarDuracao(_duracaoGravacao),
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: AudioWaveforms(
-                      size: const Size(double.infinity, 36),
-                      recorderController: _recorderController,
-                      waveStyle: const WaveStyle(
-                        waveColor: AppColors.primary,
-                        extendWaveform: true,
-                        showMiddleLine: false,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton.filled(
-                    onPressed: widget.enviando ? null : _confirmarGravacao,
-                    icon: const Icon(Icons.send_rounded),
-                    tooltip: 'Enviar áudio',
-                  ),
-                ],
-              )
-            else
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  IconButton(
-                    onPressed: widget.enviando ? null : widget.onAnexar,
-                    icon: const Icon(Icons.attach_file_rounded),
-                    tooltip: 'Anexar imagem ou vídeo',
-                  ),
-                  Expanded(
-                    child: TextField(
-                      controller: widget.controller,
-                      minLines: 1,
-                      maxLines: 4,
-                      textInputAction: TextInputAction.newline,
-                      decoration: const InputDecoration(
-                        hintText: 'Escreva uma mensagem',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(22)),
-                        ),
-                        contentPadding: EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 10,
-                        ),
-                      ),
-                      onSubmitted: (_) => widget.onEnviar(),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  if (!_temTexto)
-                    IconButton(
-                      onPressed: widget.enviando ? null : widget.onCamera,
-                      icon: const Icon(Icons.photo_camera_outlined),
-                      tooltip: 'Câmera',
-                    ),
-
-                  const SizedBox(width: 8),
-                  IconButton.filled(
-                    onPressed: widget.enviando
-                        ? null
-                        : (podeEnviarTexto
-                              ? widget.onEnviar
-                              : _iniciarGravacao),
-                    icon: widget.enviando
-                        ? const SizedBox(
-                            width: 18,
-                            height: 18,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : Icon(
-                            podeEnviarTexto
-                                ? Icons.send_rounded
-                                : Icons.mic_rounded,
-                          ),
-                    tooltip: podeEnviarTexto
-                        ? 'Enviar mensagem'
-                        : 'Gravar áudio',
-                  ),
-                ],
-              ),
-          ],
+              if (_gravando)
+                _painelGravacao()
+              else
+                _painelDigitacao(podeEnviarTexto),
+            ],
+          ),
         ),
       ),
     );

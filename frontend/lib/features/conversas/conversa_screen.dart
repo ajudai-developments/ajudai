@@ -13,6 +13,8 @@ import 'package:shared/shared.dart';
 
 import '../../core/errors/erro_mapper.dart';
 import '../../core/session/sessao.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_text_styles.dart';
 import '../../core/widgets/error_banner.dart';
 import '../../core/widgets/user_avatar.dart';
 import '../../core/ws/ws_message_stream.dart';
@@ -364,59 +366,111 @@ class _ConversaScreenState extends State<ConversaScreen> {
 
   String _horario(DateTime data) => DateFormat('HH:mm').format(data.toLocal());
 
+  bool _mesmoDia(DateTime a, DateTime b) =>
+      a.year == b.year && a.month == b.month && a.day == b.day;
+
+  /// "Hoje", "Ontem" ou dd/MM/aaaa — usado no separador de dias.
+  String _rotuloDia(DateTime data) {
+    final agora = DateTime.now();
+    if (_mesmoDia(data, agora)) return 'Hoje';
+    if (_mesmoDia(data, agora.subtract(const Duration(days: 1)))) {
+      return 'Ontem';
+    }
+    return DateFormat('dd/MM/yyyy').format(data);
+  }
+
+  void _abrirPerfil() {
+    Navigator.of(context).pushNamed(
+      AppRoutes.perfilPublico,
+      arguments: widget.conversa.outroUsuario.id,
+    );
+  }
+
+  Widget _construirMensagem(int index) {
+    final item = _mensagens[index];
+    final minha = item.mensagem.remetenteId == _usuarioId;
+    final data = item.mensagem.enviadoEm.toLocal();
+    final anterior = index > 0
+        ? _mensagens[index - 1].mensagem.enviadoEm.toLocal()
+        : null;
+    final novoDia = anterior == null || !_mesmoDia(anterior, data);
+
+    final bolha = BolhaMensagem(
+      mensagem: item,
+      minha: minha,
+      horario: _horario(item.mensagem.enviadoEm),
+      avatarUrl: minha
+          ? Sessao.instance.usuario?.avatarUrl
+          : widget.conversa.outroUsuario.avatarUrl,
+    );
+
+    if (!novoDia) return bolha;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _SeparadorDia(rotulo: _rotuloDia(data)),
+        bolha,
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final outro = widget.conversa.outroUsuario;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F7F7),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
+        backgroundColor: AppColors.background,
+        scrolledUnderElevation: 0,
+        centerTitle: false,
         titleSpacing: 0,
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            GestureDetector(
-              onTap: () => Navigator.of(context).pushNamed(
-                AppRoutes.perfilPublico,
-                arguments: widget.conversa.outroUsuario.id,
-              ),
-              child: UserAvatar(
-                avatarUrl: widget.conversa.outroUsuario.avatarUrl,
-                radius: 18,
-              ),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(1),
+          child: Divider(height: 1, color: AppColors.outline),
+        ),
+        title: InkWell(
+          onTap: _abrirPerfil,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                UserAvatar(avatarUrl: outro.avatarUrl, radius: 18),
+                const SizedBox(width: 10),
+                Flexible(
+                  child: Text(
+                    outro.nome,
+                    style: AppTextStyles.titulo,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 10),
-            Flexible(
-              child: Text(
-                widget.conversa.outroUsuario.nome,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
       body: Column(
         children: [
-          ErrorBanner(mensagem: _erro),
+          if (_erro != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              child: ErrorBanner(mensagem: _erro),
+            ),
           Expanded(
             child: _carregando
-                ? const Center(child: CircularProgressIndicator())
+                ? const Center(
+                    child: CircularProgressIndicator(color: AppColors.primary),
+                  )
                 : _mensagens.isEmpty
-                ? const Center(child: Text('Comece a conversa.'))
+                ? _EstadoSemMensagens(nome: outro.nome)
                 : ListView.builder(
                     controller: _scrollController,
                     padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
                     itemCount: _mensagens.length,
-                    itemBuilder: (context, index) {
-                      final item = _mensagens[index];
-                      final minha = item.mensagem.remetenteId == _usuarioId;
-                      return BolhaMensagem(
-                        mensagem: item,
-                        minha: minha,
-                        horario: _horario(item.mensagem.enviadoEm),
-                        avatarUrl: minha
-                            ? Sessao.instance.usuario?.avatarUrl
-                            : widget.conversa.outroUsuario.avatarUrl,
-                      );
-                    },
+                    itemBuilder: (context, index) => _construirMensagem(index),
                   ),
           ),
           Composer(
@@ -431,6 +485,72 @@ class _ConversaScreenState extends State<ConversaScreen> {
             onCamera: _abrirCamera,
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Chip centralizado com o dia ("Hoje", "Ontem", dd/MM/aaaa) que aparece
+/// antes da primeira mensagem de cada dia.
+class _SeparadorDia extends StatelessWidget {
+  final String rotulo;
+
+  const _SeparadorDia({required this.rotulo});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceAlt,
+            borderRadius: BorderRadius.circular(999),
+          ),
+          child: Text(rotulo, style: AppTextStyles.label),
+        ),
+      ),
+    );
+  }
+}
+
+class _EstadoSemMensagens extends StatelessWidget {
+  final String nome;
+
+  const _EstadoSemMensagens({required this.nome});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 64,
+              height: 64,
+              decoration: const BoxDecoration(
+                color: AppColors.primarySoft,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.chat_bubble_outline_rounded,
+                color: AppColors.primary,
+                size: 28,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text('Comece a conversa', style: AppTextStyles.titulo),
+            const SizedBox(height: 4),
+            Text(
+              'Envie uma mensagem para $nome.',
+              textAlign: TextAlign.center,
+              style: AppTextStyles.corpo,
+            ),
+          ],
+        ),
       ),
     );
   }
