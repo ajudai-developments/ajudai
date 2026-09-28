@@ -180,6 +180,11 @@ enum TipoMensagem {
   adminResponderDenuncia('admin_responder_denuncia'),
   adminResponderDenunciaOk('admin_responder_denuncia_ok'),
 
+  listarPrestadoresRecente('listar_prestador_recente'),
+  listarPrestadoresRecenteOk('listar_prestador_recente_ok'),
+  listarServicosRecente('listar_servico_recente'),
+  listarServicosRecenteOk('listar_servico_recente_ok'),
+
   erro('erro');
 
   final String valor;

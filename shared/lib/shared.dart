@@ -4,6 +4,7 @@ export 'src/models/usuario/usuario.dart';
 export 'src/models/usuario/usuario_basico.dart';
 export 'src/models/usuario/perfil_completo.dart';
 export 'src/models/usuario/perfil_estatisticas.dart';
+export 'src/models/usuario/prestador_recente.dart';
 export 'src/models/usuario/requisito_verificacao.dart';
 export 'src/models/endereco/endereco.dart';
 export 'src/models/categoria/categoria.dart';
@@ -14,6 +15,7 @@ export 'src/models/servico/servico_oferecido_preview.dart';
 export 'src/models/servico/servico_oferecido_do_prestador.dart';
 export 'src/models/servico/estatisticas_servico_oferecido.dart';
 export 'src/models/servico/servico_oferecido_detalhe_prestador.dart';
+export 'src/models/servico/servico_recente.dart';
 export 'src/models/verificacao/verificacao.dart';
 export 'src/models/verificacao/verificacao_com_detalhes.dart';
 export 'src/models/verificacao/verificacao_com_urls.dart';
@@ -56,6 +58,7 @@ export 'src/dto/usuario/obter_perfil_publico_dto.dart';
 export 'src/dto/usuario/perfil_completo_dto.dart';
 export 'src/dto/usuario/atualizar_avatar_dto.dart';
 export 'src/dto/usuario/buscar_perfil_estatisticas_dto.dart';
+export 'src/dto/usuario/listar_prestadores_recentes_dto.dart';
 
 export 'src/dto/tipo_mensagem.dart';
 export 'src/dto/json_utils.dart';
@@ -88,6 +91,8 @@ export 'src/dto/servico/listar_servico_dto.dart';
 export 'src/dto/servico/editar_servico_oferecido_dto.dart';
 export 'src/dto/servico/desativar_servico_oferecido_dto.dart';
 export 'src/dto/servico/ativar_servico_oferecido_dto.dart';
+export 'src/dto/servico/listar_servicos_recentes_dto.dart';
+
 export 'src/dto/prestador/obter_detalhe_servico_oferecido_prestador_dto.dart';
 
 export 'src/dto/prestador/criar_servico_oferecido_dto.dart';
