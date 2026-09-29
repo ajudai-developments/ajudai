@@ -59,9 +59,12 @@ class AppRoutes {
   // notificacao
   static const String notificacoes = '/notificacoes';
 
-  // admin
+  // admin (somente web)
   static const String verificacoes = '/admin/verificacoes';
   static const String verificacaoDetalhe = '/admin/verificacoes/detalhe';
+  static const adminDashboard = '/admin-dashboard';
+  static const adminContestacoes = '/admin/contestacoes';
+  static const adminDenuncias = '/admin/denuncias';
 
   static const denunciarUsuario = '/denuncia/usuario';
   static const denunciaDetalhe = '/denuncia/detalhe';
@@ -69,6 +72,4 @@ class AppRoutes {
   static const contestacaoDetalhe = '/contestacao/detalhe';
   static const minhasContestacoes = '/perfil/minhas-contestacoes';
   static const minhasDenuncias = '/perfil/minhas-denuncias';
-
-  static const adminDashboard = '/admin-dashboard';
 }

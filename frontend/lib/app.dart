@@ -1,6 +1,9 @@
 import 'package:ajudai/core/session/sessao.dart';
 import 'package:ajudai/core/widgets/tela_sem_acesso.dart';
+import 'package:ajudai/features/admin/admin_contestacoes_screen.dart';
 import 'package:ajudai/features/admin/admin_dashboard_screen.dart';
+import 'package:ajudai/features/admin/admin_denuncias_screen.dart';
+import 'package:ajudai/features/admin/admin_verificacoes_screen.dart';
 import 'package:ajudai/features/agendamento/agendamento_detalhado_screen.dart';
 import 'package:ajudai/features/contestacao/contestacao_detalhe_screen.dart';
 import 'package:ajudai/features/contestacao/contestar_agendamento_screen.dart';
@@ -134,7 +137,13 @@ class _AppRootState extends State<_AppRoot> {
     AppRoutes.confirmarPagamento,
   };
 
-  static const _rotasAdmin = <String>{AppRoutes.adminDashboard};
+  /// Rotas da área administrativa. Só admin acessa, e somente na web.
+  static const _rotasAdmin = <String>{
+    AppRoutes.adminDashboard,
+    AppRoutes.verificacoes,
+    AppRoutes.adminContestacoes,
+    AppRoutes.adminDenuncias,
+  };
 
   /// Rotas que um admin PODE acessar. Fora dessa lista, qualquer tentativa
   /// de navegação enquanto logado como admin é redirecionada pro
@@ -145,7 +154,7 @@ class _AppRootState extends State<_AppRoot> {
   /// deveria precisar visitar essas telas estando logado, mas não custa
   /// não travar caso aconteça algo fora do fluxo esperado (deep link, etc).
   static const _rotasPermitidasParaAdmin = <String>{
-    AppRoutes.adminDashboard,
+    ..._rotasAdmin,
     AppRoutes.login,
     AppRoutes.cadastro,
     AppRoutes.splash,
@@ -171,6 +180,12 @@ class _AppRootState extends State<_AppRoot> {
 
     if (_rotasSomenteMobile.contains(nome) && kIsWeb) {
       return _rotaBloqueada(settings, 'Disponível apenas no app.');
+    }
+    if (_rotasAdmin.contains(nome) && !kIsWeb) {
+      return _rotaBloqueada(
+        settings,
+        'Área administrativa disponível apenas na web.',
+      );
     }
     if (_rotasAdmin.contains(nome) && perm.papel != UserRole.admin) {
       return _rotaBloqueada(settings, 'Acesso restrito.');
@@ -222,7 +237,12 @@ class _AppRootState extends State<_AppRoot> {
       AppRoutes.minhasDenuncias: (_) => const MinhasDenunciasScreen(),
       AppRoutes.contestacaoDetalhe: (_) => const ContestacaoDetalheScreen(),
       AppRoutes.denunciaDetalhe: (_) => const DenunciaDetalheScreen(),
+
+      // Admin (somente web)
       AppRoutes.adminDashboard: (_) => const AdminDashboardScreen(),
+      AppRoutes.verificacoes: (_) => const AdminVerificacoesScreen(),
+      AppRoutes.adminContestacoes: (_) => const AdminContestacoesScreen(),
+      AppRoutes.adminDenuncias: (_) => const AdminDenunciasScreen(),
     };
 
     final builder = builders[settings.name];
