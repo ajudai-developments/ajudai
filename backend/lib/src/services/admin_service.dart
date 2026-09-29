@@ -3,6 +3,7 @@ import 'package:backend/src/repositories/usuario_repository.dart';
 import 'package:backend/src/services/arquivo_upload_service.dart';
 import 'package:backend/src/supabase/supabase_client_factory.dart';
 import 'package:shared/shared.dart';
+import 'package:supabase/supabase.dart';
 import 'sessao_service.dart';
 import '../ws/ws_connection.dart';
 
@@ -171,7 +172,7 @@ class AdminService {
       SupabaseClientFactory.criarSecret(),
     );
     final verificacao = await adminRepository.rejeitarPrestador(
-      verificacoId: dto.verificacaoId,
+      verificacaoId: dto.verificacaoId,
       adminId: adminId,
       motivo: motivo,
     );
@@ -230,12 +231,26 @@ class AdminService {
       );
     }
 
-    final adminRepository = AdminRepository(
-      SupabaseClientFactory.criarSecret(),
-    );
-    final contestacoes = await adminRepository.listarContestacoes(dto.status);
+    final clientSecret = SupabaseClientFactory.criarSecret();
+    final contestacoes = await AdminRepository(
+      clientSecret,
+    ).listarContestacoes(dto.status);
 
-    return AdminListarContestacoesResponseDto(contestacoes: contestacoes);
+    final comUrls = await Future.wait(
+      contestacoes.map(
+        (c) async => ContestacaoComUrls(
+          contestacao: c,
+          urlsArquivos: await _urlsAssinadas(
+            client: clientSecret,
+            bucket: 'contestamentos',
+            prefixo: c.id,
+            arquivos: c.arquivos,
+          ),
+        ),
+      ),
+    );
+
+    return AdminListarContestacoesResponseDto(contestacoes: comUrls);
   }
 
   Future<AdminResponderContestacaoResponseDto> responderContestacao(
@@ -324,12 +339,26 @@ class AdminService {
       );
     }
 
-    final adminRepository = AdminRepository(
-      SupabaseClientFactory.criarSecret(),
-    );
-    final denuncias = await adminRepository.listarDenuncias(dto.status);
+    final clientSecret = SupabaseClientFactory.criarSecret();
+    final denuncias = await AdminRepository(
+      clientSecret,
+    ).listarDenuncias(dto.status);
 
-    return AdminListarDenunciasResponseDto(denuncias: denuncias);
+    final comUrls = await Future.wait(
+      denuncias.map(
+        (d) async => DenunciaAdminComUrls(
+          denuncia: d,
+          urlsArquivos: await _urlsAssinadas(
+            client: clientSecret,
+            bucket: 'denuncias',
+            prefixo: d.id,
+            arquivos: d.arquivos,
+          ),
+        ),
+      ),
+    );
+
+    return AdminListarDenunciasResponseDto(denuncias: comUrls);
   }
 
   Future<AdminResponderDenunciaResponseDto> responderDenuncia(
@@ -385,5 +414,83 @@ class AdminService {
     );
 
     return AdminResponderDenunciaResponseDto(denuncia: denuncia);
+  }
+
+  Future<String> _exigirAdmin(WsConnection conexao) async {
+    final client = _sessaoService.clientDe(conexao);
+    final adminId = _sessaoService.userIdDe(conexao);
+    if (client == null || adminId == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Não autenticado',
+      );
+    }
+
+    final usuario = await UsuarioRepository(client).buscarPorId(adminId);
+    if (usuario == null) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoAutenticado,
+        mensagem: 'Usuário não encontrado',
+      );
+    }
+
+    if (usuario.userRole != UserRole.admin) {
+      throw ErroDto(
+        codigo: ErroCodigo.naoPermitido,
+        mensagem: 'Você não está autorizado a fazer isso',
+      );
+    }
+
+    return adminId;
+  }
+
+  Future<AdminMarcarContestacaoEmAnaliseResponseDto> marcarContestacaoEmAnalise(
+    WsConnection conexao,
+    AdminMarcarContestacaoEmAnaliseRequestDto dto,
+  ) async {
+    await _exigirAdmin(conexao);
+
+    final status = await AdminRepository(
+      SupabaseClientFactory.criarSecret(),
+    ).marcarContestacaoEmAnalise(dto.contestacaoId);
+
+    return AdminMarcarContestacaoEmAnaliseResponseDto(
+      contestacaoId: dto.contestacaoId,
+      status: status,
+    );
+  }
+
+  Future<AdminMarcarDenunciaEmAnaliseResponseDto> marcarDenunciaEmAnalise(
+    WsConnection conexao,
+    AdminMarcarDenunciaEmAnaliseRequestDto dto,
+  ) async {
+    await _exigirAdmin(conexao);
+
+    final status = await AdminRepository(
+      SupabaseClientFactory.criarSecret(),
+    ).marcarDenunciaEmAnalise(dto.denunciaId);
+
+    return AdminMarcarDenunciaEmAnaliseResponseDto(
+      denunciaId: dto.denunciaId,
+      status: status,
+    );
+  }
+
+  Future<List<String>> _urlsAssinadas({
+    required SupabaseClient client,
+    required String bucket,
+    required String prefixo,
+    required List<ArquivoAnexado> arquivos,
+  }) {
+    return Future.wait(
+      arquivos.map(
+        (arquivo) => ArquivoUploadService.urlAssinada(
+          client: client,
+          bucket: bucket,
+          prefixo: prefixo,
+          arquivo: arquivo,
+        ),
+      ),
+    );
   }
 }

@@ -98,7 +98,8 @@ class AdminHandler {
   ) async {
     try {
       final dto = RejeitarPrestadorRequestDto.fromJson(msg);
-      await _adminService.rejeitarPrestador(conexao, dto);
+      final resposta = await _adminService.rejeitarPrestador(conexao, dto);
+      conexao.enviar(resposta);
     } on FormatException catch (e) {
       conexao.enviar(
         ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
@@ -280,6 +281,100 @@ class AdminHandler {
         ErroDto(
           codigo: ErroCodigo.erroInterno,
           mensagem: 'Erro ao responder denúncia',
+        ),
+      );
+    }
+  }
+
+  Future<void> handleAdminMarcarContestacaoEmAnalise(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final dto = AdminMarcarContestacaoEmAnaliseRequestDto.fromJson(msg);
+      final resposta = await _adminService.marcarContestacaoEmAnalise(
+        conexao,
+        dto,
+      );
+      conexao.enviar(resposta);
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } on PostgrestException catch (e, stackTrace) {
+      if (e.code == 'PGRST116') {
+        conexao.enviar(
+          ErroDto(
+            codigo: ErroCodigo.dadosInvalidos,
+            mensagem: 'Contestação não encontrada',
+          ),
+        );
+        return;
+      }
+      print('Erro ao marcar contestação em análise (admin): $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao atualizar contestação',
+        ),
+      );
+    } catch (e, stackTrace) {
+      print('Erro ao marcar contestação em análise (admin): $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao atualizar contestação',
+        ),
+      );
+    }
+  }
+
+  Future<void> handleAdminMarcarDenunciaEmAnalise(
+    WsConnection conexao,
+    Map<String, dynamic> msg,
+  ) async {
+    try {
+      final dto = AdminMarcarDenunciaEmAnaliseRequestDto.fromJson(msg);
+      final resposta = await _adminService.marcarDenunciaEmAnalise(
+        conexao,
+        dto,
+      );
+      conexao.enviar(resposta);
+    } on FormatException catch (e) {
+      conexao.enviar(
+        ErroDto(codigo: ErroCodigo.dadosInvalidos, mensagem: e.message),
+      );
+    } on ErroDto catch (erro) {
+      conexao.enviar(erro);
+    } on PostgrestException catch (e, stackTrace) {
+      if (e.code == 'PGRST116') {
+        conexao.enviar(
+          ErroDto(
+            codigo: ErroCodigo.dadosInvalidos,
+            mensagem: 'Denúncia não encontrada',
+          ),
+        );
+        return;
+      }
+      print('Erro ao marcar denúncia em análise (admin): $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao atualizar denúncia',
+        ),
+      );
+    } catch (e, stackTrace) {
+      print('Erro ao marcar denúncia em análise (admin): $e');
+      print(stackTrace);
+      conexao.enviar(
+        ErroDto(
+          codigo: ErroCodigo.erroInterno,
+          mensagem: 'Erro ao atualizar denúncia',
         ),
       );
     }

@@ -47,6 +47,11 @@ class WsRouter {
 
       TipoMensagem.adminResponderDenuncia: h.admin.handleAdminResponderDenuncia,
 
+      TipoMensagem.adminMarcarContestacaoEmAnalise:
+          h.admin.handleAdminMarcarContestacaoEmAnalise,
+      TipoMensagem.adminMarcarDenunciaEmAnalise:
+          h.admin.handleAdminMarcarDenunciaEmAnalise,
+
       TipoMensagem.criarAgendamento: h.agendamento.handleCriarAgendamento,
 
       TipoMensagem.confirmarPagamento: h.agendamento.handleConfirmarPagamento,

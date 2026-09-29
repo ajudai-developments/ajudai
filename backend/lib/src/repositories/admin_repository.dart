@@ -5,6 +5,7 @@ class AdminRepository {
   final SupabaseClient _client;
 
   AdminRepository(this._client);
+
   Future<List<VerificacaoComDetalhes>> obterVerificacoes(
     StatusVerificacao? status,
   ) async {
@@ -43,11 +44,11 @@ class AdminRepository {
         })
         .eq('id', verificacao.usuarioId);
 
-    return Verificacao.fromJson(response);
+    return verificacao;
   }
 
   Future<Verificacao> rejeitarPrestador({
-    required String verificacoId,
+    required String verificacaoId,
     required String adminId,
     required String motivo,
   }) async {
@@ -59,7 +60,7 @@ class AdminRepository {
           "status": StatusVerificacao.rejeitado.name,
           "motivo_rejeicao": motivo,
         })
-        .eq('id', verificacoId)
+        .eq('id', verificacaoId)
         .select()
         .single();
 
@@ -144,5 +145,41 @@ class AdminRepository {
     );
 
     return Denuncia.fromJson(response as Map<String, dynamic>);
+  }
+
+  Future<StatusContestacao> marcarContestacaoEmAnalise(
+    String contestacaoId,
+  ) async {
+    // Só muda se ainda estiver aberta; se já estiver em análise (ou decidida),
+    // o update não afeta nada e devolvemos o status atual.
+    await _client
+        .from('contestacoes')
+        .update({'status': StatusContestacao.emAnalise.valor})
+        .eq('id', contestacaoId)
+        .eq('status', StatusContestacao.aberta.valor);
+
+    final row = await _client
+        .from('contestacoes')
+        .select('status')
+        .eq('id', contestacaoId)
+        .single();
+
+    return StatusContestacao.fromValor(row['status'] as String);
+  }
+
+  Future<StatusDenuncia> marcarDenunciaEmAnalise(String denunciaId) async {
+    await _client
+        .from('denuncias')
+        .update({'status': StatusDenuncia.emAnalise.valor})
+        .eq('id', denunciaId)
+        .eq('status', StatusDenuncia.aberta.valor);
+
+    final row = await _client
+        .from('denuncias')
+        .select('status')
+        .eq('id', denunciaId)
+        .single();
+
+    return StatusDenuncia.fromValor(row['status'] as String);
   }
 }
