@@ -16,27 +16,6 @@ class ListarMinhasContestacoesRequestDto implements WsMessage {
   Map<String, dynamic> toJson() => {'tipo': tipo.valor};
 }
 
-class ContestacaoComUrls {
-  final ContestacaoComDetalhes contestacao;
-  final List<String?> urlsArquivos;
-
-  ContestacaoComUrls({required this.contestacao, required this.urlsArquivos});
-
-  Map<String, dynamic> toJson() => {
-    ...contestacao.toJson(),
-    'urls_arquivos': urlsArquivos,
-  };
-
-  factory ContestacaoComUrls.fromJson(Map<String, dynamic> json) {
-    return ContestacaoComUrls(
-      contestacao: ContestacaoComDetalhes.fromJson(json),
-      urlsArquivos: (json['urls_arquivos'] as List)
-          .map((e) => e as String?)
-          .toList(),
-    );
-  }
-}
-
 class ListarMinhasContestacoesResponseDto implements WsMessage {
   final List<ContestacaoComUrls> contestacoes;
 

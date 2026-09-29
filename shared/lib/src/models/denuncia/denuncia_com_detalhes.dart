@@ -97,4 +97,25 @@ class DenunciaComDetalhes {
     'baniu_usuario': baniuUsuario,
     'arquivos': arquivos.map((a) => a.toJson()).toList(),
   };
+
+  DenunciaComDetalhes comStatus(StatusDenuncia novo) => DenunciaComDetalhes(
+    id: id,
+    usuarioId: usuarioId,
+    usuarioNome: usuarioNome,
+    usuarioRole: usuarioRole,
+    usuarioStatusPrestador: usuarioStatusPrestador,
+    usuarioBanido: usuarioBanido,
+    denunciadorId: denunciadorId,
+    denunciadorNome: denunciadorNome,
+    tipo: tipo,
+    descricao: descricao,
+    denunciadoEm: denunciadoEm,
+    status: novo,
+    respostaAdmin: respostaAdmin,
+    respondidoPorAdminId: respondidoPorAdminId,
+    respondidoEm: respondidoEm,
+    removeuPrestador: removeuPrestador,
+    baniuUsuario: baniuUsuario,
+    arquivos: arquivos,
+  );
 }

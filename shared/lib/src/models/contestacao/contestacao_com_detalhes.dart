@@ -91,4 +91,25 @@ class ContestacaoComDetalhes {
     'valor': valor,
     'arquivos': arquivos.map((a) => a.toJson()).toList(),
   };
+
+  ContestacaoComDetalhes comStatus(StatusContestacao novo) =>
+      ContestacaoComDetalhes(
+        id: id,
+        agendamentoId: agendamentoId,
+        contestadorId: contestadorId,
+        contestadorNome: contestadorNome,
+        contestadoId: contestadoId,
+        contestadoNome: contestadoNome,
+        descricao: descricao,
+        status: novo,
+        criadoEm: criadoEm,
+        respostaAdmin: respostaAdmin,
+        respondidoPorAdminId: respondidoPorAdminId,
+        respondidoEm: respondidoEm,
+        agendamentoStatus: agendamentoStatus,
+        horaInicio: horaInicio,
+        horaFim: horaFim,
+        valor: valor,
+        arquivos: arquivos,
+      );
 }

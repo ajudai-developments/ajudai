@@ -181,6 +181,10 @@ enum TipoMensagem {
   adminListarDenunciasOk('admin_listar_denuncias_ok'),
   adminResponderDenuncia('admin_responder_denuncia'),
   adminResponderDenunciaOk('admin_responder_denuncia_ok'),
+  adminMarcarContestacaoEmAnalise('admin_marcar_contestacao_em_analise'),
+  adminMarcarContestacaoEmAnaliseOk('admin_marcar_contestacao_em_analise_ok'),
+  adminMarcarDenunciaEmAnalise('admin_marcar_denuncia_em_analise'),
+  adminMarcarDenunciaEmAnaliseOk('admin_marcar_denuncia_em_analise_ok'),
 
   listarPrestadoresRecente('listar_prestador_recente'),
   listarPrestadoresRecenteOk('listar_prestador_recente_ok'),

@@ -23,7 +23,7 @@ class AdminListarDenunciasRequestDto implements WsMessage {
 }
 
 class AdminListarDenunciasResponseDto implements WsMessage {
-  final List<DenunciaComDetalhes> denuncias;
+  final List<DenunciaAdminComUrls> denuncias;
 
   AdminListarDenunciasResponseDto({required this.denuncias});
 
@@ -33,7 +33,7 @@ class AdminListarDenunciasResponseDto implements WsMessage {
   factory AdminListarDenunciasResponseDto.fromJson(Map<String, dynamic> json) {
     final lista = JsonUtils.requireListaDeMapas(json, 'denuncias');
     return AdminListarDenunciasResponseDto(
-      denuncias: lista.map(DenunciaComDetalhes.fromJson).toList(),
+      denuncias: lista.map(DenunciaAdminComUrls.fromJson).toList(),
     );
   }
 

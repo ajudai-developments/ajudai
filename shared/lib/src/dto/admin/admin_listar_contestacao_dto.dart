@@ -25,7 +25,7 @@ class AdminListarContestacoesRequestDto implements WsMessage {
 }
 
 class AdminListarContestacoesResponseDto implements WsMessage {
-  final List<ContestacaoComDetalhes> contestacoes;
+  final List<ContestacaoComUrls> contestacoes;
 
   AdminListarContestacoesResponseDto({required this.contestacoes});
 
@@ -37,7 +37,7 @@ class AdminListarContestacoesResponseDto implements WsMessage {
   ) {
     final lista = JsonUtils.requireListaDeMapas(json, 'contestacoes');
     return AdminListarContestacoesResponseDto(
-      contestacoes: lista.map(ContestacaoComDetalhes.fromJson).toList(),
+      contestacoes: lista.map(ContestacaoComUrls.fromJson).toList(),
     );
   }
 

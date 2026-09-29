@@ -41,9 +41,12 @@ export 'src/models/arquivos/arquivo_upload.dart';
 export 'src/models/arquivos/arquivo_anexado.dart';
 export 'src/models/denuncia/denuncia.dart';
 export 'src/models/denuncia/denuncia_com_detalhes.dart';
+export 'src/models/denuncia/denuncia_com_urls.dart';
+export 'src/models/denuncia/denuncia_admin_com_urls.dart';
 
 export 'src/models/contestacao/contestacao.dart';
 export 'src/models/contestacao/contestacao_com_detalhes.dart';
+export 'src/models/contestacao/contestacao_com_urls.dart';
 
 export 'src/dto/ws_message.dart';
 export 'src/dto/auth/login_request_dto.dart';
@@ -79,6 +82,8 @@ export 'src/dto/admin/aprovar_prestador_response_dto.dart';
 export 'src/dto/admin/rejeitar_prestador_request_dto.dart';
 export 'src/dto/admin/rejeitar_prestador_response_dto.dart';
 export 'src/dto/admin/listar_verificacoes_request_dto.dart';
+export 'src/dto/admin/admin_marcar_contestacao_em_analise_dto.dart';
+export 'src/dto/admin/admin_marcar_denuncia_em_analise_dto.dart';
 export 'src/dto/prestador/listar_minhas_verificacoes_request.dart';
 
 export 'src/dto/servico/listar_categorias_request_dto.dart';
