@@ -64,6 +64,11 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (Sessao.instance.estaBanido && mounted) {
+        Navigator.of(context).pushReplacementNamed(AppRoutes.meuPerfil);
+      }
+    });
     _carregarCategorias();
     _carregarAgendamentos();
     _carregarRecentes();

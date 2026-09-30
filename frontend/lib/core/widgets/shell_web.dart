@@ -57,6 +57,11 @@ class _ItemMenu {
 
 List<_ItemMenu> _itensDoMenu() {
   final s = Sessao.instance;
+  if (s.estaBanido) {
+    return const [
+      _ItemMenu(AppRoutes.meuPerfil, 'Perfil', Icons.person_outline),
+    ];
+  }
   return [
     const _ItemMenu(AppRoutes.home, 'Início', Icons.home_outlined),
     const _ItemMenu(

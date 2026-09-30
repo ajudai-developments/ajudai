@@ -1,3 +1,4 @@
+import 'package:ajudai/core/widgets/banido_dialog.dart';
 import 'package:flutter/material.dart';
 
 import '../routes/app_routes.dart';
@@ -48,6 +49,12 @@ class AppBottomNav extends StatelessWidget {
 
   void _onTap(BuildContext context, int index) {
     if (index == currentIndex) return;
+
+    // Banido: só o Perfil (2) continua acessível.
+    if (Sessao.instance.estaBanido && index != 2) {
+      BanidoDialog.mostrar(context);
+      return;
+    }
 
     if (_indicesQueExigemLogin.contains(index) && !Sessao.instance.estaLogado) {
       LoginNecessarioDialog.mostrar(context);

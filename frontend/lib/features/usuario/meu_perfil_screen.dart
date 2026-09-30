@@ -107,12 +107,15 @@ class _MeuPerfilScreenState extends State<MeuPerfilScreen> {
       comoCartao: web,
     );
 
-    return TelaAdaptativa(
-      titulo: 'Meu perfil',
-      rotaAtual: AppRoutes.meuPerfil,
-      semAppBarMobile: true,
-      rodapeMobile: const AppBottomNav(currentIndex: 2),
-      child: web ? _corpoWeb(usuario, header) : _corpoMobile(usuario, header),
+    return ListenableBuilder(
+      listenable: Sessao.instance,
+      builder: (context, _) => TelaAdaptativa(
+        titulo: 'Meu perfil',
+        rotaAtual: AppRoutes.meuPerfil,
+        semAppBarMobile: true,
+        rodapeMobile: const AppBottomNav(currentIndex: 2),
+        child: web ? _corpoWeb(usuario, header) : _corpoMobile(usuario, header),
+      ),
     );
   }
 
@@ -167,6 +170,32 @@ class _MeuPerfilScreenState extends State<MeuPerfilScreen> {
 
   /// Tudo que vem abaixo do cabeçalho — igual nos dois layouts.
   List<Widget> _secoes(Usuario usuario) {
+    if (usuario.statusUsuario) {
+      return [
+        const _AvisoBanido(),
+        const SizedBox(height: 20),
+        _SecaoCard(
+          children: [
+            _LinhaInfo(
+              icone: Icons.phone_rounded,
+              label: 'Telefone',
+              valor: usuario.telefone ?? 'Não informado',
+            ),
+          ],
+        ),
+        const SizedBox(height: 32),
+        Center(
+          child: TextButton.icon(
+            onPressed: _sair,
+            icon: const Icon(Icons.logout_rounded, size: 18),
+            label: const Text('Sair da conta'),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.textoSecundario,
+            ),
+          ),
+        ),
+      ];
+    }
     return [
       _SecaoCard(
         children: [
@@ -493,11 +522,12 @@ class _PerfilHeader extends StatelessWidget {
                     ),
                   ),
                 ),
-                IconButton(
-                  onPressed: onEditar,
-                  tooltip: 'Editar perfil',
-                  icon: const Icon(Icons.edit_rounded, color: Colors.white),
-                ),
+                if (!usuario.statusUsuario)
+                  IconButton(
+                    onPressed: onEditar,
+                    tooltip: 'Editar perfil',
+                    icon: const Icon(Icons.edit_rounded, color: Colors.white),
+                  ),
               ],
             ),
             if (!carregando && selos.isNotEmpty) ...[
@@ -627,6 +657,50 @@ class _AcaoItem extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _AvisoBanido extends StatelessWidget {
+  const _AvisoBanido();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.error.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.3)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Icon(Icons.block_rounded, color: AppColors.error, size: 22),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Você está banido da plataforma',
+                  style: AppTextStyles.corpo.copyWith(
+                    color: AppColors.error,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Você não pode mais agendar serviços, conversar ou '
+                  'oferecer serviços.',
+                  style: AppTextStyles.legenda,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

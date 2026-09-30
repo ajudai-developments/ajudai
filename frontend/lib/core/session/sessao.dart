@@ -15,6 +15,7 @@ class Sessao extends ChangeNotifier {
   Usuario? _usuario;
 
   Usuario? get usuario => _usuario;
+  bool get estaBanido => _usuario?.statusUsuario == true;
 
   bool get estaLogado => _usuario != null;
 

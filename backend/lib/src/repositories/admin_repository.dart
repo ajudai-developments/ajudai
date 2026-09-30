@@ -153,13 +153,13 @@ class AdminRepository {
     // Só muda se ainda estiver aberta; se já estiver em análise (ou decidida),
     // o update não afeta nada e devolvemos o status atual.
     await _client
-        .from('contestacoes')
+        .from('contestacoes_agendamento')
         .update({'status': StatusContestacao.emAnalise.valor})
         .eq('id', contestacaoId)
         .eq('status', StatusContestacao.aberta.valor);
 
     final row = await _client
-        .from('contestacoes')
+        .from('contestacoes_agendamento')
         .select('status')
         .eq('id', contestacaoId)
         .single();

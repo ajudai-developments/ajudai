@@ -62,6 +62,12 @@ class _LoginScreenState extends State<LoginScreen> {
         ).pushNamedAndRemoveUntil(AppRoutes.adminDashboard, (route) => false);
         return;
       }
+      if (Sessao.instance.estaBanido) {
+        Navigator.of(
+          context,
+        ).pushNamedAndRemoveUntil(AppRoutes.meuPerfil, (route) => false);
+        return;
+      }
 
       Navigator.pop(context);
     } on WsErroException catch (e) {
