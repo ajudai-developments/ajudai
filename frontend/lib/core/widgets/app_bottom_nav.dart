@@ -44,10 +44,7 @@ class AppBottomNav extends StatelessWidget {
 
   bool get _mostrarMarketplace => Sessao.instance.ehPrestador;
 
-  List<String> get _rotas => [
-    ..._rotasBase,
-    if (_mostrarMarketplace) AppRoutes.agendamentosRecebidos,
-  ];
+  List<String> get _rotas => [..._rotasBase, AppRoutes.agendamentosRecebidos];
 
   void _onTap(BuildContext context, int index) {
     if (index == currentIndex) return;

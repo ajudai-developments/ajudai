@@ -94,8 +94,8 @@ class _AgendamentosRecebidosScreenState
       key: ValueKey('ativos-$_reloadTick'),
       carregar: () async {
         final agendamentos = await _agendamentoRepository
-            .listarAgendamentosCliente();
-        return carregarComDetalhesCliente(agendamentos, _servicoRepository);
+            .listarAgendamentosPrestador();
+        return carregarComDetalhesPrestador(agendamentos, _servicoRepository);
       },
       mensagemVazio: 'Você ainda não tem agendamentos.',
       builder: (context, itens) => ListaAgendamentosFiltravel(
@@ -110,8 +110,8 @@ class _AgendamentosRecebidosScreenState
       key: ValueKey('historico-$_reloadTick'),
       carregar: () async {
         final agendamentos = await _agendamentoRepository
-            .listarHistoricoCliente();
-        return carregarComDetalhesCliente(agendamentos, _servicoRepository);
+            .listarHistoricoPrestador();
+        return carregarComDetalhesPrestador(agendamentos, _servicoRepository);
       },
       mensagemVazio: 'Nenhum agendamento no seu histórico ainda.',
       builder: (context, itens) => ListaAgendamentosHistorico(
